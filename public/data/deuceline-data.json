@@ -1,23 +1,91 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "rivalry": {
-    "id": "alan-vs-opponent",
-    "title": "Alan vs Opponent",
+    "id": "alan-vs-andy",
+    "title": "Alan vs Andy",
     "players": {
       "alan": {
         "displayName": "Alan"
       },
       "opponent": {
-        "displayName": "Opponent"
+        "displayName": "Andy"
       }
     }
   },
   "matches": [
     {
-      "id": "match-2026-06-28",
-      "date": "2026-06-28",
+      "id": "match-1",
+      "seq": 1,
+      "surface": "astro",
+      "location": "Bishop",
+      "fidelity": "matchScore",
+      "matchScore": {
+        "alan": 1,
+        "opponent": 2
+      }
+    },
+    {
+      "id": "match-2",
+      "seq": 2,
+      "surface": "astro",
+      "location": "Bishop",
+      "fidelity": "matchScore",
+      "matchScore": {
+        "alan": 0,
+        "opponent": 2
+      }
+    },
+    {
+      "id": "match-3",
+      "seq": 3,
       "surface": "hard",
-      "location": "Example Tennis Club",
+      "location": "Bishop",
+      "fidelity": "matchScore",
+      "matchScore": {
+        "alan": 2,
+        "opponent": 1
+      }
+    },
+    {
+      "id": "match-4",
+      "seq": 4,
+      "surface": "clay",
+      "location": "Bishop",
+      "fidelity": "matchScore",
+      "matchScore": {
+        "alan": 2,
+        "opponent": 0
+      }
+    },
+    {
+      "id": "match-5",
+      "seq": 5,
+      "surface": "clay",
+      "location": "Bishop",
+      "fidelity": "matchScore",
+      "matchScore": {
+        "alan": 2,
+        "opponent": 0
+      }
+    },
+    {
+      "id": "match-6",
+      "seq": 6,
+      "surface": "clay",
+      "location": "Bishop",
+      "fidelity": "matchScore",
+      "matchScore": {
+        "alan": 1,
+        "opponent": 2
+      }
+    },
+    {
+      "id": "match-7",
+      "seq": 7,
+      "date": "2026-06-28",
+      "surface": "clay",
+      "location": "Bishop",
+      "fidelity": "sets",
       "sets": [
         {
           "alan": 6,
@@ -30,108 +98,6 @@
         {
           "alan": 7,
           "opponent": 5
-        }
-      ],
-      "notes": "Sample match for initial scaffold."
-    },
-    {
-      "id": "match-2026-06-21",
-      "date": "2026-06-21",
-      "surface": "astro",
-      "location": "Astro court",
-      "sets": [
-        {
-          "alan": 4,
-          "opponent": 6
-        },
-        {
-          "alan": 5,
-          "opponent": 7
-        }
-      ],
-      "notes": "Sample loss on astro."
-    },
-    {
-      "id": "match-2026-06-14",
-      "date": "2026-06-14",
-      "surface": "grass",
-      "sets": [
-        {
-          "alan": 6,
-          "opponent": 4
-        },
-        {
-          "alan": 6,
-          "opponent": 4
-        }
-      ]
-    },
-    {
-      "id": "match-2026-06-07",
-      "date": "2026-06-07",
-      "surface": "clay",
-      "sets": [
-        {
-          "alan": 2,
-          "opponent": 6
-        },
-        {
-          "alan": 6,
-          "opponent": 3
-        },
-        {
-          "alan": 4,
-          "opponent": 6
-        }
-      ]
-    },
-    {
-      "id": "match-2026-05-31",
-      "date": "2026-05-31",
-      "surface": "hard",
-      "location": "Public courts",
-      "sets": [
-        {
-          "alan": 7,
-          "opponent": 6,
-          "tiebreak": {
-            "alan": 7,
-            "opponent": 4
-          }
-        },
-        {
-          "alan": 6,
-          "opponent": 2
-        }
-      ]
-    },
-    {
-      "id": "match-2026-05-24",
-      "date": "2026-05-24",
-      "surface": "hard",
-      "sets": [
-        {
-          "alan": 4,
-          "opponent": 6
-        },
-        {
-          "alan": 4,
-          "opponent": 6
-        }
-      ]
-    },
-    {
-      "id": "match-2026-05-17",
-      "date": "2026-05-17",
-      "surface": "astro",
-      "sets": [
-        {
-          "alan": 6,
-          "opponent": 3
-        },
-        {
-          "alan": 6,
-          "opponent": 3
         }
       ]
     }

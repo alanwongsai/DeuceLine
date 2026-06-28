@@ -5,7 +5,7 @@ export type Surface = (typeof SURFACES)[number];
 export type PlayerKey = "alan" | "opponent";
 
 export type DeucelineDataset = {
-  schemaVersion: 1;
+  schemaVersion: 2;
   rivalry: {
     id: string;
     title: string;
@@ -18,14 +18,34 @@ export type Player = {
   displayName: string;
 };
 
-export type Match = {
+// Fields shared by every match regardless of how much detail we have.
+// `seq` is the canonical chronological order (1 = oldest). `date` is optional
+// because early matches were recorded before we tracked exact dates — sorting
+// and streaks rely on `seq`, while `date` is only used for display when present.
+type MatchBase = {
   id: string;
-  date: string;
+  seq: number;
+  date?: string;
   surface: Surface;
   location?: string;
-  sets: SetScore[];
   notes?: string;
 };
+
+// Highest fidelity: we know the game score of every set.
+export type DetailedMatch = MatchBase & {
+  fidelity: "sets";
+  sets: SetScore[];
+};
+
+// Lower fidelity: we only know how many sets each player won, not the
+// individual set scores. Still enough for match record, set record,
+// decider record, streaks and surface splits.
+export type ScoreMatch = MatchBase & {
+  fidelity: "matchScore";
+  matchScore: Record<PlayerKey, number>;
+};
+
+export type Match = DetailedMatch | ScoreMatch;
 
 export type SetScore = {
   alan: number;
@@ -39,12 +59,15 @@ export type SetScore = {
 export type MatchResult = {
   winner: PlayerKey;
   matchScore: Record<PlayerKey, number>;
-  setScores: string[];
+  // Per-set display strings, or null when the match only has a set tally.
+  setScores: string[] | null;
+  hasSetDetail: boolean;
   isDecider: boolean;
 };
 
 export type OverviewStats = {
   totalMatches: number;
+  detailedMatchCount: number;
   matchRecord: Record<PlayerKey, number>;
   setRecord: Record<PlayerKey, number>;
   deciderRecord: Record<PlayerKey, number>;

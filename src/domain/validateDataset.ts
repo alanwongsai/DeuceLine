@@ -1,5 +1,5 @@
-import { DeucelineDataset, Match, PlayerKey, SetScore, SURFACES } from "./schema";
-import { deriveMatchResult } from "./deriveStats";
+import { DeucelineDataset, PlayerKey, SetScore, SURFACES } from "./schema";
+import { deriveSetWinner } from "./deriveStats";
 
 export class DatasetValidationError extends Error {
   constructor(public readonly issues: string[]) {
@@ -15,8 +15,8 @@ export function validateDataset(value: unknown): DeucelineDataset {
     throw new DatasetValidationError(["Dataset must be an object."]);
   }
 
-  if (value.schemaVersion !== 1) {
-    issues.push("schemaVersion must be 1.");
+  if (value.schemaVersion !== 2) {
+    issues.push("schemaVersion must be 2.");
   }
 
   const rivalry = value.rivalry;
@@ -61,12 +61,15 @@ function validatePlayers(value: unknown, issues: string[]) {
 
 function validateMatches(matches: unknown[], issues: string[]) {
   const ids = new Set<string>();
+  const seqs = new Set<number>();
 
   matches.forEach((match, index) => {
     if (!isRecord(match)) {
       issues.push(`matches[${index}] must be an object.`);
       return;
     }
+
+    const label = matchLabel(match, index);
 
     const id = String(match.id ?? "");
     if (!isNonEmptyString(match.id)) {
@@ -77,24 +80,43 @@ function validateMatches(matches: unknown[], issues: string[]) {
       ids.add(id);
     }
 
-    if (!isIsoDate(match.date)) {
-      issues.push(`${matchLabel(match, index)} date must be YYYY-MM-DD.`);
+    if (!isPositiveInteger(match.seq)) {
+      issues.push(`${label} seq must be a positive integer.`);
+    } else if (seqs.has(match.seq)) {
+      issues.push(`Duplicate match seq: ${match.seq}.`);
+    } else {
+      seqs.add(match.seq);
+    }
+
+    // date is optional, but must be a real YYYY-MM-DD when present.
+    if (match.date !== undefined && !isIsoDate(match.date)) {
+      issues.push(`${label} date must be YYYY-MM-DD when present.`);
     }
 
     if (typeof match.surface !== "string" || !SURFACES.includes(match.surface as never)) {
-      issues.push(`${matchLabel(match, index)} surface must be hard, clay, grass, or astro.`);
+      issues.push(`${label} surface must be hard, clay, grass, or astro.`);
     }
 
-    if ("location" in match && match.location !== undefined && typeof match.location !== "string") {
-      issues.push(`${matchLabel(match, index)} location must be a string.`);
+    if (match.location !== undefined && typeof match.location !== "string") {
+      issues.push(`${label} location must be a string.`);
     }
 
-    if ("notes" in match && match.notes !== undefined && typeof match.notes !== "string") {
-      issues.push(`${matchLabel(match, index)} notes must be a string.`);
+    if (match.notes !== undefined && typeof match.notes !== "string") {
+      issues.push(`${label} notes must be a string.`);
     }
 
-    validateSets(match.sets, matchLabel(match, index), issues);
+    validateFidelity(match, label, issues);
   });
+}
+
+function validateFidelity(match: Record<string, unknown>, label: string, issues: string[]) {
+  if (match.fidelity === "sets") {
+    validateSets(match.sets, label, issues);
+  } else if (match.fidelity === "matchScore") {
+    validateMatchScore(match.matchScore, label, issues);
+  } else {
+    issues.push(`${label} fidelity must be "sets" or "matchScore".`);
+  }
 }
 
 function validateSets(value: unknown, label: string, issues: string[]) {
@@ -115,9 +137,33 @@ function validateSets(value: unknown, label: string, issues: string[]) {
     return;
   }
 
-  const result = deriveMatchResult({ id: "validation", date: "2000-01-01", surface: "hard", sets: typedSets });
-  if (result.matchScore.alan === result.matchScore.opponent) {
+  const tally = { alan: 0, opponent: 0 };
+  typedSets.forEach((set) => {
+    tally[deriveSetWinner(set)] += 1;
+  });
+  if (tally.alan === tally.opponent) {
     issues.push(`${label} cannot end with a tied match score.`);
+  }
+}
+
+function validateMatchScore(value: unknown, label: string, issues: string[]) {
+  if (!isRecord(value)) {
+    issues.push(`${label} matchScore must be an object.`);
+    return;
+  }
+
+  const { alan, opponent } = value;
+  if (!isNonNegativeInteger(alan) || !isNonNegativeInteger(opponent)) {
+    if (!isNonNegativeInteger(alan)) issues.push(`${label} matchScore.alan must be a non-negative integer.`);
+    if (!isNonNegativeInteger(opponent)) issues.push(`${label} matchScore.opponent must be a non-negative integer.`);
+    return;
+  }
+
+  if (alan === opponent) {
+    issues.push(`${label} matchScore cannot be tied.`);
+  }
+  if (alan + opponent === 0) {
+    issues.push(`${label} matchScore must record at least one set.`);
   }
 }
 
@@ -130,7 +176,7 @@ function validateSetScore(value: unknown, label: string, issues: string[]) {
   if (!isNonNegativeInteger(value.alan)) issues.push(`${label}.alan must be a non-negative integer.`);
   if (!isNonNegativeInteger(value.opponent)) issues.push(`${label}.opponent must be a non-negative integer.`);
 
-  if ("tiebreak" in value && value.tiebreak !== undefined) {
+  if (value.tiebreak !== undefined) {
     if (!isRecord(value.tiebreak)) {
       issues.push(`${label}.tiebreak must be an object.`);
     } else {
@@ -154,6 +200,10 @@ function isNonEmptyString(value: unknown): value is string {
 
 function isNonNegativeInteger(value: unknown): value is number {
   return typeof value === "number" && Number.isInteger(value) && value >= 0;
+}
+
+function isPositiveInteger(value: unknown): value is number {
+  return typeof value === "number" && Number.isInteger(value) && value >= 1;
 }
 
 function isIsoDate(value: unknown): value is string {

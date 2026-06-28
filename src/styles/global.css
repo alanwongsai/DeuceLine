@@ -376,7 +376,8 @@ h2 {
   gap: 10px;
 }
 
-.match-card time {
+.match-card time,
+.match-card .match-seq {
   color: var(--muted);
   font-size: 0.82rem;
   font-weight: 900;

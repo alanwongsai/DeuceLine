@@ -15,13 +15,17 @@ export function MatchCard({ match, playerNames }: MatchCardProps) {
       <div className="match-card-stripe" aria-hidden="true" />
       <div className="match-card-body">
         <div className="match-card-top">
-          <time dateTime={match.date}>{formatDate(match.date)}</time>
+          {match.date ? (
+            <time dateTime={match.date}>{formatDate(match.date)}</time>
+          ) : (
+            <span className="match-seq">Match {match.seq}</span>
+          )}
           <SurfaceBadge surface={match.surface} />
         </div>
         <h2>
           {playerNames[result.winner]} won {formatMatchScore(match)}
         </h2>
-        <p className="set-line">{result.setScores.join("   ")}</p>
+        {result.setScores ? <p className="set-line">{result.setScores.join("   ")}</p> : null}
         {match.location ? <p className="match-meta">{match.location}</p> : null}
         {match.notes ? <p className="match-notes">{match.notes}</p> : null}
       </div>

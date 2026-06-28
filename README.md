@@ -23,7 +23,15 @@ The JSON dataset is the v1 source of truth:
 public/data/deuceline-data.json
 ```
 
-Derived values are not stored. Match winners, match scores, records, streaks, and surface splits are calculated from `matches[].sets`.
+Derived values (winners, records, streaks, surface splits) are never stored — they are
+calculated from each match's recorded score.
+
+Matches support two fidelity levels so partially-remembered history can still be tracked:
+
+- `fidelity: "sets"` — full per-set game scores in `sets` (e.g. `6-3`, `7-5`). Enables the
+  per-set line on the match card.
+- `fidelity: "matchScore"` — only the set tally in `matchScore` (e.g. won 2 sets to 1).
+  Still feeds match record, set record, decider record, streaks and surface splits.
 
 ## Update Data
 
@@ -31,14 +39,15 @@ For v1, update matches manually by editing `public/data/deuceline-data.json`.
 
 Each match should include:
 
-- `id`
-- `date`
-- `surface`
-- `sets`
+- `id` (unique)
+- `seq` (unique chronological order; 1 = oldest)
+- `surface` (`hard`, `clay`, `grass`, `astro`)
+- `fidelity` plus either `sets` or `matchScore`
+- optional `date` (`YYYY-MM-DD`; sorting uses `seq`, so this is display-only)
 - optional `location`
 - optional `notes`
 
-Do not add stored winner or match score fields.
+Do not add stored winner fields — winners are always derived.
 
 ## Install
 

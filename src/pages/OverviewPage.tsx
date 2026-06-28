@@ -66,7 +66,7 @@ export function OverviewPage({ dataset }: { dataset: DeucelineDataset }) {
       <section className="panel">
         <div className="panel-header">
           <h2>By surface</h2>
-          <span>Alan—Opponent</span>
+          <span>{playerNames.alan}—{playerNames.opponent}</span>
         </div>
         <div className="surface-list">
           {SURFACES.map((surface) => {
