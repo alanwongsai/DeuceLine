@@ -9,7 +9,7 @@ Tagline: **Track the rivalry. Set by set.**
 - Shows the shared head-to-head record.
 - Shows recent form, match record, set record, decider record, current streak, and surface split.
 - Shows match history newest first.
-- Tracks match score down to set-score level only.
+- Tracks match score down to set-score level when those details are known.
 - Reads data from `public/data/deuceline-data.json`.
 - Runs as a static GitHub Pages-friendly PWA.
 
