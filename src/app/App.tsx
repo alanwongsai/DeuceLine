@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { BottomNav } from "../components/BottomNav";
 import { loadDataset } from "../data/loadDataset";
 import { DeucelineDataset } from "../domain/schema";
@@ -63,6 +63,25 @@ function ErrorState({ message }: { message: string }) {
 }
 
 function AddMatchPlaceholder({ onClose }: { onClose: () => void }) {
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    closeButtonRef.current?.focus();
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKeyDown);
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [onClose]);
+
   return (
     <div className="modal-backdrop" role="presentation" onMouseDown={onClose}>
       <section className="modal-panel" role="dialog" aria-modal="true" aria-labelledby="addMatchTitle" onMouseDown={(event) => event.stopPropagation()}>
@@ -71,7 +90,7 @@ function AddMatchPlaceholder({ onClose }: { onClose: () => void }) {
             <p className="eyebrow">Add Match</p>
             <h2 id="addMatchTitle">Coming next</h2>
           </div>
-          <button className="icon-button" type="button" onClick={onClose} aria-label="Close add match dialog">
+          <button ref={closeButtonRef} className="icon-button" type="button" onClick={onClose} aria-label="Close add match dialog">
             ×
           </button>
         </div>

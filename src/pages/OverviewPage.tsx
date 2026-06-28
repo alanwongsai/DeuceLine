@@ -71,15 +71,19 @@ export function OverviewPage({ dataset }: { dataset: DeucelineDataset }) {
         <div className="surface-list">
           {SURFACES.map((surface) => {
             const row = stats.surfaceSplit[surface];
+            const played = row.played;
             return (
-              <div className="surface-row" key={surface}>
-                <span>{surfaceLabels[surface]}</span>
+              <div className={`surface-row ${played ? "" : "surface-row-empty"}`} key={surface}>
+                <span>
+                  {surfaceLabels[surface]}
+                  {played ? <em className="surface-count"> · {played}</em> : null}
+                </span>
                 <div className="surface-track">
-                  <div className={`surface-fill surface-${surface}`} style={{ width: `${row.played ? Math.max(10, (row.alan / row.played) * 100) : 0}%` }} />
+                  {played ? (
+                    <div className={`surface-fill surface-${surface}`} style={{ width: `${Math.max(8, (row.alan / played) * 100)}%` }} />
+                  ) : null}
                 </div>
-                <strong>
-                  {row.alan}—{row.opponent}
-                </strong>
+                <strong>{played ? `${row.alan}—${row.opponent}` : "—"}</strong>
               </div>
             );
           })}

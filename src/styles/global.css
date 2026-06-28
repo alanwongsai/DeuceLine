@@ -292,6 +292,16 @@ h2 {
   font-weight: 900;
 }
 
+.surface-count {
+  color: var(--muted);
+  font-style: normal;
+  font-weight: 800;
+}
+
+.surface-row-empty {
+  opacity: 0.5;
+}
+
 .surface-row strong {
   color: var(--ink);
 }
@@ -393,6 +403,12 @@ h2 {
   color: var(--muted);
   font-weight: 900;
   white-space: pre-wrap;
+}
+
+.set-line-missing {
+  font-weight: 700;
+  font-style: italic;
+  opacity: 0.75;
 }
 
 .match-meta,

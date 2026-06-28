@@ -25,7 +25,11 @@ export function MatchCard({ match, playerNames }: MatchCardProps) {
         <h2>
           {playerNames[result.winner]} won {formatMatchScore(match)}
         </h2>
-        {result.setScores ? <p className="set-line">{result.setScores.join("   ")}</p> : null}
+        {result.setScores ? (
+          <p className="set-line">{result.setScores.join("   ")}</p>
+        ) : (
+          <p className="set-line set-line-missing">Set scores not recorded</p>
+        )}
         {match.location ? <p className="match-meta">{match.location}</p> : null}
         {match.notes ? <p className="match-notes">{match.notes}</p> : null}
       </div>
