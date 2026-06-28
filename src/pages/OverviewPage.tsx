@@ -23,6 +23,9 @@ export function OverviewPage({ dataset }: { dataset: DeucelineDataset }) {
   const streak = stats.currentStreak.winner
     ? `${stats.currentStreak.winner === "alan" ? "W" : "L"}${stats.currentStreak.count}`
     : "—";
+  const surfacesByPlayed = [...SURFACES].sort(
+    (a, b) => stats.surfaceSplit[b].played - stats.surfaceSplit[a].played,
+  );
 
   return (
     <main className="screen">
@@ -34,9 +37,12 @@ export function OverviewPage({ dataset }: { dataset: DeucelineDataset }) {
 
       <section className="hero-score" aria-label="Head-to-head score">
         <div className="score-grid">
-          <ScoreSide name={playerNames.alan} value={stats.matchRecord.alan} />
+          <span className="score-name score-name-left">{playerNames.alan}</span>
+          <span aria-hidden="true" />
+          <span className="score-name score-name-right">{playerNames.opponent}</span>
+          <strong className="score-val score-val-left">{stats.matchRecord.alan}</strong>
           <span className="score-divider">—</span>
-          <ScoreSide name={playerNames.opponent} value={stats.matchRecord.opponent} />
+          <strong className="score-val score-val-right">{stats.matchRecord.opponent}</strong>
         </div>
         <p>{leaderText}</p>
         <span>{stats.totalMatches} matches played</span>
@@ -66,10 +72,19 @@ export function OverviewPage({ dataset }: { dataset: DeucelineDataset }) {
       <section className="panel">
         <div className="panel-header">
           <h2>By surface</h2>
-          <span>{playerNames.alan}—{playerNames.opponent}</span>
+          <span className="surface-legend">
+            <span className="legend-item">
+              <i className="legend-dot fill-alan" aria-hidden="true" />
+              {playerNames.alan}
+            </span>
+            <span className="legend-item">
+              <i className="legend-dot fill-andy" aria-hidden="true" />
+              {playerNames.opponent}
+            </span>
+          </span>
         </div>
         <div className="surface-list">
-          {SURFACES.map((surface) => {
+          {surfacesByPlayed.map((surface) => {
             const row = stats.surfaceSplit[surface];
             const played = row.played;
             return (
@@ -78,9 +93,12 @@ export function OverviewPage({ dataset }: { dataset: DeucelineDataset }) {
                   {surfaceLabels[surface]}
                   {played ? <em className="surface-count"> · {played}</em> : null}
                 </span>
-                <div className="surface-track">
+                <div className="surface-track surface-h2h">
                   {played ? (
-                    <div className={`surface-fill surface-${surface}`} style={{ width: `${Math.max(8, (row.alan / played) * 100)}%` }} />
+                    <>
+                      <span className="h2h-fill fill-alan" style={{ width: `${(row.alan / played) * 100}%` }} />
+                      <span className="h2h-fill fill-andy" style={{ width: `${(row.opponent / played) * 100}%` }} />
+                    </>
                   ) : null}
                 </div>
                 <strong>{played ? `${row.alan}—${row.opponent}` : "—"}</strong>
@@ -90,14 +108,5 @@ export function OverviewPage({ dataset }: { dataset: DeucelineDataset }) {
         </div>
       </section>
     </main>
-  );
-}
-
-function ScoreSide({ name, value }: { name: string; value: number }) {
-  return (
-    <div className="score-side">
-      <span>{name}</span>
-      <strong>{value}</strong>
-    </div>
   );
 }
