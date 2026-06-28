@@ -20,9 +20,10 @@ Do not overbuild this into a tournament, coaching analytics, social, or live sco
 
 ## Hard Rules
 
-- If a value can be derived from `match.sets`, derive it instead of storing it.
-- Do not store match winner.
-- Do not store match score.
+- Store only raw match input, never derived values. Each match records its score at one of
+  two fidelity levels: `fidelity: "sets"` (per-set scores) or `fidelity: "matchScore"` (set
+  tally only, for partially-remembered matches).
+- Never store match winner, records, streaks, or surface splits — always derive them.
 - Do not use `localStorage` as canonical storage.
 - Do not hardcode match data in React components.
 - Use repo-hosted JSON as the v1 source of truth.
@@ -50,6 +51,7 @@ Run, when dependencies are installed:
 
 ```bash
 npm run typecheck
+npm test
 npm run build
 ```
 

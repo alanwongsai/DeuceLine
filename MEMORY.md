@@ -39,13 +39,17 @@ V1 canonical source:
 public/data/deuceline-data.json
 ```
 
+Schema version 2. Each match has a unique `seq` (chronological order) and an optional `date`.
+
 Do not use `localStorage` as canonical storage.
 
 Do not hardcode match data inside React components.
 
 ## Core Rule
 
-Derive match winner, match score, set record, match record, recent form, current streak, surface split, and decider record from `match.sets`.
+Store only raw match input, at one of two fidelity levels: per-set scores (`fidelity: "sets"`)
+or a set tally (`fidelity: "matchScore"`). Derive everything else — winner, set record, match
+record, recent form, current streak, surface split, decider record.
 
 ## Visual Direction
 
@@ -62,16 +66,24 @@ Avoid childish tennis styling and avoid an all-green UI.
 ## Current Implementation Status
 
 - Vite + React + TypeScript scaffold exists.
-- Shared sample dataset exists.
-- Dataset validation exists.
-- Domain-derived stats exist.
+- Real rivalry data loaded: 7 Bishop matches (Alan vs Andy); 6 are score-only, today's is set-by-set.
+- Dataset validation exists (schema v2, fidelity union). A shape-only JSON Schema lives at
+  `public/data/deuceline.schema.json`; `validateDataset.ts` is the runtime gate for business rules.
+- Domain-derived stats exist; covered by Vitest tests (`npm test`).
 - Overview and Matches pages exist.
-- Add match flow is intentionally a placeholder.
-- PWA manifest and service worker placeholder exist.
+- Add match flow is intentionally a placeholder (Esc / focus / scroll handled).
+- PWA manifest and service worker exist.
+- GitHub Pages deploy workflow exists (`.github/workflows/deploy-pages.yml`).
+
+## Resolved
+
+- Opponent display name is Andy.
+- Real historical matches replaced the sample data.
+- Deployment is via GitHub Actions on push to main.
 
 ## Open Questions
 
-- What is the real opponent display name?
-- Should the initial dataset be replaced with real historical matches?
-- Should v1 deploy from `dist/` manually or through GitHub Actions?
-- Should the next shared data update workflow be manual JSON editing, a script, or PR-based?
+- Shared data update workflow beyond manual JSON editing: a script, PR-based, or in-app?
+- Service worker may serve stale data after a JSON update — needs a cache-busting strategy.
+- The published site is fully public; revisit if any data should be private.
+- When does multi-rivalry / multi-player come into scope (it would replace the alan/opponent keys)?

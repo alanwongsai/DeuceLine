@@ -42,7 +42,10 @@ Optional schema:
 public/data/deuceline.schema.json
 ```
 
-Do not store derived values such as winner, match score, set record, current streak, or surface split.
+Store only raw match input. Each match records either per-set scores (`fidelity: "sets"`) or,
+for partially-remembered matches, just the set tally (`fidelity: "matchScore"`). Do not store
+derived values such as winner, set record, match record, current streak, decider record, or
+surface split — derive them from the recorded score.
 
 ## Domain Model Rules
 
@@ -58,21 +61,23 @@ Supported players:
 - alan
 - opponent
 
-Set scores are the deepest score level in v1. Do not track point-by-point data, winners, unforced errors, serve stats, or training data.
+Per-set scores are the deepest score level in v1. Matches that predate detailed records may
+store only a set tally via `fidelity: "matchScore"`. Do not track point-by-point data, winners,
+unforced errors, serve stats, or training data.
 
 ## Dataset Validation Strategy
 
 `src/domain/validateDataset.ts` checks:
 
-- supported schema version
+- supported schema version (2)
 - rivalry and players
-- match IDs and duplicate IDs
-- ISO dates
+- unique match IDs
+- unique, positive `seq` ordering
+- optional `date`, but a real `YYYY-MM-DD` when present
 - supported surfaces
-- non-empty sets
-- numeric non-negative set scores
-- no tied sets
-- no tied match score
+- a valid `fidelity` ("sets" or "matchScore")
+- for "sets": non-empty, non-negative set scores, no tied set, no tied match score
+- for "matchScore": non-negative integers, not tied, at least one set recorded
 
 Validation is pragmatic. Historical tennis data may be imperfect, but obviously broken data should fail loudly.
 
@@ -92,10 +97,12 @@ Run:
 
 ```bash
 npm run typecheck
+npm test
 npm run build
 ```
 
-Future additions should add focused tests around domain logic before adding complex UI behavior.
+Domain logic is covered by Vitest tests in `src/domain/*.test.ts`. Add focused tests around
+domain logic before adding complex UI behavior.
 
 ## Future Migration Path
 

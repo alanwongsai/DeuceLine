@@ -66,6 +66,14 @@ Status: documentation started. Validation command is future work.
 
 Status: initial scaffold complete.
 
+## Post-Scaffold Progress
+
+- Schema v2: matches carry a `fidelity` ("sets" | "matchScore") and a `seq`; `date` is optional.
+- Real data loaded: 7 Bishop matches (Alan vs Andy).
+- Domain layer covered by Vitest tests (`npm test`).
+- Add-match modal has Escape / focus / scroll handling (still a placeholder for real editing).
+- GitHub Pages deploy workflow is in place.
+
 ## Future Phases
 
 - Multi-rivalry support.
