@@ -1,0 +1,19 @@
+{
+  "name": "Deuceline",
+  "short_name": "Deuceline",
+  "description": "A private tennis head-to-head tracker.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#eef2ed",
+  "theme_color": "#10231d",
+  "icons": [
+    {
+      "src": "./assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
