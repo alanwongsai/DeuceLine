@@ -3,3 +3,6 @@ dist/
 .DS_Store
 *.tsbuildinfo
 node_modules/.tmp/
+
+# Local Claude Code config (machine-specific settings, preview launch config)
+.claude/
