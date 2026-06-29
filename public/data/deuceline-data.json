@@ -5,10 +5,14 @@
     "title": "Alan vs Andy",
     "players": {
       "alan": {
-        "displayName": "Alan"
+        "displayName": "Alan",
+        "color": "#b85c3d",
+        "abbr": "Al"
       },
       "opponent": {
-        "displayName": "Andy"
+        "displayName": "Andy",
+        "color": "#2d7c46",
+        "abbr": "An"
       }
     }
   },

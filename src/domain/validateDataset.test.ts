@@ -7,8 +7,8 @@ const validDataset = () => ({
     id: "alan-vs-andy",
     title: "Alan vs Andy",
     players: {
-      alan: { displayName: "Alan" },
-      opponent: { displayName: "Andy" },
+      alan: { displayName: "Alan", color: "#b85c3d", abbr: "Al" },
+      opponent: { displayName: "Andy", color: "#2d7c46", abbr: "An" },
     },
   },
   matches: [
@@ -97,6 +97,20 @@ describe("validateDataset", () => {
     const detailed = validDataset();
     (detailed.matches[1] as Record<string, unknown>).matchScore = { alan: 2, opponent: 1 };
     expect(expectIssues(detailed)).toContain("match match-2 has unknown field: matchScore.");
+  });
+
+  it("requires a hex player color and an abbreviation", () => {
+    const noColor = validDataset();
+    delete (noColor.rivalry.players.alan as { color?: string }).color;
+    expect(expectIssues(noColor).some((i) => i.includes("color must be a hex color"))).toBe(true);
+
+    const badColor = validDataset();
+    (badColor.rivalry.players.alan as { color: string }).color = "terracotta";
+    expect(expectIssues(badColor).some((i) => i.includes("color must be a hex color"))).toBe(true);
+
+    const noAbbr = validDataset();
+    delete (noAbbr.rivalry.players.opponent as { abbr?: string }).abbr;
+    expect(expectIssues(noAbbr)).toContain("rivalry.players.opponent.abbr is required.");
   });
 
   it("rejects unknown nested fields", () => {

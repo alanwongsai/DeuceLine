@@ -1,4 +1,4 @@
-import { Match, MatchResult, OverviewStats, PlayerKey, SetScore, SURFACES } from "./schema";
+import { Match, MatchContext, MatchResult, OverviewStats, PlayerKey, SetScore, SURFACES } from "./schema";
 
 const emptyRecord = (): Record<PlayerKey, number> => ({ alan: 0, opponent: 0 });
 
@@ -86,6 +86,44 @@ export function deriveOverviewStats(matches: Match[]): OverviewStats {
     recentForm,
     surfaceSplit,
     sortedMatches,
+  };
+}
+
+// Context for one match: the head-to-head before and after it, the win streak
+// it belongs to, and whether it snapped the other player's run. Chronological
+// (seq-ascending) so "before"/"after" mean what they say.
+export function deriveMatchContext(matches: Match[], matchId: string): MatchContext {
+  const ordered = [...matches].sort((a, b) => a.seq - b.seq);
+  const index = ordered.findIndex((match) => match.id === matchId);
+  if (index === -1) throw new Error(`Unknown match id: ${matchId}`);
+
+  const winners = ordered.map((match) => deriveMatchResult(match).winner);
+  const winner = winners[index];
+
+  const recordBefore = emptyRecord();
+  for (let i = 0; i < index; i += 1) recordBefore[winners[i]] += 1;
+  const recordAfter = { ...recordBefore };
+  recordAfter[winner] += 1;
+
+  let streakCount = 0;
+  for (let i = index; i >= 0 && winners[i] === winner; i -= 1) streakCount += 1;
+
+  let snappedStreak: MatchContext["snappedStreak"] = null;
+  if (index > 0 && winners[index - 1] !== winner) {
+    const player = winners[index - 1];
+    let count = 0;
+    for (let i = index - 1; i >= 0 && winners[i] === player; i -= 1) count += 1;
+    if (count >= 2) snappedStreak = { player, count };
+  }
+
+  return {
+    matchNumber: index + 1,
+    totalMatches: ordered.length,
+    winner,
+    recordBefore,
+    recordAfter,
+    streakAfter: { winner, count: streakCount },
+    snappedStreak,
   };
 }
 

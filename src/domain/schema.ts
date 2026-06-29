@@ -16,6 +16,10 @@ export type DeucelineDataset = {
 
 export type Player = {
   displayName: string;
+  // Identity (not derived data): the player's colour drives every win/identity
+  // cue in the UI, and `abbr` disambiguates names that share a first letter.
+  color: string;
+  abbr: string;
 };
 
 // Fields shared by every match regardless of how much detail we have.
@@ -63,6 +67,17 @@ export type MatchResult = {
   setScores: string[] | null;
   hasSetDetail: boolean;
   isDecider: boolean;
+};
+
+// What a single match did to the rivalry — derived on demand for the detail view.
+export type MatchContext = {
+  matchNumber: number;
+  totalMatches: number;
+  winner: PlayerKey;
+  recordBefore: Record<PlayerKey, number>;
+  recordAfter: Record<PlayerKey, number>;
+  streakAfter: { winner: PlayerKey; count: number };
+  snappedStreak: { player: PlayerKey; count: number } | null;
 };
 
 export type OverviewStats = {

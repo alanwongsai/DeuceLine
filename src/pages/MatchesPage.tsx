@@ -1,13 +1,13 @@
+import { useState } from "react";
 import { MatchCard } from "../components/MatchCard";
+import { MatchDetail } from "../components/MatchDetail";
 import { sortMatchesNewestFirst } from "../domain/deriveStats";
-import { DeucelineDataset } from "../domain/schema";
+import { DeucelineDataset, Match } from "../domain/schema";
 
 export function MatchesPage({ dataset }: { dataset: DeucelineDataset }) {
   const sortedMatches = sortMatchesNewestFirst(dataset.matches);
-  const playerNames = {
-    alan: dataset.rivalry.players.alan.displayName,
-    opponent: dataset.rivalry.players.opponent.displayName,
-  };
+  const players = dataset.rivalry.players;
+  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
 
   return (
     <main className="screen">
@@ -20,9 +20,17 @@ export function MatchesPage({ dataset }: { dataset: DeucelineDataset }) {
       </header>
       <section className="match-list" aria-label="Matches newest first">
         {sortedMatches.map((match) => (
-          <MatchCard key={match.id} match={match} playerNames={playerNames} />
+          <MatchCard key={match.id} match={match} players={players} onOpen={() => setSelectedMatch(match)} />
         ))}
       </section>
+      {selectedMatch ? (
+        <MatchDetail
+          match={selectedMatch}
+          players={players}
+          matches={dataset.matches}
+          onClose={() => setSelectedMatch(null)}
+        />
+      ) : null}
     </main>
   );
 }

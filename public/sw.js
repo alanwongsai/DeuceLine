@@ -1,5 +1,13 @@
-const CACHE_NAME = "deuceline-cache-v2";
-const PRECACHE_ASSETS = ["./manifest.webmanifest", "./assets/icon.svg"];
+const CACHE_NAME = "deuceline-cache-v3";
+const PRECACHE_ASSETS = [
+  "./manifest.webmanifest",
+  "./assets/icon.svg",
+  "./assets/favicon-32.png",
+  "./assets/apple-touch-icon.png",
+  "./assets/icon-192.png",
+  "./assets/icon-512.png",
+  "./assets/icon-maskable-512.png",
+];
 const DATASET_PATH = "/data/deuceline-data.json";
 
 self.addEventListener("install", (event) => {

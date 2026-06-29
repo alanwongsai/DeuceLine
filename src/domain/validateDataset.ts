@@ -58,9 +58,15 @@ function validatePlayers(value: unknown, issues: string[]) {
       issues.push(`rivalry.players.${playerKey} must exist.`);
       return;
     }
-    validateKnownKeys(player, `rivalry.players.${playerKey}`, ["displayName"], issues);
+    validateKnownKeys(player, `rivalry.players.${playerKey}`, ["displayName", "color", "abbr"], issues);
     if (!isNonEmptyString(player.displayName)) {
       issues.push(`rivalry.players.${playerKey}.displayName is required.`);
+    }
+    if (!isHexColor(player.color)) {
+      issues.push(`rivalry.players.${playerKey}.color must be a hex color like #b85c3d.`);
+    }
+    if (!isNonEmptyString(player.abbr)) {
+      issues.push(`rivalry.players.${playerKey}.abbr is required.`);
     }
   });
 }
@@ -224,6 +230,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
+}
+
+function isHexColor(value: unknown): value is string {
+  return typeof value === "string" && /^#[0-9a-fA-F]{6}$/.test(value);
 }
 
 function isNonNegativeInteger(value: unknown): value is number {

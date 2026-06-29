@@ -61,6 +61,11 @@ Supported players:
 - alan
 - opponent
 
+Each player is identity config in the dataset: `displayName`, `color` (a `#rrggbb` hex), and a
+short `abbr` (1–3 chars). These are not derived; they drive every identity cue in the UI.
+Current identity: Alan = terracotta `#b85c3d`, Andy = grass `#2d7c46`. `abbr` exists because
+both names start with "A" (Al / An).
+
 Per-set scores are the deepest score level in v1. Matches that predate detailed records may
 store only a set tally via `fidelity: "matchScore"`. Do not track point-by-point data, winners,
 unforced errors, serve stats, or training data.
@@ -70,7 +75,7 @@ unforced errors, serve stats, or training data.
 `src/domain/validateDataset.ts` checks:
 
 - supported schema version (2)
-- rivalry and players
+- rivalry and players (each player needs `displayName`, a hex `color`, and an `abbr`)
 - unique match IDs
 - unique, positive `seq` ordering
 - optional `date`, but a real `YYYY-MM-DD` when present
@@ -88,6 +93,9 @@ Validation is pragmatic. Historical tennis data may be imperfect, but obviously 
 - Bottom navigation uses Overview / center Add / Matches.
 - The large head-to-head score is the visual anchor.
 - Surface badges use distinct colors.
+- Results are colored by **player identity**, not win/loss: recent form shows the winner's
+  `abbr` in their color, and match cards take the winner's stripe color.
+- Overview stat cards: Match record, Set record, Win rate, Current streak.
 - Avoid making everything bright green.
 - Keep cards readable on a phone.
 

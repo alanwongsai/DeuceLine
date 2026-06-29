@@ -74,6 +74,22 @@ Status: initial scaffold complete.
 - Add-match modal has Escape / focus / scroll handling (still a placeholder for real editing).
 - GitHub Pages deploy workflow is in place.
 
+## Phase 7: V-next Visual Refresh
+
+Shift the app from win/loss coloring to player-identity coloring, plus richer presentation.
+
+- Identity colors in schema (`Player.color` + `Player.abbr`); Alan terracotta, Andy grass. — done
+- Recent form shows the winner's abbr in their color (no more W/L). — done
+- Match-history cards stripe by the winner's identity color. — done
+- Surface split bars/legend use identity colors. — done
+- Replace the low-signal "Deciders" card with "Win rate". — done
+- Multi-size PWA icon (favicon / apple-touch / 192 / 512 / maskable). — done
+- Tennis-court-style hero score background (`CourtBackdrop`). — done
+- Tap-to-open match detail (per-set, tiebreaks, H2H impact via `deriveMatchContext`). — done
+
+Status: complete. Icons are PNGs rasterised from `public/assets/icon*.svg` (regenerate with
+qlmanage if the art changes). Match entry/save deliberately deferred (still a placeholder).
+
 ## Future Phases
 
 - Multi-rivalry support.

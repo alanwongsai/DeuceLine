@@ -1,18 +1,25 @@
 import { deriveMatchResult, formatMatchScore } from "../domain/deriveStats";
-import { Match, PlayerKey } from "../domain/schema";
+import { Match, Player, PlayerKey } from "../domain/schema";
 import { SurfaceBadge } from "./SurfaceBadge";
 
 type MatchCardProps = {
   match: Match;
-  playerNames: Record<PlayerKey, string>;
+  players: Record<PlayerKey, Player>;
+  onOpen: () => void;
 };
 
-export function MatchCard({ match, playerNames }: MatchCardProps) {
+export function MatchCard({ match, players, onOpen }: MatchCardProps) {
   const result = deriveMatchResult(match);
+  const winner = players[result.winner];
 
   return (
-    <article className={`match-card ${result.winner === "alan" ? "win" : "loss"}`}>
-      <div className="match-card-stripe" aria-hidden="true" />
+    <button
+      type="button"
+      className="match-card"
+      onClick={onOpen}
+      aria-label={`${winner.displayName} won ${formatMatchScore(match)} — open match detail`}
+    >
+      <div className="match-card-stripe" aria-hidden="true" style={{ background: winner.color }} />
       <div className="match-card-body">
         <div className="match-card-top">
           {match.date ? (
@@ -23,7 +30,7 @@ export function MatchCard({ match, playerNames }: MatchCardProps) {
           <SurfaceBadge surface={match.surface} />
         </div>
         <h2>
-          {playerNames[result.winner]} won {formatMatchScore(match)}
+          {winner.displayName} won {formatMatchScore(match)}
         </h2>
         {result.setScores ? (
           <p className="set-line">{result.setScores.join("   ")}</p>
@@ -33,7 +40,8 @@ export function MatchCard({ match, playerNames }: MatchCardProps) {
         {match.location ? <p className="match-meta">{match.location}</p> : null}
         {match.notes ? <p className="match-notes">{match.notes}</p> : null}
       </div>
-    </article>
+      <span className="match-card-chevron" aria-hidden="true">›</span>
+    </button>
   );
 }
 

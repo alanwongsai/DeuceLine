@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { DetailedMatch, Match, ScoreMatch } from "./schema";
-import { deriveMatchResult, deriveOverviewStats, formatMatchScore, sortMatchesNewestFirst } from "./deriveStats";
+import {
+  deriveMatchContext,
+  deriveMatchResult,
+  deriveOverviewStats,
+  formatMatchScore,
+  sortMatchesNewestFirst,
+} from "./deriveStats";
 
 const detailed = (seq: number, surface: Match["surface"], sets: DetailedMatch["sets"]): DetailedMatch => ({
   id: `d-${seq}`,
@@ -120,6 +126,33 @@ describe("deriveOverviewStats (full Bishop rivalry)", () => {
 
   it("returns recent form newest-first, capped at five", () => {
     expect(stats.recentForm.map((f) => f.winner)).toEqual(["alan", "opponent", "alan", "alan", "alan"]);
+  });
+});
+
+describe("deriveMatchContext", () => {
+  it("captures the head-to-head before and after a match", () => {
+    const ctx = deriveMatchContext(bishop, "s-6");
+    expect(ctx.matchNumber).toBe(6);
+    expect(ctx.totalMatches).toBe(7);
+    expect(ctx.winner).toBe("opponent");
+    expect(ctx.recordBefore).toEqual({ alan: 3, opponent: 2 });
+    expect(ctx.recordAfter).toEqual({ alan: 3, opponent: 3 });
+  });
+
+  it("detects when a match snapped the other player's streak", () => {
+    const ctx = deriveMatchContext(bishop, "s-6");
+    expect(ctx.snappedStreak).toEqual({ player: "alan", count: 3 });
+    expect(ctx.streakAfter).toEqual({ winner: "opponent", count: 1 });
+  });
+
+  it("reports the running streak it extended", () => {
+    const ctx = deriveMatchContext(bishop, "s-5");
+    expect(ctx.streakAfter).toEqual({ winner: "alan", count: 3 });
+    expect(ctx.snappedStreak).toBeNull();
+  });
+
+  it("throws on an unknown match id", () => {
+    expect(() => deriveMatchContext(bishop, "nope")).toThrow();
   });
 });
 

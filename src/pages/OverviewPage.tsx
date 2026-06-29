@@ -1,6 +1,9 @@
+import { useState } from "react";
+import { CourtBackdrop } from "../components/CourtBackdrop";
+import { MatchDetail } from "../components/MatchDetail";
 import { StatCard } from "../components/StatCard";
 import { deriveOverviewStats } from "../domain/deriveStats";
-import { DeucelineDataset, PlayerKey, Surface, SURFACES } from "../domain/schema";
+import { DeucelineDataset, Match, PlayerKey, Surface, SURFACES } from "../domain/schema";
 
 const surfaceLabels: Record<Surface, string> = {
   hard: "Hard",
@@ -11,18 +14,20 @@ const surfaceLabels: Record<Surface, string> = {
 
 export function OverviewPage({ dataset }: { dataset: DeucelineDataset }) {
   const stats = deriveOverviewStats(dataset.matches);
+  const players = dataset.rivalry.players;
+  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const playerNames = {
-    alan: dataset.rivalry.players.alan.displayName,
-    opponent: dataset.rivalry.players.opponent.displayName,
+    alan: players.alan.displayName,
+    opponent: players.opponent.displayName,
   };
   const lead = stats.matchRecord.alan - stats.matchRecord.opponent;
   const leaderText =
     lead === 0
       ? "Rivalry is level"
       : `${lead > 0 ? playerNames.alan : playerNames.opponent} leads by ${Math.abs(lead)} match${Math.abs(lead) === 1 ? "" : "es"}`;
-  const streak = stats.currentStreak.winner
-    ? `${stats.currentStreak.winner === "alan" ? "W" : "L"}${stats.currentStreak.count}`
-    : "—";
+  const streakWinner = stats.currentStreak.winner;
+  const winRate = (key: PlayerKey) =>
+    stats.totalMatches === 0 ? 0 : Math.round((stats.matchRecord[key] / stats.totalMatches) * 100);
   const surfacesByPlayed = [...SURFACES].sort(
     (a, b) => stats.surfaceSplit[b].played - stats.surfaceSplit[a].played,
   );
@@ -36,6 +41,7 @@ export function OverviewPage({ dataset }: { dataset: DeucelineDataset }) {
       </header>
 
       <section className="hero-score" aria-label="Head-to-head score">
+        <CourtBackdrop players={players} />
         <div className="score-grid">
           <span className="score-name score-name-left">{playerNames.alan}</span>
           <span aria-hidden="true" />
@@ -54,19 +60,34 @@ export function OverviewPage({ dataset }: { dataset: DeucelineDataset }) {
           <span>Newest first</span>
         </div>
         <div className="form-row" aria-label="Recent form newest first">
-          {stats.recentForm.map((item) => (
-            <span className={`form-dot ${item.winner === "alan" ? "win" : "loss"}`} key={item.matchId}>
-              {item.winner === "alan" ? "W" : "L"}
-            </span>
-          ))}
+          {stats.recentForm.map((item) => {
+            const match = dataset.matches.find((candidate) => candidate.id === item.matchId);
+            return (
+              <button
+                type="button"
+                className="form-dot"
+                key={item.matchId}
+                style={{ background: players[item.winner].color }}
+                onClick={() => match && setSelectedMatch(match)}
+                aria-label={`${playerNames[item.winner]} won — open match detail`}
+              >
+                {players[item.winner].abbr}
+              </button>
+            );
+          })}
         </div>
       </section>
 
       <section className="stat-grid" aria-label="Rivalry statistics">
         <StatCard label="Match record" value={`${stats.matchRecord.alan}—${stats.matchRecord.opponent}`} />
         <StatCard label="Set record" value={`${stats.setRecord.alan}—${stats.setRecord.opponent}`} />
-        <StatCard label="Deciders" value={`${stats.deciderRecord.alan}—${stats.deciderRecord.opponent}`} />
-        <StatCard label="Current streak" value={streak} detail={streak === "—" ? undefined : stats.currentStreak.winner === "alan" ? playerNames.alan : playerNames.opponent} />
+        <StatCard label="Win rate" value={`${winRate("alan")}% · ${winRate("opponent")}%`} />
+        <StatCard
+          label="Current streak"
+          value={streakWinner ? String(stats.currentStreak.count) : "—"}
+          detail={streakWinner ? playerNames[streakWinner] : undefined}
+          accentColor={streakWinner ? players[streakWinner].color : undefined}
+        />
       </section>
 
       <section className="panel">
@@ -74,11 +95,11 @@ export function OverviewPage({ dataset }: { dataset: DeucelineDataset }) {
           <h2>By surface</h2>
           <span className="surface-legend">
             <span className="legend-item">
-              <i className="legend-dot fill-alan" aria-hidden="true" />
+              <i className="legend-dot" style={{ background: players.alan.color }} aria-hidden="true" />
               {playerNames.alan}
             </span>
             <span className="legend-item">
-              <i className="legend-dot fill-andy" aria-hidden="true" />
+              <i className="legend-dot" style={{ background: players.opponent.color }} aria-hidden="true" />
               {playerNames.opponent}
             </span>
           </span>
@@ -96,8 +117,8 @@ export function OverviewPage({ dataset }: { dataset: DeucelineDataset }) {
                 <div className="surface-track surface-h2h">
                   {played ? (
                     <>
-                      <span className="h2h-fill fill-alan" style={{ width: `${(row.alan / played) * 100}%` }} />
-                      <span className="h2h-fill fill-andy" style={{ width: `${(row.opponent / played) * 100}%` }} />
+                      <span className="h2h-fill" style={{ width: `${(row.alan / played) * 100}%`, background: players.alan.color }} />
+                      <span className="h2h-fill" style={{ width: `${(row.opponent / played) * 100}%`, background: players.opponent.color }} />
                     </>
                   ) : null}
                 </div>
@@ -107,6 +128,15 @@ export function OverviewPage({ dataset }: { dataset: DeucelineDataset }) {
           })}
         </div>
       </section>
+
+      {selectedMatch ? (
+        <MatchDetail
+          match={selectedMatch}
+          players={players}
+          matches={dataset.matches}
+          onClose={() => setSelectedMatch(null)}
+        />
+      ) : null}
     </main>
   );
 }
