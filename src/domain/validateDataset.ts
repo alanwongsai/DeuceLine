@@ -15,6 +15,8 @@ export function validateDataset(value: unknown): DeucelineDataset {
     throw new DatasetValidationError(["Dataset must be an object."]);
   }
 
+  validateKnownKeys(value, "dataset", ["schemaVersion", "rivalry", "matches"], issues);
+
   if (value.schemaVersion !== 2) {
     issues.push("schemaVersion must be 2.");
   }
@@ -23,6 +25,7 @@ export function validateDataset(value: unknown): DeucelineDataset {
   if (!isRecord(rivalry)) {
     issues.push("rivalry must exist.");
   } else {
+    validateKnownKeys(rivalry, "rivalry", ["id", "title", "players"], issues);
     if (!isNonEmptyString(rivalry.id)) issues.push("rivalry.id is required.");
     if (!isNonEmptyString(rivalry.title)) issues.push("rivalry.title is required.");
     validatePlayers(rivalry.players, issues);
@@ -47,12 +50,15 @@ function validatePlayers(value: unknown, issues: string[]) {
     return;
   }
 
+  validateKnownKeys(value, "rivalry.players", ["alan", "opponent"], issues);
+
   (["alan", "opponent"] satisfies PlayerKey[]).forEach((playerKey) => {
     const player = value[playerKey];
     if (!isRecord(player)) {
       issues.push(`rivalry.players.${playerKey} must exist.`);
       return;
     }
+    validateKnownKeys(player, `rivalry.players.${playerKey}`, ["displayName"], issues);
     if (!isNonEmptyString(player.displayName)) {
       issues.push(`rivalry.players.${playerKey}.displayName is required.`);
     }
@@ -70,6 +76,7 @@ function validateMatches(matches: unknown[], issues: string[]) {
     }
 
     const label = matchLabel(match, index);
+    validateKnownKeys(match, label, matchKeys(match), issues);
 
     const id = String(match.id ?? "");
     if (!isNonEmptyString(match.id)) {
@@ -152,6 +159,8 @@ function validateMatchScore(value: unknown, label: string, issues: string[]) {
     return;
   }
 
+  validateKnownKeys(value, `${label} matchScore`, ["alan", "opponent"], issues);
+
   const { alan, opponent } = value;
   if (!isNonNegativeInteger(alan) || !isNonNegativeInteger(opponent)) {
     if (!isNonNegativeInteger(alan)) issues.push(`${label} matchScore.alan must be a non-negative integer.`);
@@ -173,6 +182,8 @@ function validateSetScore(value: unknown, label: string, issues: string[]) {
     return;
   }
 
+  validateKnownKeys(value, label, ["alan", "opponent", "tiebreak"], issues);
+
   if (!isNonNegativeInteger(value.alan)) issues.push(`${label}.alan must be a non-negative integer.`);
   if (!isNonNegativeInteger(value.opponent)) issues.push(`${label}.opponent must be a non-negative integer.`);
 
@@ -180,10 +191,27 @@ function validateSetScore(value: unknown, label: string, issues: string[]) {
     if (!isRecord(value.tiebreak)) {
       issues.push(`${label}.tiebreak must be an object.`);
     } else {
+      validateKnownKeys(value.tiebreak, `${label}.tiebreak`, ["alan", "opponent"], issues);
       if (!isNonNegativeInteger(value.tiebreak.alan)) issues.push(`${label}.tiebreak.alan must be a non-negative integer.`);
       if (!isNonNegativeInteger(value.tiebreak.opponent)) issues.push(`${label}.tiebreak.opponent must be a non-negative integer.`);
     }
   }
+}
+
+function validateKnownKeys(value: Record<string, unknown>, label: string, allowedKeys: string[], issues: string[]) {
+  const allowed = new Set(allowedKeys);
+  Object.keys(value).forEach((key) => {
+    if (!allowed.has(key)) {
+      issues.push(`${label} has unknown field: ${key}.`);
+    }
+  });
+}
+
+function matchKeys(match: Record<string, unknown>): string[] {
+  const baseKeys = ["id", "seq", "date", "surface", "location", "notes", "fidelity"];
+  if (match.fidelity === "sets") return [...baseKeys, "sets"];
+  if (match.fidelity === "matchScore") return [...baseKeys, "matchScore"];
+  return [...baseKeys, "sets", "matchScore"];
 }
 
 function isValidSetShape(value: unknown): value is SetScore {

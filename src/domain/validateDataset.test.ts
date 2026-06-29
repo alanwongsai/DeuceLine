@@ -83,6 +83,32 @@ describe("validateDataset", () => {
     expect(expectIssues(data).some((i) => i.includes('fidelity must be "sets" or "matchScore"'))).toBe(true);
   });
 
+  it("rejects unknown fields instead of silently ignoring derived data", () => {
+    const data = validDataset();
+    (data.matches[0] as Record<string, unknown>).winner = "opponent";
+    expect(expectIssues(data)).toContain("match match-1 has unknown field: winner.");
+  });
+
+  it("rejects score fields from the wrong fidelity level", () => {
+    const scoreOnly = validDataset();
+    (scoreOnly.matches[0] as Record<string, unknown>).sets = [{ alan: 6, opponent: 3 }];
+    expect(expectIssues(scoreOnly)).toContain("match match-1 has unknown field: sets.");
+
+    const detailed = validDataset();
+    (detailed.matches[1] as Record<string, unknown>).matchScore = { alan: 2, opponent: 1 };
+    expect(expectIssues(detailed)).toContain("match match-2 has unknown field: matchScore.");
+  });
+
+  it("rejects unknown nested fields", () => {
+    const playerData = validDataset();
+    (playerData.rivalry.players.alan as Record<string, unknown>).seed = 1;
+    expect(expectIssues(playerData)).toContain("rivalry.players.alan has unknown field: seed.");
+
+    const scoreData = validDataset();
+    ((scoreData.matches[0] as { matchScore: Record<string, unknown> }).matchScore).winner = "opponent";
+    expect(expectIssues(scoreData)).toContain("match match-1 matchScore has unknown field: winner.");
+  });
+
   it("rejects a tied match score", () => {
     const data = validDataset();
     (data.matches[0] as { matchScore: { alan: number; opponent: number } }).matchScore = { alan: 1, opponent: 1 };

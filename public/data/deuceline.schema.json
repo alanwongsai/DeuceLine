@@ -97,6 +97,7 @@
       }
     },
     "detailedMatch": {
+      "unevaluatedProperties": false,
       "allOf": [
         {
           "$ref": "#/$defs/matchBase"
@@ -123,6 +124,7 @@
       ]
     },
     "scoreMatch": {
+      "unevaluatedProperties": false,
       "allOf": [
         {
           "$ref": "#/$defs/matchBase"
