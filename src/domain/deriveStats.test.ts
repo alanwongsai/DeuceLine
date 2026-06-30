@@ -117,11 +117,50 @@ describe("deriveOverviewStats (full Bishop rivalry)", () => {
     expect(stats.totalMatches).toBe(7);
   });
 
-  it("splits results by surface, including the per-surface set tally", () => {
-    expect(stats.surfaceSplit.astro).toEqual({ played: 2, alan: 0, opponent: 2, setsAlan: 1, setsOpponent: 4 });
-    expect(stats.surfaceSplit.hard).toEqual({ played: 1, alan: 1, opponent: 0, setsAlan: 2, setsOpponent: 1 });
-    expect(stats.surfaceSplit.clay).toEqual({ played: 4, alan: 3, opponent: 1, setsAlan: 7, setsOpponent: 3 });
-    expect(stats.surfaceSplit.grass).toEqual({ played: 0, alan: 0, opponent: 0, setsAlan: 0, setsOpponent: 0 });
+  it("splits results by surface, including the per-surface set and decider tally", () => {
+    expect(stats.surfaceSplit.astro).toEqual({
+      played: 2,
+      alan: 0,
+      opponent: 2,
+      setsAlan: 1,
+      setsOpponent: 4,
+      decidersAlan: 0,
+      decidersOpponent: 1,
+    });
+    expect(stats.surfaceSplit.hard).toEqual({
+      played: 1,
+      alan: 1,
+      opponent: 0,
+      setsAlan: 2,
+      setsOpponent: 1,
+      decidersAlan: 1,
+      decidersOpponent: 0,
+    });
+    expect(stats.surfaceSplit.clay).toEqual({
+      played: 4,
+      alan: 3,
+      opponent: 1,
+      setsAlan: 7,
+      setsOpponent: 3,
+      decidersAlan: 1,
+      decidersOpponent: 1,
+    });
+    expect(stats.surfaceSplit.grass).toEqual({
+      played: 0,
+      alan: 0,
+      opponent: 0,
+      setsAlan: 0,
+      setsOpponent: 0,
+      decidersAlan: 0,
+      decidersOpponent: 0,
+    });
+  });
+
+  it("computes the current streak within each surface", () => {
+    expect(stats.surfaceStreak.astro).toEqual({ winner: "opponent", count: 2 });
+    expect(stats.surfaceStreak.hard).toEqual({ winner: "alan", count: 1 });
+    expect(stats.surfaceStreak.clay).toEqual({ winner: "alan", count: 1 });
+    expect(stats.surfaceStreak.grass).toEqual({ winner: null, count: 0 });
   });
 
   it("returns recent form newest-first, capped at five", () => {

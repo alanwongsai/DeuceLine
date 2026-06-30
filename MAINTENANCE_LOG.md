@@ -38,6 +38,17 @@
 
 ## Log
 
+### v0.5.3 — 2026-06-30
+- **Surface breakdown sheet grew two more rows**: Deciders (close-match record, per
+  surface — `surfaceSplit[surface].decidersAlan/decidersOpponent`) and Current run
+  (the win streak within just that surface — `OverviewStats.surfaceStreak`, reuses the
+  existing streak algorithm filtered to one surface). Both still derived, nothing new
+  stored.
+- **Fixed modal sheets clipping into the device's rounded screen corners.** Alan
+  flagged via screenshot that on a real iPhone, the sheet's bottom corners sat right in
+  the curved safe-area zone. `.modal-backdrop` now reserves `env(safe-area-inset-bottom)`
+  at the bottom, same pattern `.bottom-nav` / `.app-shell` already used.
+
 ### v0.5.2 — 2026-06-30
 - **Tap-to-expand stat cards.** Match record / Set record / Win rate / Current streak
   and each By-surface row are now tappable, opening a shared `StatDetailSheet` (built

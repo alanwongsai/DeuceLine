@@ -80,16 +80,18 @@ export type MatchContext = {
   snappedStreak: { player: PlayerKey; count: number } | null;
 };
 
+export type StreakState = {
+  winner: PlayerKey | null;
+  count: number;
+};
+
 export type OverviewStats = {
   totalMatches: number;
   detailedMatchCount: number;
   matchRecord: Record<PlayerKey, number>;
   setRecord: Record<PlayerKey, number>;
   deciderRecord: Record<PlayerKey, number>;
-  currentStreak: {
-    winner: PlayerKey | null;
-    count: number;
-  };
+  currentStreak: StreakState;
   recentForm: Array<{
     matchId: string;
     winner: PlayerKey;
@@ -102,6 +104,8 @@ export type OverviewStats = {
       opponent: number;
       setsAlan: number;
       setsOpponent: number;
+      decidersAlan: number;
+      decidersOpponent: number;
     }
   >;
   // Consecutive-winner runs, newest first (the first entry is the current streak).
@@ -109,5 +113,7 @@ export type OverviewStats = {
     winner: PlayerKey;
     count: number;
   }>;
+  // The current win streak within each surface alone (e.g. "on grass, Alan has won the last 2").
+  surfaceStreak: Record<Surface, StreakState>;
   sortedMatches: Match[];
 };

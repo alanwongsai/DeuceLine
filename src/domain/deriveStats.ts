@@ -4,7 +4,10 @@ const emptyRecord = (): Record<PlayerKey, number> => ({ alan: 0, opponent: 0 });
 
 const surfaceRecord = () =>
   Object.fromEntries(
-    SURFACES.map((surface) => [surface, { played: 0, alan: 0, opponent: 0, setsAlan: 0, setsOpponent: 0 }]),
+    SURFACES.map((surface) => [
+      surface,
+      { played: 0, alan: 0, opponent: 0, setsAlan: 0, setsOpponent: 0, decidersAlan: 0, decidersOpponent: 0 },
+    ]),
   ) as OverviewStats["surfaceSplit"];
 
 export function sortMatchesNewestFirst(matches: Match[]): Match[] {
@@ -70,6 +73,9 @@ export function deriveOverviewStats(matches: Match[]): OverviewStats {
     surfaceSplit[match.surface][result.winner] += 1;
     surfaceSplit[match.surface].setsAlan += result.matchScore.alan;
     surfaceSplit[match.surface].setsOpponent += result.matchScore.opponent;
+    if (result.isDecider) {
+      surfaceSplit[match.surface][result.winner === "alan" ? "decidersAlan" : "decidersOpponent"] += 1;
+    }
   }
 
   // results is already newest-first.
@@ -80,6 +86,9 @@ export function deriveOverviewStats(matches: Match[]): OverviewStats {
 
   const currentStreak = deriveCurrentStreak(results);
   const streakHistory = deriveStreakHistory(results);
+  const surfaceStreak = Object.fromEntries(
+    SURFACES.map((surface) => [surface, deriveCurrentStreak(results.filter((entry) => entry.match.surface === surface))]),
+  ) as OverviewStats["surfaceStreak"];
 
   return {
     totalMatches: matches.length,
@@ -91,6 +100,7 @@ export function deriveOverviewStats(matches: Match[]): OverviewStats {
     recentForm,
     surfaceSplit,
     streakHistory,
+    surfaceStreak,
     sortedMatches,
   };
 }

@@ -591,7 +591,7 @@ button.surface-row:focus-visible {
   display: grid;
   align-items: end;
   justify-items: center;
-  padding: 12px;
+  padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
   background: rgba(10, 18, 16, 0.46);
   backdrop-filter: blur(8px);
 }

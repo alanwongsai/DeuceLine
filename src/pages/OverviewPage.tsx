@@ -89,12 +89,36 @@ export function OverviewPage({ dataset }: { dataset: DeucelineDataset }) {
 
   const surfaceSheetRows = (surface: Surface): DetailRow[] => {
     const row = stats.surfaceSplit[surface];
-    return (["matchRecord", "setRecord", "winRate"] as MetricKind[]).map((metric) => ({
+    const deciderTotal = row.decidersAlan + row.decidersOpponent;
+    const streak = stats.surfaceStreak[surface];
+
+    const metricRows = (["matchRecord", "setRecord", "winRate"] as MetricKind[]).map((metric) => ({
       key: metric,
       label: metricLabels[metric],
       value: metricValue(row, metric),
       bar: metricBar(row, metric),
     }));
+
+    return [
+      ...metricRows,
+      {
+        key: "deciders",
+        label: "Deciders",
+        value: deciderTotal ? `${row.decidersAlan}—${row.decidersOpponent}` : "—",
+        bar: recordBar(row.decidersAlan, row.decidersOpponent, deciderTotal),
+      },
+      {
+        key: "streak",
+        label: "Current run",
+        value: streak.winner ? `${streak.count} · ${playerNames[streak.winner]}` : "—",
+        bar:
+          streak.winner === "alan"
+            ? { leftPct: 100, rightPct: 0, leftColor: players.alan.color, rightColor: players.opponent.color }
+            : streak.winner === "opponent"
+              ? { leftPct: 0, rightPct: 100, leftColor: players.alan.color, rightColor: players.opponent.color }
+              : undefined,
+      },
+    ];
   };
 
   const streakSheetRows = (): DetailRow[] =>
