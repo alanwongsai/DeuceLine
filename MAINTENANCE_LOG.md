@@ -38,6 +38,24 @@
 
 ## Log
 
+### v0.5.2 — 2026-06-30
+- **Tap-to-expand stat cards.** Match record / Set record / Win rate / Current streak
+  and each By-surface row are now tappable, opening a shared `StatDetailSheet` (built
+  on a new `Modal` component extracted from `MatchDetail`). Stat cards expand into a
+  by-surface breakdown of that metric; a surface row expands into a by-metric
+  breakdown of that surface; Current streak opens a newest-first streak-history list.
+  All of it reuses existing derived stats plus two small additions: per-surface set
+  tally (`surfaceSplit[surface].setsAlan/setsOpponent`) and `streakHistory` — both
+  still derived from raw match scores, nothing new stored.
+- **Corner radius unified** to an iOS-style two-tier scale (`--radius-lg` 22px for
+  big cards/panels/modals, `--radius-md` 14px for buttons/badges/list chrome), tokens
+  in `global.css` `:root`. Pills and circles untouched.
+- **FAB centering bug fixed**: the add button had no flex/grid centering, so the "+"
+  glyph sat off-center under default button box metrics. Now `display:grid;
+  place-items:center`.
+- **Accent gold cleaned up**: `--accent` `#c69b48` (read as muddy/brown) → `#d9ad53`
+  (cleaner trophy gold), per Alan's call.
+
 ### v0.5.1 — 2026-06-30
 - Slimmed the bottom nav bar: tighter padding, shorter nav-item min-height, and a
   smaller FAB (62px → 52px) so it takes up noticeably less of the screen on small

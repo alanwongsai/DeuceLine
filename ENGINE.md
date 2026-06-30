@@ -97,6 +97,15 @@ Validation is pragmatic. Historical tennis data may be imperfect, but obviously 
 - Results are colored by **player identity**, not win/loss: recent form shows the winner's
   `abbr` in their color, and match cards take the winner's stripe color.
 - Overview stat cards: Match record, Set record, Win rate, Current streak.
+- Stat cards and By-surface rows are tappable: each opens a shared detail sheet
+  (`StatDetailSheet`) that slices the same derived stats a different way — a stat card
+  breaks its metric down by surface, a surface row breaks that surface down by metric,
+  and Current streak opens a streak-history list (`OverviewStats.streakHistory`, newest
+  run first). No new raw data is stored for this — only new derived views over the
+  existing dataset, consistent with the "derive, don't store" rule above.
+- `src/components/Modal.tsx` is the single shared overlay shell (backdrop, escape-to-close,
+  focus-on-open, body-scroll lock). `MatchDetail` and `StatDetailSheet` both build on it —
+  new modal-style UI should reuse it rather than re-implementing that chrome.
 - Avoid making everything bright green.
 - Keep cards readable on a phone.
 
@@ -120,6 +129,11 @@ Chrome colour (everything that is *not* a player's identity colour) lives in one
 - Known deferred clash: surface badge `--grass` (green) and `--clay` (terracotta) overlap
   Andy's / a player's identity colour; and Wimbledon is itself a grass event. Left as-is this
   version — see [PROJECT_PLAN.md](PROJECT_PLAN.md).
+
+Corner radius is a separate, non-skin token: a two-tier scale in `global.css` `:root`
+(`--radius-lg` for big cards/panels/modals, `--radius-md` for buttons/badges/list chrome).
+It lives outside `skins.css` because it is structural consistency, not part of a Grand Slam
+look. Pills (`999px`) and circles (`50%`) are unaffected by the scale.
 
 ## Testing And Build Expectations
 

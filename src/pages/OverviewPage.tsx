@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { CourtBackdrop } from "../components/CourtBackdrop";
 import { MatchDetail } from "../components/MatchDetail";
+import { DetailRow, StatDetailSheet } from "../components/StatDetailSheet";
 import { StatCard } from "../components/StatCard";
 import { deriveOverviewStats } from "../domain/deriveStats";
-import { DeucelineDataset, Match, PlayerKey, Surface, SURFACES } from "../domain/schema";
+import { DeucelineDataset, Match, OverviewStats, PlayerKey, Surface, SURFACES } from "../domain/schema";
 
 const surfaceLabels: Record<Surface, string> = {
   hard: "Hard",
@@ -12,10 +13,23 @@ const surfaceLabels: Record<Surface, string> = {
   astro: "Astro",
 };
 
+type MetricKind = "matchRecord" | "setRecord" | "winRate";
+
+const metricLabels: Record<MetricKind, string> = {
+  matchRecord: "Match record",
+  setRecord: "Set record",
+  winRate: "Win rate",
+};
+
+type SheetState = { kind: MetricKind } | { kind: "streak" } | { kind: "surface"; surface: Surface };
+
+type SurfaceRow = OverviewStats["surfaceSplit"][Surface];
+
 export function OverviewPage({ dataset }: { dataset: DeucelineDataset }) {
   const stats = deriveOverviewStats(dataset.matches);
   const players = dataset.rivalry.players;
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
+  const [sheet, setSheet] = useState<SheetState | null>(null);
   const playerNames = {
     alan: players.alan.displayName,
     opponent: players.opponent.displayName,
@@ -26,11 +40,75 @@ export function OverviewPage({ dataset }: { dataset: DeucelineDataset }) {
       ? "Rivalry is level"
       : `${lead > 0 ? playerNames.alan : playerNames.opponent} leads by ${Math.abs(lead)} match${Math.abs(lead) === 1 ? "" : "es"}`;
   const streakWinner = stats.currentStreak.winner;
+  const hasMatches = stats.totalMatches > 0;
   const winRate = (key: PlayerKey) =>
     stats.totalMatches === 0 ? 0 : Math.round((stats.matchRecord[key] / stats.totalMatches) * 100);
   const surfacesByPlayed = [...SURFACES].sort(
     (a, b) => stats.surfaceSplit[b].played - stats.surfaceSplit[a].played,
   );
+
+  const recordBar = (alanCount: number, opponentCount: number, total: number) =>
+    total === 0
+      ? undefined
+      : {
+          leftPct: (alanCount / total) * 100,
+          rightPct: (opponentCount / total) * 100,
+          leftColor: players.alan.color,
+          rightColor: players.opponent.color,
+        };
+
+  const metricValue = (row: SurfaceRow, metric: MetricKind): string => {
+    if (metric === "setRecord") {
+      const total = row.setsAlan + row.setsOpponent;
+      return total ? `${row.setsAlan}—${row.setsOpponent}` : "—";
+    }
+    if (metric === "winRate") {
+      return row.played
+        ? `${Math.round((row.alan / row.played) * 100)}% · ${Math.round((row.opponent / row.played) * 100)}%`
+        : "—";
+    }
+    return row.played ? `${row.alan}—${row.opponent}` : "—";
+  };
+
+  const metricBar = (row: SurfaceRow, metric: MetricKind) =>
+    metric === "setRecord"
+      ? recordBar(row.setsAlan, row.setsOpponent, row.setsAlan + row.setsOpponent)
+      : recordBar(row.alan, row.opponent, row.played);
+
+  const metricSheetRows = (metric: MetricKind): DetailRow[] =>
+    surfacesByPlayed.map((surface) => {
+      const row = stats.surfaceSplit[surface];
+      return {
+        key: surface,
+        label: surfaceLabels[surface],
+        meta: row.played ? String(row.played) : undefined,
+        value: metricValue(row, metric),
+        bar: metricBar(row, metric),
+      };
+    });
+
+  const surfaceSheetRows = (surface: Surface): DetailRow[] => {
+    const row = stats.surfaceSplit[surface];
+    return (["matchRecord", "setRecord", "winRate"] as MetricKind[]).map((metric) => ({
+      key: metric,
+      label: metricLabels[metric],
+      value: metricValue(row, metric),
+      bar: metricBar(row, metric),
+    }));
+  };
+
+  const streakSheetRows = (): DetailRow[] =>
+    stats.streakHistory.map((run, index) => ({
+      key: `${run.winner}-${index}`,
+      label: playerNames[run.winner],
+      value: `${run.count} in a row`,
+      bar: {
+        leftPct: run.winner === "alan" ? 100 : 0,
+        rightPct: run.winner === "opponent" ? 100 : 0,
+        leftColor: players.alan.color,
+        rightColor: players.opponent.color,
+      },
+    }));
 
   return (
     <main className="screen">
@@ -80,14 +158,27 @@ export function OverviewPage({ dataset }: { dataset: DeucelineDataset }) {
       </section>
 
       <section className="stat-grid" aria-label="Rivalry statistics">
-        <StatCard label="Match record" value={`${stats.matchRecord.alan}—${stats.matchRecord.opponent}`} />
-        <StatCard label="Set record" value={`${stats.setRecord.alan}—${stats.setRecord.opponent}`} />
-        <StatCard label="Win rate" value={`${winRate("alan")}% · ${winRate("opponent")}%`} />
+        <StatCard
+          label="Match record"
+          value={`${stats.matchRecord.alan}—${stats.matchRecord.opponent}`}
+          onClick={hasMatches ? () => setSheet({ kind: "matchRecord" }) : undefined}
+        />
+        <StatCard
+          label="Set record"
+          value={`${stats.setRecord.alan}—${stats.setRecord.opponent}`}
+          onClick={hasMatches ? () => setSheet({ kind: "setRecord" }) : undefined}
+        />
+        <StatCard
+          label="Win rate"
+          value={`${winRate("alan")}% · ${winRate("opponent")}%`}
+          onClick={hasMatches ? () => setSheet({ kind: "winRate" }) : undefined}
+        />
         <StatCard
           label="Current streak"
           value={streakWinner ? String(stats.currentStreak.count) : "—"}
           detail={streakWinner ? playerNames[streakWinner] : undefined}
           accentColor={streakWinner ? players[streakWinner].color : undefined}
+          onClick={hasMatches ? () => setSheet({ kind: "streak" }) : undefined}
         />
       </section>
 
@@ -110,7 +201,13 @@ export function OverviewPage({ dataset }: { dataset: DeucelineDataset }) {
             const row = stats.surfaceSplit[surface];
             const played = row.played;
             return (
-              <div className={`surface-row ${played ? "" : "surface-row-empty"}`} key={surface}>
+              <button
+                type="button"
+                className={`surface-row ${played ? "" : "surface-row-empty"}`}
+                key={surface}
+                onClick={() => setSheet({ kind: "surface", surface })}
+                aria-label={`${surfaceLabels[surface]} breakdown`}
+              >
                 <span>
                   {surfaceLabels[surface]}
                   {played ? <em className="surface-count"> · {played}</em> : null}
@@ -124,7 +221,7 @@ export function OverviewPage({ dataset }: { dataset: DeucelineDataset }) {
                   ) : null}
                 </div>
                 <strong>{played ? `${row.alan}—${row.opponent}` : "—"}</strong>
-              </div>
+              </button>
             );
           })}
         </div>
@@ -136,6 +233,24 @@ export function OverviewPage({ dataset }: { dataset: DeucelineDataset }) {
           players={players}
           matches={dataset.matches}
           onClose={() => setSelectedMatch(null)}
+        />
+      ) : null}
+
+      {sheet ? (
+        <StatDetailSheet
+          titleId="statDetailTitle"
+          eyebrow={sheet.kind === "streak" ? "Newest first" : sheet.kind === "surface" ? "Surface breakdown" : "By surface"}
+          title={
+            sheet.kind === "streak" ? "Streak history" : sheet.kind === "surface" ? surfaceLabels[sheet.surface] : metricLabels[sheet.kind]
+          }
+          rows={
+            sheet.kind === "streak"
+              ? streakSheetRows()
+              : sheet.kind === "surface"
+                ? surfaceSheetRows(sheet.surface)
+                : metricSheetRows(sheet.kind)
+          }
+          onClose={() => setSheet(null)}
         />
       ) : null}
     </main>

@@ -117,15 +117,24 @@ describe("deriveOverviewStats (full Bishop rivalry)", () => {
     expect(stats.totalMatches).toBe(7);
   });
 
-  it("splits results by surface", () => {
-    expect(stats.surfaceSplit.astro).toEqual({ played: 2, alan: 0, opponent: 2 });
-    expect(stats.surfaceSplit.hard).toEqual({ played: 1, alan: 1, opponent: 0 });
-    expect(stats.surfaceSplit.clay).toEqual({ played: 4, alan: 3, opponent: 1 });
-    expect(stats.surfaceSplit.grass).toEqual({ played: 0, alan: 0, opponent: 0 });
+  it("splits results by surface, including the per-surface set tally", () => {
+    expect(stats.surfaceSplit.astro).toEqual({ played: 2, alan: 0, opponent: 2, setsAlan: 1, setsOpponent: 4 });
+    expect(stats.surfaceSplit.hard).toEqual({ played: 1, alan: 1, opponent: 0, setsAlan: 2, setsOpponent: 1 });
+    expect(stats.surfaceSplit.clay).toEqual({ played: 4, alan: 3, opponent: 1, setsAlan: 7, setsOpponent: 3 });
+    expect(stats.surfaceSplit.grass).toEqual({ played: 0, alan: 0, opponent: 0, setsAlan: 0, setsOpponent: 0 });
   });
 
   it("returns recent form newest-first, capped at five", () => {
     expect(stats.recentForm.map((f) => f.winner)).toEqual(["alan", "opponent", "alan", "alan", "alan"]);
+  });
+
+  it("groups results into newest-first streak runs", () => {
+    expect(stats.streakHistory).toEqual([
+      { winner: "alan", count: 1 },
+      { winner: "opponent", count: 1 },
+      { winner: "alan", count: 3 },
+      { winner: "opponent", count: 2 },
+    ]);
   });
 });
 
@@ -162,5 +171,6 @@ describe("deriveOverviewStats (empty)", () => {
     expect(stats.totalMatches).toBe(0);
     expect(stats.currentStreak).toEqual({ winner: null, count: 0 });
     expect(stats.matchRecord).toEqual({ alan: 0, opponent: 0 });
+    expect(stats.streakHistory).toEqual([]);
   });
 });

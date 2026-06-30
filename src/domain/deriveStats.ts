@@ -3,7 +3,9 @@ import { Match, MatchContext, MatchResult, OverviewStats, PlayerKey, SetScore, S
 const emptyRecord = (): Record<PlayerKey, number> => ({ alan: 0, opponent: 0 });
 
 const surfaceRecord = () =>
-  Object.fromEntries(SURFACES.map((surface) => [surface, { played: 0, alan: 0, opponent: 0 }])) as OverviewStats["surfaceSplit"];
+  Object.fromEntries(
+    SURFACES.map((surface) => [surface, { played: 0, alan: 0, opponent: 0, setsAlan: 0, setsOpponent: 0 }]),
+  ) as OverviewStats["surfaceSplit"];
 
 export function sortMatchesNewestFirst(matches: Match[]): Match[] {
   return [...matches].sort((a, b) => b.seq - a.seq);
@@ -66,6 +68,8 @@ export function deriveOverviewStats(matches: Match[]): OverviewStats {
     if (result.hasSetDetail) detailedMatchCount += 1;
     surfaceSplit[match.surface].played += 1;
     surfaceSplit[match.surface][result.winner] += 1;
+    surfaceSplit[match.surface].setsAlan += result.matchScore.alan;
+    surfaceSplit[match.surface].setsOpponent += result.matchScore.opponent;
   }
 
   // results is already newest-first.
@@ -75,6 +79,7 @@ export function deriveOverviewStats(matches: Match[]): OverviewStats {
   }));
 
   const currentStreak = deriveCurrentStreak(results);
+  const streakHistory = deriveStreakHistory(results);
 
   return {
     totalMatches: matches.length,
@@ -85,6 +90,7 @@ export function deriveOverviewStats(matches: Match[]): OverviewStats {
     currentStreak,
     recentForm,
     surfaceSplit,
+    streakHistory,
     sortedMatches,
   };
 }
@@ -125,6 +131,20 @@ export function deriveMatchContext(matches: Match[], matchId: string): MatchCont
     streakAfter: { winner, count: streakCount },
     snappedStreak,
   };
+}
+
+// Groups newest-first results into consecutive-winner runs, newest run first.
+function deriveStreakHistory(results: Array<{ result: MatchResult }>): OverviewStats["streakHistory"] {
+  const runs: OverviewStats["streakHistory"] = [];
+  for (const { result } of results) {
+    const lastRun = runs[runs.length - 1];
+    if (lastRun && lastRun.winner === result.winner) {
+      lastRun.count += 1;
+    } else {
+      runs.push({ winner: result.winner, count: 1 });
+    }
+  }
+  return runs;
 }
 
 function deriveCurrentStreak(results: Array<{ result: MatchResult }>): OverviewStats["currentStreak"] {

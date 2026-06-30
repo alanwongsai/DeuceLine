@@ -100,7 +100,14 @@ export type OverviewStats = {
       played: number;
       alan: number;
       opponent: number;
+      setsAlan: number;
+      setsOpponent: number;
     }
   >;
+  // Consecutive-winner runs, newest first (the first entry is the current streak).
+  streakHistory: Array<{
+    winner: PlayerKey;
+    count: number;
+  }>;
   sortedMatches: Match[];
 };

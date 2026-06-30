@@ -8,6 +8,12 @@
     sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
+
+  /* iOS-style two-tier corner scale: big cards get the generous, rounder
+     radius; smaller controls (buttons, list rows, badges) get the tighter
+     one. Pills (999px) and circles (50%) are unaffected. */
+  --radius-lg: 22px;
+  --radius-md: 14px;
 }
 
 * {
@@ -95,7 +101,7 @@ h2 {
   position: relative;
   min-height: 238px;
   padding: 22px;
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   color: var(--hero-ink);
   background: var(--hero-fallback);
   box-shadow: 0 16px 34px rgba(20, 53, 42, 0.22);
@@ -173,8 +179,26 @@ h2 {
 .match-card,
 .state-panel {
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
   background: rgba(251, 253, 249, 0.94);
+}
+
+.stat-card-button {
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.stat-card-button:active {
+  transform: scale(0.98);
+}
+
+.stat-card-button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
 }
 
 .panel {
@@ -207,7 +231,7 @@ h2 {
   place-items: center;
   border: 0;
   padding: 0;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   color: white;
   font-size: 0.82rem;
   font-weight: 950;
@@ -278,6 +302,30 @@ h2 {
   gap: 10px;
   color: var(--muted);
   font-size: 0.9rem;
+}
+
+.detail-sheet-list .surface-row {
+  grid-template-columns: 108px 1fr auto;
+}
+
+button.surface-row {
+  width: 100%;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+button.surface-row:active {
+  transform: scale(0.98);
+}
+
+button.surface-row:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
 }
 
 .surface-row > span {
@@ -501,9 +549,12 @@ h2 {
 }
 
 .add-button {
+  display: grid;
+  place-items: center;
   width: 52px;
   height: 52px;
   margin: -14px auto 0;
+  padding: 0;
   border: 3px solid var(--panel);
   border-radius: 50%;
   color: var(--accent-ink);
@@ -527,7 +578,7 @@ h2 {
   overflow: auto;
   max-height: 58svh;
   padding: 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   color: #691f1f;
   background: #fff1f1;
   white-space: pre-wrap;
@@ -548,7 +599,7 @@ h2 {
 .modal-panel {
   width: min(100%, 496px);
   padding: 18px;
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
   background: var(--panel);
   box-shadow: 0 24px 80px rgba(16, 35, 29, 0.28);
 }
@@ -569,7 +620,7 @@ h2 {
 .icon-button,
 .primary-button {
   min-height: 42px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid transparent;
   font-weight: 950;
 }
@@ -605,7 +656,7 @@ h2 {
   padding: 0;
   list-style: none;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   overflow: hidden;
 }
 
