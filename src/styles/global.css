@@ -37,7 +37,7 @@ pre {
   width: min(100%, 520px);
   min-height: 100svh;
   margin: 0 auto;
-  padding: max(16px, env(safe-area-inset-top)) 16px calc(96px + env(safe-area-inset-bottom));
+  padding: max(16px, env(safe-area-inset-top)) 16px calc(78px + env(safe-area-inset-bottom));
 }
 
 .screen {
@@ -473,7 +473,7 @@ h2 {
   display: grid;
   grid-template-columns: 1fr 86px 1fr;
   align-items: center;
-  padding: 10px 18px calc(10px + env(safe-area-inset-bottom));
+  padding: 6px 18px calc(6px + env(safe-area-inset-bottom));
   border-top: 1px solid rgba(16, 35, 29, 0.12);
   background: rgba(251, 253, 249, 0.93);
   backdrop-filter: blur(20px);
@@ -482,17 +482,17 @@ h2 {
 .nav-item {
   display: grid;
   place-items: center;
-  gap: 3px;
-  min-height: 52px;
+  gap: 2px;
+  min-height: 38px;
   border: 0;
   color: var(--muted);
   background: transparent;
-  font-size: 0.76rem;
+  font-size: 0.72rem;
   font-weight: 950;
 }
 
 .nav-item span {
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   line-height: 1;
 }
 
@@ -501,15 +501,15 @@ h2 {
 }
 
 .add-button {
-  width: 62px;
-  height: 62px;
-  margin: -22px auto 0;
-  border: 4px solid var(--panel);
+  width: 52px;
+  height: 52px;
+  margin: -14px auto 0;
+  border: 3px solid var(--panel);
   border-radius: 50%;
   color: var(--accent-ink);
   background: var(--accent);
-  box-shadow: 0 12px 28px rgba(16, 35, 29, 0.24);
-  font-size: 2.25rem;
+  box-shadow: 0 10px 22px rgba(16, 35, 29, 0.22);
+  font-size: 1.9rem;
   font-weight: 900;
   line-height: 1;
 }

@@ -38,6 +38,11 @@
 
 ## Log
 
+### v0.5.1 — 2026-06-30
+- Slimmed the bottom nav bar: tighter padding, shorter nav-item min-height, and a
+  smaller FAB (62px → 52px) so it takes up noticeably less of the screen on small
+  devices. `.app-shell` bottom clearance reduced to match (96px → 78px).
+
 ### v0.5.0 — 2026-06-30
 - Introduced a **skin token layer** (`src/styles/skins.css`): all chrome colour is now
   CSS custom properties under `[data-skin="…"]`, selected via `data-skin` on `<html>`.
