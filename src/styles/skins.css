@@ -1,0 +1,46 @@
+/* Skin token layer — the single place chrome colour lives.
+
+   Each Grand Slam look is one [data-skin] block of CSS custom properties.
+   global.css consumes these vars and never hardcodes a chrome colour, so adding
+   a future skin (Roland-Garros / US Open / Australian Open) is just one new
+   block here plus data-skin="<name>" on <html> — zero component changes.
+
+   Player IDENTITY colours (Alan / Andy) are NOT skin tokens: they belong to this
+   rivalry and live in the dataset (public/data/deuceline-data.json). A skin only
+   *suggests* a palette via --skin-player-a / --skin-player-b for reference. The
+   Wimbledon skin's suggestion is Alan = purple, Andy = grass green, which the
+   dataset currently mirrors. */
+
+:root,
+[data-skin="wimbledon"] {
+  --bg: #f3f1e6;
+  --ink: #14352a;
+  --muted: #5d6b62;
+  --panel: #fcfbf4;
+  --line: #dcdccb;
+
+  --accent: #c69b48;
+  --accent-ink: #14352a;
+
+  /* Hero court (the head-to-head scoreboard) */
+  --hero-ink: #ffffff;
+  --hero-fallback: #14352a;
+  --court-lighten: rgba(255, 255, 255, 0.15);
+  --court-line: rgba(255, 255, 255, 0.55);
+  --court-net: #ffffff;
+  --court-pocket: #06150d;
+
+  /* Surface badges — kept on the existing palette this skin. The grass/Andy and
+     clay/Alan collisions are a known, deferred issue (see PROJECT_PLAN.md). */
+  --hard: #446a87;
+  --clay: #b85c3d;
+  --grass: #2d7c46;
+  --astro: #24867c;
+
+  /* Suggested player palette for this skin (reference only; dataset is source of truth) */
+  --skin-player-a: #57298a;
+  --skin-player-b: #1e7a45;
+}
+
+/* Future skins drop in below as additional [data-skin="…"] blocks, e.g.
+   [data-skin="roland-garros"] { --bg: #f4ede1; --ink: …; --clay: …; } */

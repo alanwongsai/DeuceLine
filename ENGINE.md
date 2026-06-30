@@ -63,8 +63,9 @@ Supported players:
 
 Each player is identity config in the dataset: `displayName`, `color` (a `#rrggbb` hex), and a
 short `abbr` (1–3 chars). These are not derived; they drive every identity cue in the UI.
-Current identity: Alan = terracotta `#b85c3d`, Andy = grass `#2d7c46`. `abbr` exists because
-both names start with "A" (Al / An).
+Current identity: Alan = purple `#57298a`, Andy = grass green `#1e7a45`. `abbr` exists because
+both names start with "A" (Al / An). Identity colours live in the dataset, **not** the skin
+(see Skin / Theme Layer below) — they belong to this rivalry, not to a Grand Slam look.
 
 Per-set scores are the deepest score level in v1. Matches that predate detailed records may
 store only a set tally via `fidelity: "matchScore"`. Do not track point-by-point data, winners,
@@ -98,6 +99,27 @@ Validation is pragmatic. Historical tennis data may be imperfect, but obviously 
 - Overview stat cards: Match record, Set record, Win rate, Current streak.
 - Avoid making everything bright green.
 - Keep cards readable on a phone.
+
+## Skin / Theme Layer
+
+Chrome colour (everything that is *not* a player's identity colour) lives in one place:
+`src/styles/skins.css`. Each look is a block of CSS custom properties keyed by a
+`[data-skin="…"]` attribute on `<html>`; `:root` carries the default (Wimbledon).
+
+- `global.css` `@import`s `skins.css` first, then consumes only the vars (`--bg`, `--ink`,
+  `--accent`, `--court-line`, `--hard/clay/grass/astro`, …). It must never hardcode a chrome
+  colour — that is what keeps skins swappable.
+- **Player identity colours are not skin tokens.** They come from the dataset; a skin only
+  *suggests* a palette via `--skin-player-a` / `--skin-player-b` (reference only).
+- SVG note: CSS `var()` does not resolve in SVG presentation attributes, so `CourtBackdrop`
+  sets skin-driven fills/strokes via inline `style`, and player-half fills via the literal
+  hex from the dataset.
+- Adding a Grand Slam skin = one new `[data-skin="roland-garros|us-open|australian-open"]`
+  block + setting `data-skin` on `<html>`. Zero component changes. There is no skin-switcher
+  UI yet (deferred — see [PROJECT_PLAN.md](PROJECT_PLAN.md)).
+- Known deferred clash: surface badge `--grass` (green) and `--clay` (terracotta) overlap
+  Andy's / a player's identity colour; and Wimbledon is itself a grass event. Left as-is this
+  version — see [PROJECT_PLAN.md](PROJECT_PLAN.md).
 
 ## Testing And Build Expectations
 

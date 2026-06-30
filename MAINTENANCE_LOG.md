@@ -38,6 +38,24 @@
 
 ## Log
 
+### v0.5.0 — 2026-06-30
+- Introduced a **skin token layer** (`src/styles/skins.css`): all chrome colour is now
+  CSS custom properties under `[data-skin="…"]`, selected via `data-skin` on `<html>`.
+  `global.css` consumes the vars and hardcodes no chrome colour, so future Grand Slam
+  skins (Roland-Garros / US Open / Australian Open) are one new block + `data-skin`
+  value, zero component changes.
+- Shipped the **Wimbledon skin** (default): cream ground, ivy-green ink, gold accent
+  (FAB / count pill / streak dot) replacing the old lime `--accent`.
+- New **player identity colours** in the dataset: Alan purple `#57298a`, Andy grass
+  green `#1e7a45` (was terracotta / grass). Identity colours stay in the dataset, not
+  the skin.
+- Rebuilt the hero into a **full split court** (`CourtBackdrop`): solid per-player
+  halves, full white chalk lines, centre net as the divider, dark "pockets" + heavier
+  text shadow behind each score for readability.
+- New **liquid-glass app icon** (green→purple glass squircle, glossy tennis-ball orb,
+  gold seam); all PNGs re-rasterised from `public/assets/icon*.svg`; service worker
+  cache bumped to v4.
+
 ### v0.4.0 — 2026-06-29
 - V-next redesign: shift from win/loss coloring to player-identity coloring (Alan
   terracotta, Andy grass) across recent form, match cards, and surface bars.

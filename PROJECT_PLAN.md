@@ -90,8 +90,32 @@ Shift the app from win/loss coloring to player-identity coloring, plus richer pr
 Status: complete. Icons are PNGs rasterised from `public/assets/icon*.svg` (regenerate with
 qlmanage if the art changes). Match entry/save deliberately deferred (still a placeholder).
 
+## Phase 8: Wimbledon Skin + Skin Interface
+
+Reskin the app to a Wimbledon palette and lay the interface for future Grand Slam skins.
+
+- Skin token layer (`src/styles/skins.css`); chrome colour selected by `data-skin` on
+  `<html>`, consumed by `global.css`. — done
+- Wimbledon skin (default): cream / ivy-green / gold accent. — done
+- Player identity colours → Alan purple `#57298a`, Andy grass green `#1e7a45` (in the
+  dataset, not the skin). — done
+- Hero rebuilt as a full split court; readability-tuned scores. — done
+- Liquid-glass app icon; PNGs re-rasterised from `public/assets/icon*.svg`. — done
+
+Status: complete. Interface is in place; **no skin-switcher UI yet** (a skin is chosen by
+the `data-skin` attribute at build time).
+
+Deferred / parked from this phase:
+- **Future Grand Slam skins**: Roland-Garros, US Open, Australian Open. Each is one new
+  `[data-skin="…"]` block in `skins.css` + the matching `data-skin` value. Will likely also
+  want a runtime skin-switcher and a per-skin suggested player palette.
+- **Colour clashes left unresolved this round**: surface `--grass`/`--clay` collide with a
+  player's identity colour, and Wimbledon is itself a grass event (theme ↔ surface semantic
+  overlap). Revisit when a skin-switcher or surface-colour rework lands.
+
 ## Future Phases
 
+- Future Grand Slam skins (Roland-Garros / US Open / Australian Open) + skin-switcher UI.
 - Multi-rivalry support.
 - Import/export as a non-canonical helper.
 - Admin editor.

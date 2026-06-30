@@ -54,10 +54,20 @@ his regular partner Andy — deployed static-first to GitHub Pages.
 
 - **UI is colored by player identity, not win/loss.** Each player carries
   `displayName`, `color` (hex), `abbr` in the dataset; the dataset is the canonical
-  source of those values. Current identity: Alan = terracotta `#b85c3d` / `Al`, Andy =
-  grass `#2d7c46` / `An`. **Why:** identity coloring reads as a long-term rivalry
+  source of those values. Current identity: Alan = purple `#57298a` / `Al`, Andy =
+  grass green `#1e7a45` / `An`. **Why:** identity coloring reads as a long-term rivalry
   notebook, not a generic green dashboard. **Boundary:** read colors from the dataset;
-  don't hardcode them in CSS; avoid an all-green UI.
+  don't hardcode them in CSS; identity colours are NOT skin tokens (see next).
+
+- **Chrome colour is a swappable skin; identity colour is not.** All non-identity
+  colour lives in `src/styles/skins.css` as CSS vars under `[data-skin="…"]` (default
+  Wimbledon = cream / ivy-green / gold); `global.css` consumes the vars and hardcodes no
+  chrome colour. **Why:** the owner wants per-Grand-Slam skins (Wimbledon now;
+  Roland-Garros / US Open / Australian Open later) without touching components.
+  **Boundary:** a new skin is one `[data-skin]` block + the `data-skin` attribute on
+  `<html>`; player identity colours stay in the dataset (a skin may only *suggest* a
+  palette via `--skin-player-*`). No skin-switcher UI yet; surface `--grass`/`--clay`
+  vs identity-colour clash is deferred — see [PROJECT_PLAN.md](PROJECT_PLAN.md).
 
 - **Single fixed rivalry in v1.** Alan vs Andy only. **Why:** keeps the model and UI
   honest to the one real use case. **Boundary:** multi-rivalry / multi-player is a

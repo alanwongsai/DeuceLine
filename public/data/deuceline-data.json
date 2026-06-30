@@ -6,12 +6,12 @@
     "players": {
       "alan": {
         "displayName": "Alan",
-        "color": "#b85c3d",
+        "color": "#57298a",
         "abbr": "Al"
       },
       "opponent": {
         "displayName": "Andy",
-        "color": "#2d7c46",
+        "color": "#1e7a45",
         "abbr": "An"
       }
     }

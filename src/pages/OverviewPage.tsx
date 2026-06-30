@@ -44,10 +44,11 @@ export function OverviewPage({ dataset }: { dataset: DeucelineDataset }) {
         <CourtBackdrop players={players} />
         <div className="score-grid">
           <span className="score-name score-name-left">{playerNames.alan}</span>
-          <span aria-hidden="true" />
           <span className="score-name score-name-right">{playerNames.opponent}</span>
           <strong className="score-val score-val-left">{stats.matchRecord.alan}</strong>
-          <span className="score-divider">—</span>
+          <span className="score-divider" aria-hidden="true">
+            —
+          </span>
           <strong className="score-val score-val-right">{stats.matchRecord.opponent}</strong>
         </div>
         <p>{leaderText}</p>
