@@ -1,30 +1,17 @@
 # CLAUDE.md
 
-The canonical agent instructions for this project live in **[AGENTS.md](AGENTS.md)**, so that
-every coding agent (Claude, Codex, Kimi, …) works from one source of truth. Read it before
-making changes.
+This project uses **[AGENTS.md](AGENTS.md)** as its primary instruction file for all AI
+coding agents (Claude, Codex, Kimi, …), so everyone works from one source of truth.
 
-Supporting docs:
+**Read [AGENTS.md](AGENTS.md) before making any changes to this repository.**
 
-- **[ENGINE.md](ENGINE.md)** — durable engineering manual: architecture, data strategy, validation.
-- **[MEMORY.md](MEMORY.md)** — project state, what's done, and open questions across sessions.
-- **[PROJECT_PLAN.md](PROJECT_PLAN.md)** — phased plan and progress.
-
-## Keep the boundaries truthful
-
-These docs are only useful while they match the code. When you change the data model
-(`src/domain/schema.ts`), validation, or the build/deploy setup, update AGENTS.md, ENGINE.md,
-and MEMORY.md in the **same change** so they don't drift.
+`CLAUDE.md` is only a pointer — do not treat it as a project-state source. AGENTS.md
+carries the startup core, scope and hard rules, architecture boundaries, the Working
+Agreement, the Current State pointer block, the Documentation Sync Rules (which one doc
+owns each kind of fact — point, don't copy), and the close-out contract.
 
 ## Working alongside other agents
 
-More than one agent may share this working tree. Commit only the files you changed (use explicit
-`git add <paths>`, not `git add -A`) so you don't sweep up another agent's in-progress work.
-
-## Before finishing
-
-```bash
-npm run typecheck
-npm test
-npm run build
-```
+More than one agent may share this working tree. Commit only the files you changed (use
+explicit `git add <paths>`, not `git add -A`) so you don't sweep up another agent's
+in-progress work.

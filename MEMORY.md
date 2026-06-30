@@ -1,103 +1,71 @@
-# MEMORY.md
+# Deuceline — Project Memory (router + decision ledger)
 
-Persistent project memory for future AI sessions.
+> For fast context recovery in a new session. **This is a router + durable-decision
+> ledger, not a status mirror**: current status, version, what shipped, and progress
+> are NOT written here — they live in their owner docs and this file only points at
+> them. (Copying volatile facts into memory is exactly what makes a memory rot.)
 
-## Identity
+## What this is (one line)
 
-- App name: Deuceline
-- Package/repo-friendly name: deuceline
-- Product: mobile-first tennis rivalry tracker
-- Tagline: Track the rivalry. Set by set.
+Deuceline is a mobile-first tennis rivalry tracker for one fixed rivalry — Alan vs
+his regular partner Andy — deployed static-first to GitHub Pages.
 
-## Current Target
+## Navigation (to know X → read Y)
 
-V1 is a single-rivalry tracker for Alan vs one regular tennis partner.
+| To know… | Read |
+|---|---|
+| scope, hard rules, how to work here | [AGENTS.md](AGENTS.md) |
+| what shipped / current version | [MAINTENANCE_LOG.md](MAINTENANCE_LOG.md) |
+| what's next / parked decisions / future phases | [PROJECT_PLAN.md](PROJECT_PLAN.md) |
+| architecture, data flow, validation strategy | [ENGINE.md](ENGINE.md) |
+| commands (typecheck/test/build) | [AGENTS.md](AGENTS.md) → Verification |
+| deferred maintenance | [MAINTENANCE_LOG.md](MAINTENANCE_LOG.md) → Backlog |
 
-The app should answer:
+## File / module map
 
-- What is the current head-to-head?
-- Who is leading?
-- What is the recent form?
-- How do results split by surface?
-- What happened in past matches?
+| Module | Does | Path |
+|---|---|---|
+| schema | Dataset types (schema v2, fidelity union, player identity) | `src/domain/schema.ts` |
+| validateDataset | Runtime gate for dataset shape + business rules | `src/domain/validateDataset.ts` |
+| deriveStats | Derives H2H, records, form, streak, surface split | `src/domain/deriveStats.ts` |
+| loadDataset | Fetches + validates the repo-hosted JSON | `src/data/loadDataset.ts` |
+| pages | Overview + Matches screens | `src/pages/` |
+| components | Reusable UI (CourtBackdrop, MatchCard, MatchDetail, …) | `src/components/` |
+| dataset | Canonical match data (schema v2) | `public/data/deuceline-data.json` |
 
-## Layout
+## Durable decisions & boundaries
 
-Mobile-first bottom navigation:
+> Each is a settled decision + WHY + what it deliberately rules out. These are
+> stable facts, safe to keep here; volatile status is not.
 
-```text
-[ Overview ] [ + ] [ Matches ]
-```
+- **Store only raw match input; derive everything else.** Each match records its score
+  at one of two fidelity levels — `fidelity: "sets"` (per-set) or
+  `fidelity: "matchScore"` (set tally only, for partially-remembered matches).
+  **Why:** derived values (winner, records, streaks, surface splits) drift the moment
+  raw and derived disagree. **Boundary:** never persist winner/records/streaks; no
+  point-by-point, serve, or training data.
 
-Overview is the default landing screen. The center plus button is primary, but currently opens a placeholder explaining the v1 data workflow.
+- **Static-first; repo-hosted JSON is the v1 source of truth.** The app fetches
+  `public/data/deuceline-data.json`, validates, derives, renders. **Why:** GitHub
+  Pages has no backend; everyone opening the link must see the same record.
+  **Boundary:** `localStorage` is never canonical; no in-browser writes pretending to
+  be canonical; the center "+" stays a placeholder until a real shared-update workflow
+  exists.
 
-## Data
+- **UI is colored by player identity, not win/loss.** Each player carries
+  `displayName`, `color` (hex), `abbr` in the dataset; the dataset is the canonical
+  source of those values. Current identity: Alan = terracotta `#b85c3d` / `Al`, Andy =
+  grass `#2d7c46` / `An`. **Why:** identity coloring reads as a long-term rivalry
+  notebook, not a generic green dashboard. **Boundary:** read colors from the dataset;
+  don't hardcode them in CSS; avoid an all-green UI.
 
-V1 canonical source:
+- **Single fixed rivalry in v1.** Alan vs Andy only. **Why:** keeps the model and UI
+  honest to the one real use case. **Boundary:** multi-rivalry / multi-player is a
+  deliberate future expansion (would replace the alan/opponent keys) — see
+  [PROJECT_PLAN.md](PROJECT_PLAN.md), don't slide into it.
 
-```text
-public/data/deuceline-data.json
-```
-
-Schema version 2. Each match has a unique `seq` (chronological order) and an optional `date`.
-Each player carries identity config: `displayName`, `color` (hex), and `abbr`.
-
-Do not use `localStorage` as canonical storage.
-
-Do not hardcode match data inside React components.
-
-## Core Rule
-
-Store only raw match input, at one of two fidelity levels: per-set scores (`fidelity: "sets"`)
-or a set tally (`fidelity: "matchScore"`). Derive everything else — winner, set record, match
-record, recent form, current streak, surface split, decider record.
-
-## Visual Direction
-
-- Clean
-- Sporty
-- Slightly competitive
-- Long-term rivalry notebook
-- Deep ink / off-white base
-- Tennis yellow accent
-- Surface-specific colors
-- Player-identity colors (not win/loss): Alan = terracotta `#b85c3d`, Andy = grass `#2d7c46`
-
-Avoid childish tennis styling and avoid an all-green UI.
-
-## Current Implementation Status
-
-- Vite + React + TypeScript scaffold exists.
-- Real rivalry data loaded: 7 Bishop matches (Alan vs Andy); 6 are score-only, today's is set-by-set.
-- Dataset validation exists (schema v2, fidelity union). A shape-only JSON Schema lives at
-  `public/data/deuceline.schema.json`; `validateDataset.ts` is the runtime gate for business rules.
-- Domain-derived stats exist; covered by Vitest tests (`npm test`).
-- Overview and Matches pages exist. Identity-color refresh applied: recent form shows winner
-  initials in player color, match cards stripe by winner identity, surface bars use identity
-  colors, and the old "Deciders" card was replaced by "Win rate". (`deciderRecord` is still
-  derived in the domain layer, just no longer surfaced.)
-- Overview hero uses a `CourtBackdrop` SVG (top-down court, net under the score divider, halves
-  tinted in each player's color).
-- Match cards are buttons; tapping opens a `MatchDetail` modal (per-set scores colored by set
-  winner, tiebreaks, and "rivalry impact" from `deriveMatchContext` — H2H before/after, streak
-  extended, streak snapped).
-- Multi-size PWA icons live in `public/assets/` (icon.svg + favicon-32 / apple-touch-icon /
-  icon-192 / icon-512 / icon-maskable-512 PNGs), rasterised from icon*.svg via `qlmanage`.
-  Service worker precaches them (cache bumped to v3).
-- Add match flow is intentionally a placeholder (Esc / focus / scroll handled).
-- PWA manifest and service worker exist.
-- GitHub Pages deploy workflow exists (`.github/workflows/deploy-pages.yml`).
-
-## Resolved
-
-- Opponent display name is Andy.
-- Real historical matches replaced the sample data.
-- Deployment is via GitHub Actions on push to main.
-- Identity colors confirmed: Alan = terracotta `#b85c3d`, Andy = grass `#2d7c46`; abbreviations Al / An.
-
-## Open Questions
-
-- Shared data update workflow beyond manual JSON editing: a script, PR-based, or in-app?
-- Service worker may serve stale data after a JSON update — needs a cache-busting strategy.
-- The published site is fully public; revisit if any data should be private.
-- When does multi-rivalry / multi-player come into scope (it would replace the alan/opponent keys)?
+- **Validation fails loudly, pragmatically.** `validateDataset.ts` is the runtime gate;
+  `public/data/deuceline.schema.json` is a shape-only JSON Schema. **Why:** historical
+  tennis data is imperfect, but obviously broken data must not render silently.
+  **Boundary:** full tennis-scoring-rule enforcement is deferred — see
+  [MAINTENANCE_LOG.md](MAINTENANCE_LOG.md) → Backlog.

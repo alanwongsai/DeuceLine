@@ -48,9 +48,9 @@ Validate dataset shape and obvious bad data in `src/domain/validateDataset.ts`.
 
 The app must not silently ignore invalid data. It should surface dataset errors clearly.
 
-## Before Final Response
+## Verification
 
-Run, when dependencies are installed:
+Before declaring a task done, run (when dependencies are installed):
 
 ```bash
 npm run typecheck
@@ -58,10 +58,84 @@ npm test
 npm run build
 ```
 
-In the final response, summarize:
+Don't report success you haven't verified. If something fails, say so plainly and show
+the output — a faithfully reported failure is more useful than a confident "done".
 
-- Files created or changed.
-- Commands run.
-- Whether typecheck/build passed.
-- What is intentionally left for the next step.
-- Architecture risks or decisions Alan should review.
+## Required Reading (startup core — minimal)
+
+Read these every new session; they're enough to start almost any task:
+
+1. `AGENTS.md` (this file) — scope, hard rules, how to work here.
+2. The latest entry in [MAINTENANCE_LOG.md](MAINTENANCE_LOG.md) — what shipped recently.
+
+Read the rest **only when the task touches that area** — do not pre-read it:
+
+- [ENGINE.md](ENGINE.md) — when touching architecture, data flow, or validation.
+- [PROJECT_PLAN.md](PROJECT_PLAN.md) — when touching scope or deciding what's next.
+- [MEMORY.md](MEMORY.md) — to recover durable decisions and their boundaries.
+
+## Working Agreement (how to work here)
+
+Standing preferences, so the owner (Alan) doesn't restate them each session:
+
+- **Task and docs change together.** Keep the relevant owner doc in sync *as part of
+  the same change*, never deferred — deferred doc updates are how drift starts.
+- **Self-verify before claiming done.** Run the Verification commands above; report
+  failures honestly with output.
+- **Review before a major commit.** For significant or risky changes (new behavior,
+  anything touching data integrity / the dataset / deploy, large or cross-cutting
+  diffs), do a correctness review pass *before* committing. Small mechanical changes
+  don't need it; use judgment.
+- **Close out with a commit.** A real change ends with: a dated `MAINTENANCE_LOG.md`
+  entry, the affected owner doc updated, verification run, and a commit. Do this
+  proactively — don't wait to be reminded.
+- **Small, honest, reviewable changes.** Don't bundle unrelated work. Don't present
+  assumptions as facts when the docs already define scope. Look before you delete.
+
+## Why these conventions (the discipline)
+
+- **Single owner per fact; point, don't copy.** Each volatile fact (status, version,
+  scope) has one owner doc; everywhere else links to it. Copying a volatile fact is the
+  root of all drift — see Documentation Sync Rules below.
+- **MEMORY.md is a router + durable-decision ledger, not a status mirror.** It points
+  at owners; it never holds current status, version, or progress.
+- **Startup core is minimal.** Read the small fixed set above every session; everything
+  else on demand.
+
+## Current State (pointer block — do not restate status here)
+
+This section is a pointer to the single owner of each kind of fact; keep it free of
+dates and version numbers:
+
+- **Latest version & what shipped** → [MAINTENANCE_LOG.md](MAINTENANCE_LOG.md).
+- **Scope / parked decisions / future phases** → [PROJECT_PLAN.md](PROJECT_PLAN.md).
+- **Architecture / data flow / validation strategy** → [ENGINE.md](ENGINE.md).
+- **Durable decisions & boundaries** → [MEMORY.md](MEMORY.md).
+- **Commands** → the Verification section above.
+
+## Documentation Sync Rules (one owner per fact)
+
+Point, don't copy. Each kind of change updates exactly one doc:
+
+| If you changed… | Update only… |
+|---|---|
+| the running product / existing functionality | [MAINTENANCE_LOG.md](MAINTENANCE_LOG.md) |
+| architecture / module boundaries / data flow / validation | [ENGINE.md](ENGINE.md) |
+| scope / a parked decision / what's next | [PROJECT_PLAN.md](PROJECT_PLAN.md) |
+| a settled decision + its boundary | [MEMORY.md](MEMORY.md) |
+| agent behavior / these rules / hard rules | `AGENTS.md` |
+
+There is no CI drift-linter yet (deferred — see the keel close-out). Until there is,
+these rules are upheld by the review pass, not by automation.
+
+## Close-Out Contract
+
+1. **Read-only analysis / planning only**: no changelog entry, no commit.
+2. **Any repo-tracked file change**: add a dated [MAINTENANCE_LOG.md](MAINTENANCE_LOG.md)
+   entry, update the single owner doc affected, run verification, then commit.
+3. **Major/risky change**: also run the review pass (Working Agreement) before
+   committing.
+
+In the final response, summarize: files changed, commands run, whether
+typecheck/test/build passed, what is intentionally left for the next step, and any
+architecture risks or decisions Alan should review.
