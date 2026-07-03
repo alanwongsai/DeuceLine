@@ -104,6 +104,28 @@
           "opponent": 5
         }
       ]
+    },
+    {
+      "id": "match-8",
+      "seq": 8,
+      "date": "2026-07-04",
+      "surface": "clay",
+      "location": "Bishop",
+      "fidelity": "sets",
+      "sets": [
+        {
+          "alan": 4,
+          "opponent": 6
+        },
+        {
+          "alan": 6,
+          "opponent": 3
+        },
+        {
+          "alan": 6,
+          "opponent": 2
+        }
+      ]
     }
   ]
 }
