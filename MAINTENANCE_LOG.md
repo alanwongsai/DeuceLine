@@ -38,6 +38,20 @@
 
 ## Log
 
+### v0.6.4 — 2026-07-03
+- **Sheets are floating Liquid Glass again, done right — the bottom colour seam is gone**
+  (Alan: v0.6.3 only *attached* the flush sheet to the bottom colour block; a colour
+  difference remained). The flush bottom sheet was the cause: a translucent panel welded
+  to the screen edge sampled a lighter backdrop up top and a darker one at the safe-area
+  strip, reading as a vertical colour shift with a distinct block where it met the edge.
+  Following Apple's Liquid Glass guidance (a modal is a *detached* glass surface floating
+  over a dimming layer, fully rounded), `.modal-panel` now floats free of every edge:
+  the `.modal-backdrop` padding is the margin it floats inside (`shell-pad` sides/top +
+  `safe-area-inset-bottom`), all four corners rounded (`--radius-lg`), lifted off the
+  backdrop by a hairline edge + drop shadow. The dim layer was strengthened to a uniform
+  `rgba(8,20,15,0.58)` so the whole glass samples one even backdrop — no gradient, no
+  seam. `max-height: 100%` (the backdrop padding now defines the gaps).
+
 ### v0.6.3 — 2026-07-03
 - **Modals are now bottom sheets, not floating cards** (Alan: the gap below an open
   sheet looked unstable, and tall forms crammed the top). `.modal-panel` sits flush to

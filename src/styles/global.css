@@ -623,30 +623,41 @@ button.surface-row:focus-visible {
   display: grid;
   align-items: end;
   justify-items: center;
-  background: rgba(10, 18, 16, 0.46);
+  /* This padding is the margin the glass floats inside: it detaches the sheet
+     from every screen edge, so the panel never meets a screen seam — that seam
+     against a different-coloured region was the "colour block" a flush sheet
+     could never avoid. Bottom clears the home indicator; top leaves a tappable
+     strip to dismiss. */
+  padding: max(var(--shell-pad), env(safe-area-inset-top)) var(--shell-pad)
+    calc(var(--shell-pad) + env(safe-area-inset-bottom));
+  /* A stronger, uniform dim gives the glass one consistent backdrop to sample,
+     so the panel reads as a single even material top-to-bottom — no gradient,
+     no visible colour shift where it used to touch the bottom. */
+  background: rgba(8, 20, 15, 0.58);
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   /* Keep sheet scrolling from chaining into the page behind it. */
   overscroll-behavior: contain;
 }
 
-/* Bottom sheet: flush to the screen's bottom edge, top corners rounded only.
-   The home-indicator safe area is the sheet's own bottom padding — so there's
-   no floating gap under it, and no bottom corners to clip into the device's
-   rounded screen corner. Capped short of the top so it never crams the status
-   bar / notch, leaving a backdrop strip that's tappable to dismiss. */
+/* Floating glass sheet (Apple Liquid Glass): detached on all four edges, fully
+   rounded, one uniform glass material lifted off the dim layer by its own
+   shadow and hairline edge. Fills the space the backdrop's padding leaves,
+   capping and scrolling internally when its content is tall. */
 .modal-panel {
   width: min(100%, 496px);
-  max-height: calc(100svh - 40px - env(safe-area-inset-top));
+  max-height: 100%;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 20px 18px calc(18px + env(safe-area-inset-bottom));
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 20px 18px 22px;
+  border-radius: var(--radius-lg);
   background: var(--material-bg-strong);
   backdrop-filter: blur(calc(var(--material-blur) + 8px)) saturate(1.5);
   -webkit-backdrop-filter: blur(calc(var(--material-blur) + 8px)) saturate(1.5);
   box-shadow:
     inset 0 1px 0 var(--material-border),
-    0 -6px 34px rgba(12, 47, 34, 0.26);
+    inset 0 0 0 1px var(--material-edge),
+    0 18px 50px rgba(8, 20, 15, 0.42);
 }
 
 .modal-header {
