@@ -1,0 +1,7 @@
+# Cloudflare Pages config. The site is a static Vite build in dist/; the
+# functions/ directory is deployed automatically as Pages Functions.
+# Secrets (GITHUB_TOKEN, ADD_MATCH_PASSWORD) are set in the Cloudflare dashboard,
+# and locally in .dev.vars (git-ignored) for `wrangler pages dev`.
+name = "deuceline"
+pages_build_output_dir = "dist"
+compatibility_date = "2024-11-01"

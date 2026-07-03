@@ -893,6 +893,32 @@ button.surface-row:focus-visible {
   font-size: 0.72rem;
 }
 
+/* One-tap publish: error notice + the collapsed GitHub-editor fallback. */
+.publish-error {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  color: #691f1f;
+  background: #fff1f1;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.publish-fallback {
+  margin-top: 12px;
+}
+
+.publish-fallback > summary {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.publish-fallback[open] > summary {
+  margin-bottom: 8px;
+}
+
 .detail-meta {
   display: flex;
   align-items: center;

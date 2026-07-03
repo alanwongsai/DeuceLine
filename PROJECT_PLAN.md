@@ -57,10 +57,13 @@ never canonical: the form hands off to the GitHub editor for the commit.
 - Add validation command if practical.
 - Consider future script for adding matches safely.
 
-Status: superseded by the add-match form (validate → review → copy JSON → GitHub
-editor). Parked upgrade: **one-tap commit** — a fine-grained PAT (contents:write,
-this repo only) pasted once on Alan's phone, form submits via the GitHub contents
-API. Replaces only the hand-off step; revisit when the copy-paste flow feels slow.
+Status: superseded by the add-match form, now upgraded to **one-tap publish** (shipped).
+The review screen POSTs the new match to a Cloudflare Pages Function
+(`functions/api/add-match.ts`) that commits it, guarded by a password + append-only + a
+repo-scoped fine-grained PAT (see ENGINE.md, Data Update Flow). The GitHub-editor
+copy/paste flow remains as an automatic fallback. Moving hosting to Cloudflare Pages and
+setting the two secrets (`GITHUB_TOKEN`, `ADD_MATCH_PASSWORD`) are one-time owner steps;
+until then the app falls back to the editor. See MAINTENANCE_LOG.md.
 
 ## Phase 6: PWA And GitHub Pages Polish
 
@@ -124,6 +127,7 @@ Deferred / parked from this phase:
 - Multi-rivalry support.
 - Import/export as a non-canonical helper.
 - Admin editor.
-- GitHub API sync with protected token strategy.
+- Cloudflare Access (email-login) as a stronger auth upgrade over the shared publish
+  password — parked; the shipped one-tap flow uses the password gate.
 - Firebase or Supabase.
 - Native iOS app.

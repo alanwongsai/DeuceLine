@@ -7,6 +7,37 @@ import { DatasetValidationError, validateDataset } from "../domain/validateDatas
 import { Modal } from "./Modal";
 import { SurfaceBadge } from "./SurfaceBadge";
 
+// The Cloudflare Pages Function that commits the match for us (one-tap publish).
+const PUBLISH_ENDPOINT = "/api/add-match";
+// The publish password is stored on this device only — never in the bundle — so
+// a visitor with just the link can't reach the write path. It's a credential,
+// not canonical data, so localStorage is fine here (see AGENTS.md).
+const PASSWORD_KEY = "deuceline.addMatchKey";
+
+function readStoredPassword(): string {
+  try {
+    return localStorage.getItem(PASSWORD_KEY) ?? "";
+  } catch {
+    return "";
+  }
+}
+
+function storePassword(value: string): void {
+  try {
+    localStorage.setItem(PASSWORD_KEY, value);
+  } catch {
+    /* localStorage may be unavailable (private mode); the GitHub-editor fallback still works. */
+  }
+}
+
+function clearStoredPassword(): void {
+  try {
+    localStorage.removeItem(PASSWORD_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
 const surfaceLabels: Record<Surface, string> = {
   hard: "Hard",
   clay: "Clay",
@@ -53,6 +84,11 @@ export function AddMatchSheet({ dataset, onClose }: AddMatchSheetProps) {
   const [candidate, setCandidate] = useState<DeucelineDataset | null>(null);
   const [copied, setCopied] = useState(false);
   const [copyFailed, setCopyFailed] = useState(false);
+  const [pendingInput, setPendingInput] = useState<NewMatchInput | null>(null);
+  const [password, setPassword] = useState(readStoredPassword);
+  const [needsPassword, setNeedsPassword] = useState(false);
+  const [publishState, setPublishState] = useState<"idle" | "publishing" | "done">("idle");
+  const [publishError, setPublishError] = useState<string | null>(null);
 
   const updateSetRow = (index: number, patch: Partial<SetRowState>) => {
     setSetRows((rows) => rows.map((row, i) => (i === index ? { ...row, ...patch } : row)));
@@ -81,10 +117,16 @@ export function AddMatchSheet({ dataset, onClose }: AddMatchSheetProps) {
 
   const onReview = () => {
     try {
-      setCandidate(validateDataset(appendMatch(dataset, buildInput())));
+      const input = buildInput();
+      setCandidate(validateDataset(appendMatch(dataset, input)));
+      setPendingInput(input);
       setIssues(null);
       setCopied(false);
       setCopyFailed(false);
+      setPublishState("idle");
+      setPublishError(null);
+      // Reveal the password field on review only if we don't already have one.
+      setNeedsPassword(!password.trim());
     } catch (reason: unknown) {
       setIssues(reason instanceof DatasetValidationError ? reason.issues : ["Could not build the match."]);
     }
@@ -99,6 +141,49 @@ export function AddMatchSheet({ dataset, onClose }: AddMatchSheetProps) {
       setCopyFailed(true);
     }
     window.open(DATASET_EDIT_URL, "_blank", "noopener");
+  };
+
+  // One-tap publish: send only the new match to the Cloudflare Function, which
+  // re-appends + re-validates server-side and commits. The whole domain flow
+  // (validate → review) already ran; this just replaces the manual hand-off.
+  const onSubmit = async () => {
+    if (!pendingInput) return;
+    const key = password.trim();
+    if (!key) {
+      setNeedsPassword(true);
+      return;
+    }
+
+    setPublishState("publishing");
+    setPublishError(null);
+    try {
+      const response = await fetch(PUBLISH_ENDPOINT, {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-deuceline-key": key },
+        body: JSON.stringify({ match: pendingInput }),
+      });
+
+      if (response.status === 401) {
+        clearStoredPassword();
+        setNeedsPassword(true);
+        setPublishState("idle");
+        setPublishError("That password was rejected. Re-enter it and try again.");
+        return;
+      }
+      if (!response.ok) {
+        const detail = (await response.json().catch(() => null)) as { error?: string } | null;
+        setPublishState("idle");
+        setPublishError(detail?.error ?? `Publish failed (${response.status}). You can still commit on GitHub below.`);
+        return;
+      }
+
+      storePassword(key);
+      setNeedsPassword(false);
+      setPublishState("done");
+    } catch {
+      setPublishState("idle");
+      setPublishError("Couldn't reach the publisher. You can still commit on GitHub below.");
+    }
   };
 
   if (candidate) {
@@ -123,28 +208,74 @@ export function AddMatchSheet({ dataset, onClose }: AddMatchSheetProps) {
           </p>
         </div>
 
-        <p className="review-steps">
-          The updated data file goes to your clipboard, and the GitHub editor opens. There:
-          select all, paste, commit. The site redeploys itself.
-        </p>
+        {publishState === "done" ? (
+          <>
+            <p className="review-copied">Published ✓ — the site updates in about a minute.</p>
+            <button className="primary-button" type="button" onClick={onClose}>
+              Done
+            </button>
+          </>
+        ) : (
+          <>
+            <p className="review-steps">
+              Submit publishes this match straight to the site — it commits for you and the site
+              redeploys itself.
+            </p>
 
-        {copied ? <p className="review-copied">Copied — paste over the whole file, then commit.</p> : null}
-        {copyFailed ? (
-          <textarea
-            className="json-fallback"
-            readOnly
-            value={serializeDataset(candidate)}
-            onFocus={(event) => event.currentTarget.select()}
-            aria-label="Updated dataset JSON — copy manually"
-          />
-        ) : null}
+            {needsPassword ? (
+              <label className="field">
+                <span className="field-label">Publish password</span>
+                <input
+                  className="text-input"
+                  type="password"
+                  value={password}
+                  autoComplete="off"
+                  placeholder="Entered once, then remembered on this device"
+                  onChange={(event) => setPassword(event.target.value)}
+                />
+              </label>
+            ) : null}
 
-        <button className="primary-button" type="button" onClick={onCopyAndOpen}>
-          {copied ? "Open GitHub editor again" : "Copy JSON & open GitHub"}
-        </button>
-        <button className="secondary-button" type="button" onClick={() => setCandidate(null)}>
-          Back to edit
-        </button>
+            {publishError ? (
+              <p className="publish-error" role="alert">
+                {publishError}
+              </p>
+            ) : null}
+
+            <button
+              className="primary-button"
+              type="button"
+              onClick={onSubmit}
+              disabled={publishState === "publishing"}
+            >
+              {publishState === "publishing" ? "Publishing…" : "Submit & publish"}
+            </button>
+
+            <details className="publish-fallback" open={publishError !== null}>
+              <summary>Or commit on GitHub yourself</summary>
+              <p className="review-steps">
+                Copies the updated file and opens the GitHub editor: select all, paste, commit.
+              </p>
+              {copied ? <p className="review-copied">Copied — paste over the whole file, then commit.</p> : null}
+              {copyFailed ? (
+                <textarea
+                  className="json-fallback"
+                  readOnly
+                  value={serializeDataset(candidate)}
+                  onFocus={(event) => event.currentTarget.select()}
+                  aria-label="Updated dataset JSON — copy manually"
+                />
+              ) : null}
+              <button className="secondary-button" type="button" onClick={onCopyAndOpen}>
+                {copied ? "Open GitHub editor again" : "Copy JSON & open GitHub"}
+              </button>
+            </details>
+
+            <button className="secondary-button" type="button" onClick={() => setCandidate(null)}>
+              Back to edit
+            </button>
+          </>
+        )}
       </Modal>
     );
   }

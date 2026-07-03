@@ -16,7 +16,7 @@ Do not mix domain calculations into React components when they can live in pure 
 
 ## Static GitHub Pages Constraints
 
-GitHub Pages has no app backend in v1. Everyone opening the published link should see the same record. That means browser-local writes are not the source of truth.
+The read path has no app backend: everyone opening the published link fetches the same repo-hosted JSON, so browser-local writes are never the source of truth. The only server-side piece is a thin, stateless commit-proxy Function (see Data Update Flow) that writes back to that same JSON and stores nothing itself — the repo remains the single source of truth.
 
 Use this v1 flow:
 
@@ -49,22 +49,38 @@ surface split — derive them from the recorded score.
 
 ## Data Update Flow (add-match form)
 
-The center add button opens `AddMatchSheet`, a standardized form. The app has no write
-path of its own; the commit always happens on github.com:
+The center add button opens `AddMatchSheet`, a standardized form. The domain flow is
+unchanged; only the final hand-off changed — the app now publishes in one tap through a
+Cloudflare Pages Function, and still never holds a GitHub token itself:
 
 ```text
 form input
   -> appendMatch (src/domain/addMatch.ts: next seq, free id, omit empty optionals)
   -> validateDataset (same validator the loader uses — bad data cannot pass)
   -> review step (winner scoreline + new H2H, so a mis-entry is caught by eye)
-  -> serializeDataset to the clipboard + open DATASET_EDIT_URL
-     (src/data/datasetSource.ts) -> paste over the file, commit, Pages redeploys
+  -> POST { match } to /api/add-match (functions/api/add-match.ts)
+       -> the Function re-reads the dataset, re-runs appendMatch + validateDataset,
+          and commits — pushing to main, which redeploys the site.
 ```
 
+The write Function (`functions/api/add-match.ts`) is guarded three ways, so a visitor with
+only the public link can't write or delete:
+
+- **Password gate** — the caller must send the shared password (a Cloudflare secret,
+  `ADD_MATCH_PASSWORD`); the app stores it on-device only, never in the bundle.
+- **Append-only** — the client sends only a new match; the Function re-appends server-side,
+  so the endpoint can add one match but never delete or rewrite existing ones.
+- **Least privilege** — the token (`GITHUB_TOKEN`) is a fine-grained PAT scoped to this repo,
+  Contents-only; every write is a commit, so any bad write is git-revertible.
+
+The Function runs on Cloudflare Pages (`wrangler.toml`; secrets set in the Cloudflare
+dashboard, or `.dev.vars` for `wrangler pages dev`). Until hosting moves there,
+`/api/add-match` returns 404 and the app falls back to the original hand-off:
+`serializeDataset` to the clipboard + open `DATASET_EDIT_URL` (`src/data/datasetSource.ts`)
+— paste over the file, commit, Pages redeploys.
+
 Empty numeric fields map to `NaN` (never `0` — `Number("")` is `0`), so a half-filled
-set is rejected loudly by the validator instead of silently scoring a bagel. A possible
-future "one-tap commit" upgrade (fine-grained PAT + GitHub contents API) would replace
-only the last step; see PROJECT_PLAN.md.
+set is rejected loudly by the validator instead of silently scoring a bagel.
 
 ## Domain Model Rules
 

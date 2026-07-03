@@ -4,5 +4,9 @@ dist/
 *.tsbuildinfo
 node_modules/.tmp/
 
+# Cloudflare Pages local dev — real secrets and wrangler state, never commit
+.dev.vars
+.wrangler/
+
 # Local Claude Code config (machine-specific settings, preview launch config)
 .claude/

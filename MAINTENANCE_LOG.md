@@ -38,6 +38,28 @@
 
 ## Log
 
+### v0.7.0 — 2026-07-03
+- **One-tap publish for adding a match** (Alan: on his phone, fill → review → one tap →
+  saved, without the copy-paste-to-GitHub dance). The review screen now POSTs the new match
+  to a Cloudflare Pages Function (`functions/api/add-match.ts`) that commits it to the
+  canonical JSON; pushing to `main` redeploys the site. The domain flow (appendMatch →
+  validateDataset → review) is unchanged — only the final hand-off moved from "copy JSON +
+  open the GitHub editor" to the API call. That editor path stays as an automatic fallback
+  (and covers local dev, where `/api/add-match` 404s — verified: submit surfaces the error
+  and auto-opens the fallback).
+- **Security — only Alan can write, and even he can't delete history through it.**
+  (1) Password gate: the Function checks a shared password (Cloudflare secret
+  `ADD_MATCH_PASSWORD`); the app stores it on-device only (localStorage), never in the
+  bundle, so a visitor with just the link can't call it. (2) Append-only: the client sends
+  only a new match; the Function re-appends + re-validates server-side, so it can add one
+  match but never delete or rewrite existing ones. (3) Least privilege: the token
+  (`GITHUB_TOKEN`) is a fine-grained PAT scoped to this repo, Contents-only; every write is a
+  commit, so bad writes are git-revertible.
+- **Cloudflare-ready** (`wrangler.toml`, `.dev.vars.example`, `@cloudflare/workers-types`
+  dev dep, `typecheck:functions` script). Moving hosting to Cloudflare Pages + setting the two
+  secrets are one-time owner steps; until then the site stays on GitHub Pages and the app uses
+  the editor fallback. See ENGINE.md (Data Update Flow) and PROJECT_PLAN.md (Phase 5).
+
 ### v0.6.4 — 2026-07-03
 - **Sheets are floating Liquid Glass again, done right — the bottom colour seam is gone**
   (Alan: v0.6.3 only *attached* the flush sheet to the bottom colour block; a colour

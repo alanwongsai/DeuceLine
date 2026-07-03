@@ -1,0 +1,7 @@
+# Local secrets for `wrangler pages dev`. Copy this file to `.dev.vars` (which is
+# git-ignored) and fill in real values. NEVER commit real secrets.
+#
+# A fine-grained PAT scoped to THIS repo only, permission Contents: Read and write.
+GITHUB_TOKEN="github_pat_xxx"
+# The shared password the app sends in the x-deuceline-key header.
+ADD_MATCH_PASSWORD="choose-a-password"
