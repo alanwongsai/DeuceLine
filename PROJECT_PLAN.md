@@ -47,7 +47,9 @@ Status: complete for scaffold.
 - Define future persistent edit workflow.
 - Avoid pretending browser edits are canonical in v1.
 
-Status: placeholder complete. Real shared editing is future work.
+Status: complete — the placeholder became the real `AddMatchSheet` form in v0.6.1
+(see MAINTENANCE_LOG.md and ENGINE.md, Data Update Flow). Browser edits are still
+never canonical: the form hands off to the GitHub editor for the commit.
 
 ## Phase 5: Data Update Workflow
 
@@ -55,7 +57,10 @@ Status: placeholder complete. Real shared editing is future work.
 - Add validation command if practical.
 - Consider future script for adding matches safely.
 
-Status: documentation started. Validation command is future work.
+Status: superseded by the add-match form (validate → review → copy JSON → GitHub
+editor). Parked upgrade: **one-tap commit** — a fine-grained PAT (contents:write,
+this repo only) pasted once on Alan's phone, form submits via the GitHub contents
+API. Replaces only the hand-off step; revisit when the copy-paste flow feels slow.
 
 ## Phase 6: PWA And GitHub Pages Polish
 

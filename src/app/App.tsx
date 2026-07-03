@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { AddMatchSheet } from "../components/AddMatchSheet";
 import { BottomNav } from "../components/BottomNav";
 import { loadDataset } from "../data/loadDataset";
 import { DeucelineDataset } from "../domain/schema";
@@ -37,7 +38,7 @@ export function App() {
     <div className="app-shell">
       {content}
       <BottomNav activeView={activeView} onAdd={() => setIsAddOpen(true)} onChange={setActiveView} />
-      {isAddOpen ? <AddMatchPlaceholder onClose={() => setIsAddOpen(false)} /> : null}
+      {isAddOpen && dataset ? <AddMatchSheet dataset={dataset} onClose={() => setIsAddOpen(false)} /> : null}
     </div>
   );
 }
@@ -62,46 +63,3 @@ function ErrorState({ message }: { message: string }) {
   );
 }
 
-function AddMatchPlaceholder({ onClose }: { onClose: () => void }) {
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    closeButtonRef.current?.focus();
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-    document.addEventListener("keydown", onKeyDown);
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [onClose]);
-
-  return (
-    <div className="modal-backdrop" role="presentation" onMouseDown={onClose}>
-      <section className="modal-panel" role="dialog" aria-modal="true" aria-labelledby="addMatchTitle" onMouseDown={(event) => event.stopPropagation()}>
-        <div className="modal-header">
-          <div>
-            <p className="eyebrow">Add Match</p>
-            <h2 id="addMatchTitle">Coming next</h2>
-          </div>
-          <button ref={closeButtonRef} className="icon-button" type="button" onClick={onClose} aria-label="Close add match dialog">
-            ×
-          </button>
-        </div>
-        <p>
-          V1 reads from <code>public/data/deuceline-data.json</code> so everyone opening the GitHub Pages link sees the same record.
-        </p>
-        <p>For now, add matches by editing that JSON file. The future editor should commit back to the repo or use a protected sync flow.</p>
-        <button className="primary-button" type="button" onClick={onClose}>
-          Got it
-        </button>
-      </section>
-    </div>
-  );
-}

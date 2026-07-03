@@ -14,7 +14,9 @@ The app should feel like a polished mobile sports notebook, not a generic dashbo
 - Static GitHub Pages deployment.
 - Read the shared dataset from `public/data/deuceline-data.json`.
 - Display Overview and Matches pages.
-- Keep the center add button as a placeholder until there is a real shared data update workflow.
+- The center add button opens the add-match form. The app itself never writes
+  anywhere: the form validates, then copies the updated JSON and hands off to the
+  GitHub web editor for the actual commit (see ENGINE.md, Data Update Flow).
 
 Do not overbuild this into a tournament, coaching analytics, social, or live scoring platform.
 

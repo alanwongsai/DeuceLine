@@ -47,6 +47,25 @@ for partially-remembered matches, just the set tally (`fidelity: "matchScore"`).
 derived values such as winner, set record, match record, current streak, decider record, or
 surface split — derive them from the recorded score.
 
+## Data Update Flow (add-match form)
+
+The center add button opens `AddMatchSheet`, a standardized form. The app has no write
+path of its own; the commit always happens on github.com:
+
+```text
+form input
+  -> appendMatch (src/domain/addMatch.ts: next seq, free id, omit empty optionals)
+  -> validateDataset (same validator the loader uses — bad data cannot pass)
+  -> review step (winner scoreline + new H2H, so a mis-entry is caught by eye)
+  -> serializeDataset to the clipboard + open DATASET_EDIT_URL
+     (src/data/datasetSource.ts) -> paste over the file, commit, Pages redeploys
+```
+
+Empty numeric fields map to `NaN` (never `0` — `Number("")` is `0`), so a half-filled
+set is rejected loudly by the validator instead of silently scoring a bagel. A possible
+future "one-tap commit" upgrade (fine-grained PAT + GitHub contents API) would replace
+only the last step; see PROJECT_PLAN.md.
+
 ## Domain Model Rules
 
 Supported surfaces:

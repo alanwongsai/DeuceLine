@@ -38,6 +38,21 @@
 
 ## Log
 
+### v0.6.1 — 2026-07-03
+- **The add button is real: standardized add-match form** (`AddMatchSheet`, replaces
+  the placeholder). Date (defaults today) / surface segmented control (defaults to the
+  last match's surface) / location (defaults likewise) / full-set-scores vs sets-tally
+  toggle / per-set inputs with automatic tiebreak fields on 7-6 / optional notes.
+- **The form cannot produce bad data**: it builds the candidate dataset via new domain
+  helpers `appendMatch` + `serializeDataset` (`src/domain/addMatch.ts`, tested) and runs
+  the same `validateDataset` the loader uses; issues render in-sheet. Empty numeric
+  fields map to NaN, not 0, so half-filled sets fail loudly.
+- **Review step before hand-off**: winner scoreline, surface/location/date, and "H2H
+  becomes X—Y" so a mis-entry is caught by eye. Then one tap copies the full updated
+  JSON and opens the GitHub web editor (`DATASET_EDIT_URL`) — paste over the file,
+  commit, Pages redeploys. Clipboard-blocked browsers get a select-all textarea.
+- Modal panels now cap their height and scroll, so long sheets fit small screens.
+
 ### v0.6.0 — 2026-07-03
 - **Wimbledon skin retuned to the Championships look** (Alan: the cream/ivory base
   didn't read as Wimbledon — go by the official app). Background is now a cool
