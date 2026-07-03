@@ -53,7 +53,7 @@
     {
       "id": "match-4",
       "seq": 4,
-      "surface": "clay",
+      "surface": "astro",
       "location": "Bishop",
       "fidelity": "matchScore",
       "matchScore": {
