@@ -13,22 +13,38 @@
 
 :root,
 [data-skin="wimbledon"] {
-  --bg: #f3f1e6;
-  --ink: #14352a;
-  --muted: #5d6b62;
-  --panel: #fcfbf4;
-  --line: #dcdccb;
+  /* Championships look: crisp near-white content on a deep-green masthead,
+     gold reserved for honours (masthead eyebrow, count pill, primary action). */
+  --bg: #f4f6f2;
+  --ink: #0c2f22;
+  --muted: #5a6b61;
+  --panel: #ffffff;
+  --line: #e2e7e0;
 
-  --accent: #d9ad53;
-  --accent-ink: #14352a;
+  --accent: #c19a4b;
+  --accent-ink: #0c2f22;
+
+  /* Masthead (deep-green header band, like the official app's chrome) */
+  --masthead-bg: #0a2f21;
+  --masthead-glow: #14523a;
+  --masthead-ink: #ffffff;
+  --masthead-muted: rgba(255, 255, 255, 0.76);
+  --masthead-accent: #d9bc72;
 
   /* Hero court (the head-to-head scoreboard) */
   --hero-ink: #ffffff;
-  --hero-fallback: #14352a;
+  --hero-fallback: #0c2f22;
   --court-lighten: rgba(255, 255, 255, 0.15);
   --court-line: rgba(255, 255, 255, 0.55);
   --court-net: #ffffff;
   --court-pocket: #06150d;
+
+  /* Floating-layer material (Liquid-Glass-style). Only nav / FAB / sheets use
+     these — content stays opaque. Blur radius lives in global.css (structural). */
+  --material-bg: rgba(255, 255, 255, 0.68);
+  --material-bg-strong: rgba(255, 255, 255, 0.86);
+  --material-border: rgba(255, 255, 255, 0.55);
+  --material-edge: rgba(12, 47, 34, 0.12);
 
   /* Surface badges — kept on the existing palette this skin. The grass/Andy and
      clay/Alan collisions are a known, deferred issue (see PROJECT_PLAN.md). */

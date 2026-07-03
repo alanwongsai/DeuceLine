@@ -52,6 +52,39 @@ export function formatMatchScore(match: Match): string {
   return `${matchScore.alan}—${matchScore.opponent}`;
 }
 
+// Scoreline read from the winner's perspective — tennis convention: "Andy won
+// 2—1", sets "6-3 3-6 7-5", all winner-first. Views that lay out Alan-left /
+// Andy-right (the detail set list, the H2H) keep the fixed orientation instead,
+// because names and identity colours make that layout explicit.
+export function formatWinnerScoreline(match: Match): {
+  winner: PlayerKey;
+  score: string;
+  setScores: string[] | null;
+} {
+  const result = deriveMatchResult(match);
+  const loser: PlayerKey = result.winner === "alan" ? "opponent" : "alan";
+  const setScores =
+    match.fidelity !== "sets"
+      ? null
+      : match.sets.map((set) =>
+          result.winner === "alan"
+            ? formatSetScore(set)
+            : formatSetScore({
+                alan: set.opponent,
+                opponent: set.alan,
+                tiebreak: set.tiebreak
+                  ? { alan: set.tiebreak.opponent, opponent: set.tiebreak.alan }
+                  : undefined,
+              }),
+        );
+
+  return {
+    winner: result.winner,
+    score: `${result.matchScore[result.winner]}—${result.matchScore[loser]}`,
+    setScores,
+  };
+}
+
 export function deriveOverviewStats(matches: Match[]): OverviewStats {
   const sortedMatches = sortMatchesNewestFirst(matches);
   // Compute each result once, then fold every stat from it in a single pass.

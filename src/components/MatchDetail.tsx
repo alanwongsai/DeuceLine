@@ -1,4 +1,4 @@
-import { deriveMatchContext, deriveMatchResult, deriveSetWinner, formatMatchScore } from "../domain/deriveStats";
+import { deriveMatchContext, deriveMatchResult, deriveSetWinner, formatWinnerScoreline } from "../domain/deriveStats";
 import { Match, Player, PlayerKey } from "../domain/schema";
 import { Modal } from "./Modal";
 import { SurfaceBadge } from "./SurfaceBadge";
@@ -12,6 +12,7 @@ type MatchDetailProps = {
 
 export function MatchDetail({ match, players, matches, onClose }: MatchDetailProps) {
   const result = deriveMatchResult(match);
+  const scoreline = formatWinnerScoreline(match);
   const context = deriveMatchContext(matches, match.id);
   const winner = players[result.winner];
 
@@ -36,7 +37,7 @@ export function MatchDetail({ match, players, matches, onClose }: MatchDetailPro
       eyebrow={match.date ? formatDate(match.date) : `Match ${match.seq}`}
       title={
         <>
-          {winner.displayName} won {formatMatchScore(match)}
+          {winner.displayName} won {scoreline.score}
         </>
       }
       onClose={onClose}
@@ -69,7 +70,7 @@ export function MatchDetail({ match, players, matches, onClose }: MatchDetailPro
         </ol>
       ) : (
         <p className="set-line set-line-missing">
-          Set scores not recorded · final {match.matchScore.alan}—{match.matchScore.opponent}
+          Set scores not recorded · final {scoreline.score}
         </p>
       )}
 

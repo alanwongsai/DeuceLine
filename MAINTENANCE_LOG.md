@@ -38,6 +38,25 @@
 
 ## Log
 
+### v0.6.0 — 2026-07-03
+- **Wimbledon skin retuned to the Championships look** (Alan: the cream/ivory base
+  didn't read as Wimbledon — go by the official app). Background is now a cool
+  near-white, panels pure white, and both pages open with a deep-green **masthead**
+  band (gold eyebrow, white type) that bleeds to the shell edges. Gold accent
+  desaturated; `theme-color` meta matches the masthead.
+- **Liquid-Glass-style material layer**, restrained per Apple's guidance: glass only on
+  the floating chrome (bottom nav, modal sheets, FAB specular highlight), never on
+  content. New `--material-*` skin tokens + structural `--material-blur` / `--shell-pad`;
+  solid-panel fallbacks for `prefers-reduced-transparency` and no-`backdrop-filter`
+  browsers. This is the seam a future native app swaps for real platform materials.
+- **Scorelines now read winner-first** (tennis convention): new tested domain helper
+  `formatWinnerScoreline` — match cards and the detail title show "Andy won 2—1" with
+  set lines flipped to match; fixed Alan-left layouts (detail set list, H2H) unchanged.
+- Polish: "Astro · 2" no longer wraps in By surface; "Set scores not recorded" is
+  smaller and quieter (and shows the winner-first final in the detail view); stat-card
+  spacing tightened; remaining hardcoded chrome colours (surface track, match-card
+  hover, shadows) moved onto tokens.
+
 ### v0.5.3 — 2026-06-30
 - **Surface breakdown sheet grew two more rows**: Deciders (close-match record, per
   surface — `surfaceSplit[surface].decidersAlan/decidersOpponent`) and Current run

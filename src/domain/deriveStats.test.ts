@@ -5,6 +5,7 @@ import {
   deriveMatchResult,
   deriveOverviewStats,
   formatMatchScore,
+  formatWinnerScoreline,
   sortMatchesNewestFirst,
 } from "./deriveStats";
 
@@ -84,6 +85,40 @@ describe("deriveMatchResult", () => {
 describe("formatMatchScore", () => {
   it("formats with an em dash", () => {
     expect(formatMatchScore(score(1, "clay", 2, 1))).toBe("2—1");
+  });
+});
+
+describe("formatWinnerScoreline", () => {
+  it("keeps Alan-first ordering when Alan wins", () => {
+    const scoreline = formatWinnerScoreline(
+      detailed(1, "clay", [
+        { alan: 6, opponent: 3 },
+        { alan: 3, opponent: 6 },
+        { alan: 7, opponent: 5 },
+      ]),
+    );
+    expect(scoreline.winner).toBe("alan");
+    expect(scoreline.score).toBe("2—1");
+    expect(scoreline.setScores).toEqual(["6-3", "3-6", "7-5"]);
+  });
+
+  it("flips the score and set lines when the opponent wins", () => {
+    const scoreline = formatWinnerScoreline(
+      detailed(1, "hard", [
+        { alan: 3, opponent: 6 },
+        { alan: 6, opponent: 7, tiebreak: { alan: 4, opponent: 7 } },
+      ]),
+    );
+    expect(scoreline.winner).toBe("opponent");
+    expect(scoreline.score).toBe("2—0");
+    expect(scoreline.setScores).toEqual(["6-3", "7-6 (7-4)"]);
+  });
+
+  it("flips a score-only tally and has no set lines", () => {
+    const scoreline = formatWinnerScoreline(score(1, "astro", 1, 2));
+    expect(scoreline.winner).toBe("opponent");
+    expect(scoreline.score).toBe("2—1");
+    expect(scoreline.setScores).toBeNull();
   });
 });
 

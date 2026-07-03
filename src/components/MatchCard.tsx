@@ -1,4 +1,4 @@
-import { deriveMatchResult, formatMatchScore } from "../domain/deriveStats";
+import { formatWinnerScoreline } from "../domain/deriveStats";
 import { Match, Player, PlayerKey } from "../domain/schema";
 import { SurfaceBadge } from "./SurfaceBadge";
 
@@ -9,15 +9,15 @@ type MatchCardProps = {
 };
 
 export function MatchCard({ match, players, onOpen }: MatchCardProps) {
-  const result = deriveMatchResult(match);
-  const winner = players[result.winner];
+  const scoreline = formatWinnerScoreline(match);
+  const winner = players[scoreline.winner];
 
   return (
     <button
       type="button"
       className="match-card"
       onClick={onOpen}
-      aria-label={`${winner.displayName} won ${formatMatchScore(match)} — open match detail`}
+      aria-label={`${winner.displayName} won ${scoreline.score} — open match detail`}
     >
       <div className="match-card-stripe" aria-hidden="true" style={{ background: winner.color }} />
       <div className="match-card-body">
@@ -30,10 +30,10 @@ export function MatchCard({ match, players, onOpen }: MatchCardProps) {
           <SurfaceBadge surface={match.surface} />
         </div>
         <h2>
-          {winner.displayName} won {formatMatchScore(match)}
+          {winner.displayName} won {scoreline.score}
         </h2>
-        {result.setScores ? (
-          <p className="set-line">{result.setScores.join("   ")}</p>
+        {scoreline.setScores ? (
+          <p className="set-line">{scoreline.setScores.join("   ")}</p>
         ) : (
           <p className="set-line set-line-missing">Set scores not recorded</p>
         )}

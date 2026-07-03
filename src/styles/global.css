@@ -14,6 +14,11 @@
      one. Pills (999px) and circles (50%) are unaffected. */
   --radius-lg: 22px;
   --radius-md: 14px;
+
+  /* Structural (non-skin) tokens: the shell gutter, referenced by the masthead
+     bleed, and the blur radius of the floating-layer material. */
+  --shell-pad: 16px;
+  --material-blur: 22px;
 }
 
 * {
@@ -24,9 +29,7 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background:
-    linear-gradient(180deg, rgba(20, 53, 42, 0.05), transparent 26rem),
-    var(--bg);
+  background: var(--bg);
 }
 
 button {
@@ -43,7 +46,8 @@ pre {
   width: min(100%, 520px);
   min-height: 100svh;
   margin: 0 auto;
-  padding: max(16px, env(safe-area-inset-top)) 16px calc(78px + env(safe-area-inset-bottom));
+  padding: max(var(--shell-pad), env(safe-area-inset-top)) var(--shell-pad)
+    calc(78px + env(safe-area-inset-bottom));
 }
 
 .screen {
@@ -77,22 +81,35 @@ h2 {
   font-size: 1rem;
 }
 
+/* Masthead: both page headers bleed to the shell edges as a deep-green band —
+   the Championships chrome — with white type and the gold eyebrow on top. */
 .app-header,
 .page-header {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: 16px;
-  padding: 8px 0 10px;
+  margin: calc(-1 * max(var(--shell-pad), env(safe-area-inset-top)))
+    calc(-1 * var(--shell-pad)) 2px;
+  padding: calc(max(var(--shell-pad), env(safe-area-inset-top)) + 12px) 20px 18px;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  color: var(--masthead-ink);
+  background: linear-gradient(168deg, var(--masthead-glow), var(--masthead-bg) 58%);
+  box-shadow: 0 14px 30px rgba(10, 47, 33, 0.16);
 }
 
 .app-header {
   display: block;
 }
 
+.app-header .eyebrow,
+.page-header .eyebrow {
+  color: var(--masthead-accent);
+}
+
 .app-header p:last-child {
   margin: 0;
-  color: var(--muted);
+  color: var(--masthead-muted);
   font-weight: 800;
 }
 
@@ -104,7 +121,7 @@ h2 {
   border-radius: var(--radius-lg);
   color: var(--hero-ink);
   background: var(--hero-fallback);
-  box-shadow: 0 16px 34px rgba(20, 53, 42, 0.22);
+  box-shadow: 0 16px 34px rgba(12, 47, 34, 0.2);
 }
 
 .court-backdrop {
@@ -180,7 +197,7 @@ h2 {
 .state-panel {
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
-  background: rgba(251, 253, 249, 0.94);
+  background: var(--panel);
 }
 
 .stat-card-button {
@@ -255,12 +272,12 @@ h2 {
 }
 
 .stat-card {
-  min-height: 96px;
+  min-height: 86px;
   padding: 14px;
 }
 
 .stat-card p {
-  margin-bottom: 8px;
+  margin-bottom: 5px;
   color: var(--muted);
   font-size: 0.76rem;
   font-weight: 900;
@@ -331,6 +348,7 @@ button.surface-row:focus-visible {
 .surface-row > span {
   color: var(--ink);
   font-weight: 900;
+  white-space: nowrap;
 }
 
 .surface-count {
@@ -351,7 +369,7 @@ button.surface-row:focus-visible {
   height: 8px;
   overflow: hidden;
   border-radius: 999px;
-  background: #e3e8e1;
+  background: var(--line);
 }
 
 .surface-h2h {
@@ -439,7 +457,7 @@ button.surface-row:focus-visible {
 }
 
 .match-card:hover {
-  box-shadow: inset 0 0 0 1px #bcc6ba;
+  box-shadow: inset 0 0 0 1px rgba(12, 47, 34, 0.28);
 }
 
 .match-card:focus-visible {
@@ -494,10 +512,11 @@ button.surface-row:focus-visible {
   white-space: pre-wrap;
 }
 
+/* Quiet placeholder for pre-record-keeping matches — informative, not shouty. */
 .set-line-missing {
+  font-size: 0.82rem;
   font-weight: 700;
-  font-style: italic;
-  opacity: 0.75;
+  opacity: 0.6;
 }
 
 .match-meta,
@@ -511,6 +530,9 @@ button.surface-row:focus-visible {
   margin-top: 6px;
 }
 
+/* Floating layer (Liquid-Glass-style material). Per Apple's guidance, glass is
+   reserved for the controls layer floating above content — the nav bar, the FAB
+   and the modal sheet — never for content itself, and never glass-on-glass. */
 .bottom-nav {
   position: fixed;
   left: 50%;
@@ -522,9 +544,11 @@ button.surface-row:focus-visible {
   grid-template-columns: 1fr 86px 1fr;
   align-items: center;
   padding: 6px 18px calc(6px + env(safe-area-inset-bottom));
-  border-top: 1px solid rgba(16, 35, 29, 0.12);
-  background: rgba(251, 253, 249, 0.93);
-  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--material-edge);
+  background: var(--material-bg);
+  backdrop-filter: blur(var(--material-blur)) saturate(1.7);
+  -webkit-backdrop-filter: blur(var(--material-blur)) saturate(1.7);
+  box-shadow: inset 0 1px 0 var(--material-border);
 }
 
 .nav-item {
@@ -559,7 +583,11 @@ button.surface-row:focus-visible {
   border-radius: 50%;
   color: var(--accent-ink);
   background: var(--accent);
-  box-shadow: 0 10px 22px rgba(16, 35, 29, 0.22);
+  /* Top specular highlight gives the gold button its lensed, glassy read. */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -6px 12px rgba(12, 47, 34, 0.18),
+    0 10px 22px rgba(12, 47, 34, 0.24);
   font-size: 1.9rem;
   font-weight: 900;
   line-height: 1;
@@ -600,8 +628,12 @@ button.surface-row:focus-visible {
   width: min(100%, 496px);
   padding: 18px;
   border-radius: var(--radius-lg);
-  background: var(--panel);
-  box-shadow: 0 24px 80px rgba(16, 35, 29, 0.28);
+  background: var(--material-bg-strong);
+  backdrop-filter: blur(calc(var(--material-blur) + 8px)) saturate(1.5);
+  -webkit-backdrop-filter: blur(calc(var(--material-blur) + 8px)) saturate(1.5);
+  box-shadow:
+    inset 0 1px 0 var(--material-border),
+    0 24px 80px rgba(12, 47, 34, 0.28);
 }
 
 .modal-header {
@@ -724,9 +756,8 @@ button.surface-row:focus-visible {
 }
 
 @media (max-width: 390px) {
-  .app-shell {
-    padding-left: 12px;
-    padding-right: 12px;
+  :root {
+    --shell-pad: 12px;
   }
 
   .hero-score {
@@ -736,5 +767,23 @@ button.surface-row:focus-visible {
 
   .surface-row {
     grid-template-columns: 64px 1fr auto;
+  }
+}
+
+/* Material fallbacks: anyone who asks for less transparency — or a browser
+   without backdrop-filter — gets the solid panel instead of glass. */
+@supports not (backdrop-filter: blur(1px)) {
+  .bottom-nav,
+  .modal-panel {
+    background: var(--panel);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .bottom-nav,
+  .modal-panel {
+    background: var(--panel);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
 }

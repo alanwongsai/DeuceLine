@@ -96,6 +96,13 @@ Validation is pragmatic. Historical tennis data may be imperfect, but obviously 
 - Surface badges use distinct colors.
 - Results are colored by **player identity**, not win/loss: recent form shows the winner's
   `abbr` in their color, and match cards take the winner's stripe color.
+- Match scorelines read from the **winner's perspective** (tennis convention):
+  `formatWinnerScoreline` in `src/domain/deriveStats.ts` produces "Andy won 2—1" with
+  winner-first set lines. Views that lay out Alan-left / Andy-right (the detail set list,
+  the H2H impact line) keep the fixed orientation — names and colours make those explicit.
+- Both page headers are a **masthead**: a deep-green band that bleeds to the shell edges
+  (`--masthead-*` skin tokens), white type, gold eyebrow. The shell gutter it bleeds
+  across is the structural token `--shell-pad` in `global.css`.
 - Overview stat cards: Match record, Set record, Win rate, Current streak.
 - Stat cards and By-surface rows are tappable: each opens a shared detail sheet
   (`StatDetailSheet`) that slices the same derived stats a different way — a stat card
@@ -134,6 +141,22 @@ Corner radius is a separate, non-skin token: a two-tier scale in `global.css` `:
 (`--radius-lg` for big cards/panels/modals, `--radius-md` for buttons/badges/list chrome).
 It lives outside `skins.css` because it is structural consistency, not part of a Grand Slam
 look. Pills (`999px`) and circles (`50%`) are unaffected by the scale.
+
+## Material Layer (Liquid-Glass-style)
+
+Floating chrome uses a translucent blurred material, kept deliberately restrained per
+Apple's Liquid Glass guidance:
+
+- **Glass is only for the floating layer** — the bottom nav, the modal sheet, and the
+  FAB's specular highlight. Content (cards, panels, hero) stays opaque. Never glass on
+  glass.
+- Colour tokens (`--material-bg`, `--material-bg-strong`, `--material-border`,
+  `--material-edge`) live in `skins.css` (they are chrome colour); the blur radius
+  (`--material-blur`) is structural and lives in `global.css` `:root`.
+- Fallbacks: `@supports not (backdrop-filter…)` and `prefers-reduced-transparency`
+  both drop to the solid `--panel` background.
+- This is the seam for a future native app: swapping `.bottom-nav` / `.modal-panel`
+  materials for platform-native ones touches no component code.
 
 ## Testing And Build Expectations
 
