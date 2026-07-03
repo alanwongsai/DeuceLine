@@ -535,11 +535,15 @@ button.surface-row:focus-visible {
    and the modal sheet — never for content itself, and never glass-on-glass. */
 .bottom-nav {
   position: fixed;
-  left: 50%;
+  /* Centered with auto margins, not transform: translateX — a transform on a
+     fixed element makes mobile WebKit/Chrome repaint it late during scroll,
+     so the bar visibly drifted on a real phone. */
+  left: 0;
+  right: 0;
   bottom: 0;
   z-index: 5;
   width: min(100%, 520px);
-  transform: translateX(-50%);
+  margin: 0 auto;
   display: grid;
   grid-template-columns: 1fr 86px 1fr;
   align-items: center;
@@ -622,12 +626,15 @@ button.surface-row:focus-visible {
   padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
   background: rgba(10, 18, 16, 0.46);
   backdrop-filter: blur(8px);
+  /* Keep sheet scrolling from chaining into the page behind it. */
+  overscroll-behavior: contain;
 }
 
 .modal-panel {
   width: min(100%, 496px);
   max-height: calc(100svh - 24px - env(safe-area-inset-bottom));
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 18px;
   border-radius: var(--radius-lg);
   background: var(--material-bg-strong);

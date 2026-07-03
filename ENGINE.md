@@ -130,8 +130,13 @@ Validation is pragmatic. Historical tennis data may be imperfect, but obviously 
   run first). No new raw data is stored for this — only new derived views over the
   existing dataset, consistent with the "derive, don't store" rule above.
 - `src/components/Modal.tsx` is the single shared overlay shell (backdrop, escape-to-close,
-  focus-on-open, body-scroll lock). `MatchDetail` and `StatDetailSheet` both build on it —
-  new modal-style UI should reuse it rather than re-implementing that chrome.
+  focus-on-open, body-scroll lock). `MatchDetail`, `StatDetailSheet` and `AddMatchSheet`
+  all build on it — new modal-style UI should reuse it rather than re-implementing that
+  chrome. The scroll lock pins the body with `position: fixed` + a remembered scroll
+  offset, because mobile WebKit (Safari *and* iPhone Chrome) ignores `overflow: hidden`
+  on body for touch scrolling.
+- Fixed chrome must not be positioned with `transform` (mobile browsers repaint it late
+  during scroll, so it visibly drifts) — `.bottom-nav` centers with auto margins instead.
 - Avoid making everything bright green.
 - Keep cards readable on a phone.
 

@@ -19,12 +19,33 @@ export function Modal({ titleId, eyebrow, title, onClose, children }: ModalProps
     };
     document.addEventListener("keydown", onKeyDown);
 
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    // iOS Safari ignores overflow:hidden on body for touch scrolling, so the
+    // page kept scrolling under open sheets on a real device. Pinning the body
+    // with position:fixed is the lock iOS respects; remember the scroll offset
+    // and restore it on close so the page doesn't jump to the top.
+    const scrollY = window.scrollY;
+    const { style } = document.body;
+    const previous = {
+      position: style.position,
+      top: style.top,
+      left: style.left,
+      right: style.right,
+      width: style.width,
+    };
+    style.position = "fixed";
+    style.top = `-${scrollY}px`;
+    style.left = "0";
+    style.right = "0";
+    style.width = "100%";
 
     return () => {
       document.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = previousOverflow;
+      style.position = previous.position;
+      style.top = previous.top;
+      style.left = previous.left;
+      style.right = previous.right;
+      style.width = previous.width;
+      window.scrollTo(0, scrollY);
     };
   }, [onClose]);
 

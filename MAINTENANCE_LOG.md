@@ -38,6 +38,19 @@
 
 ## Log
 
+### v0.6.2 — 2026-07-03
+- **Fixed chrome drifting / page scrolling under sheets on a real phone** (Alan's
+  device screenshots, mobile Chrome on iPhone — same WebKit engine as Safari).
+  Two causes, both device-only (the preview browser can't reproduce touch scroll):
+  - Mobile WebKit ignores `overflow: hidden` on body, so open sheets didn't lock the
+    page behind them. `Modal` now pins the body with `position: fixed` + a remembered
+    scroll offset, restored exactly on close.
+  - `.bottom-nav` was centred with `transform: translateX(-50%)`; mobile browsers
+    repaint transformed fixed elements late during scroll, making the bar drift.
+    Now centred with `left/right: 0` + auto margins — no transform.
+- `overscroll-behavior: contain` on the sheet and backdrop stops sheet scrolling from
+  chaining into the page.
+
 ### v0.6.1 — 2026-07-03
 - **The add button is real: standardized add-match form** (`AddMatchSheet`, replaces
   the placeholder). Date (defaults today) / surface segmented control (defaults to the
