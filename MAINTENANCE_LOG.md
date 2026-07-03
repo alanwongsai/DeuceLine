@@ -38,6 +38,15 @@
 
 ## Log
 
+### v0.6.3 — 2026-07-03
+- **Modals are now bottom sheets, not floating cards** (Alan: the gap below an open
+  sheet looked unstable, and tall forms crammed the top). `.modal-panel` sits flush to
+  the screen's bottom edge with only the top corners rounded; `env(safe-area-inset-bottom)`
+  became the sheet's own bottom padding (no floating gap, no bottom corners clipping the
+  device corner — retires the v0.5.3 backdrop-padding workaround); `max-height` capped at
+  `100svh - 40px - safe-area-top` so it never crams the status bar and leaves a tappable
+  backdrop strip at the top. Shadow flipped to cast upward.
+
 ### v0.6.2 — 2026-07-03
 - **Fixed chrome drifting / page scrolling under sheets on a real phone** (Alan's
   device screenshots, mobile Chrome on iPhone — same WebKit engine as Safari).

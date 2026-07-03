@@ -135,6 +135,12 @@ Validation is pragmatic. Historical tennis data may be imperfect, but obviously 
   chrome. The scroll lock pins the body with `position: fixed` + a remembered scroll
   offset, because mobile WebKit (Safari *and* iPhone Chrome) ignores `overflow: hidden`
   on body for touch scrolling.
+- `.modal-panel` is a **bottom sheet**: flush to the screen's bottom edge, only the top
+  corners rounded, `env(safe-area-inset-bottom)` folded into its own bottom padding (so
+  there's no floating gap below it and no bottom corners to clip the device's rounded
+  screen corner), and `max-height` capped short of the top so tall forms never cram the
+  status bar. Do not restore a floating-card style with a bottom margin — that gap was
+  the thing Alan flagged as ugly.
 - Fixed chrome must not be positioned with `transform` (mobile browsers repaint it late
   during scroll, so it visibly drifts) — `.bottom-nav` centers with auto margins instead.
 - Avoid making everything bright green.
