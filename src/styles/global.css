@@ -624,20 +624,26 @@ button.surface-row:focus-visible {
   align-items: end;
   justify-items: center;
   /* This padding is the margin the glass floats inside: it detaches the sheet
-     from every screen edge, so the panel never meets a screen seam — that seam
-     against a different-coloured region was the "colour block" a flush sheet
-     could never avoid. Bottom clears the home indicator; top leaves a tappable
-     strip to dismiss. */
+     from every screen edge, so the panel never meets a screen seam. Bottom
+     clears the home indicator; top leaves a tappable strip to dismiss. */
   padding: max(var(--shell-pad), env(safe-area-inset-top)) var(--shell-pad)
     calc(var(--shell-pad) + env(safe-area-inset-bottom));
-  /* A stronger, uniform dim gives the glass one consistent backdrop to sample,
-     so the panel reads as a single even material top-to-bottom — no gradient,
-     no visible colour shift where it used to touch the bottom. */
-  background: rgba(8, 20, 15, 0.58);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  /* A strong, uniform dim + blur swamps the page's own light/dark structure
+     behind it (dark masthead up top, light content below), so the whole
+     backdrop reads as one even field around the floating glass — no lighter
+     band at the bottom to mismatch the top. */
+  background: rgba(8, 20, 15, 0.72);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   /* Keep sheet scrolling from chaining into the page behind it. */
   overscroll-behavior: contain;
+}
+
+/* While any sheet is open the bottom nav is hidden (see Modal.tsx): its own
+   backdrop-filter makes it immune to the dim on iOS, so it would otherwise
+   bleed through as a milky slab under the floating panel. */
+body.modal-open .bottom-nav {
+  display: none;
 }
 
 /* Floating glass sheet (Apple Liquid Glass): detached on all four edges, fully
@@ -654,6 +660,7 @@ button.surface-row:focus-visible {
      overflow-x clips nothing — it just kills the sideways drag. */
   overflow-x: hidden;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   padding: 20px 18px 22px;
   border-radius: var(--radius-lg);
@@ -735,6 +742,26 @@ button.surface-row:focus-visible {
   background: white;
   font: inherit;
   font-weight: 800;
+}
+
+/* iOS Safari's date control ignores the input's own width when sizing its
+   calendar icon — the UA stylesheet gives ::-webkit-calendar-picker-indicator
+   generous default padding/margin that isn't counted against `width: 100%`,
+   so the control silently renders wider than its box and bleeds into (then,
+   post-v0.7.2, gets clipped by) the sheet's edge. Trimming the icon's own
+   padding reclaims that overflow. */
+input[type="date"].text-input::-webkit-calendar-picker-indicator {
+  margin-left: 4px;
+  padding: 4px;
+}
+
+/* The native date control lays out its value + picker inside the box with no
+   way to ellipsize, so at the default 1rem bold the value ("4 Jul 2026") could
+   run into the picker icon and get clipped on narrower iPhones. A slightly
+   smaller, width-adaptive size (vw scales with screen width, never with the
+   browser-chrome-cropped height) keeps it comfortably inside the field. */
+input[type="date"].text-input {
+  font-size: clamp(0.88rem, 3.7vw, 1rem);
 }
 
 .text-input:focus-visible,

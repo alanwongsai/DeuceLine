@@ -38,6 +38,21 @@
 
 ## Log
 
+### v0.7.3 — 2026-07-04
+- **Add-match sheet: killed the milky slab under the floating panel** (Alan: on his iPhone a
+  cream band showed below the sheet, and the dim looked dark up top but light at the bottom —
+  "上下对不齐"). Root cause: the bottom nav is its own `backdrop-filter` glass bar, and on iOS
+  Safari a `backdrop-filter` element is *not* darkened by the dim painted above it, so the
+  white nav bled through under the panel. Fix: `Modal.tsx` now adds `body.modal-open` while any
+  sheet is open and CSS hides `.bottom-nav`, leaving one even dim around the floating glass;
+  bumped the backdrop dim to `0.72` + `blur(12px)` so the page's own light/dark structure no
+  longer shows through top-vs-bottom. Kept the floating rounded glass block (an earlier
+  full-bleed attempt was reverted — not what was wanted).
+- **Date field no longer clips its value on narrow iPhones.** The native date control can't
+  ellipsize, so at 1rem bold "4 Jul 2026" could run into the picker icon; made it width-
+  adaptive with `clamp(0.88rem, 3.7vw, 1rem)` (vw scales with width, never with the
+  chrome-cropped height).
+
 ### v0.7.2 — 2026-07-04
 - **Add-match sheet no longer wobbles sideways** (Alan: the modal content could be dragged
   left/right on his phone — ugly). Root cause: `.modal-panel` set only `overflow-y: auto`,

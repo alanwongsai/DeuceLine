@@ -38,8 +38,16 @@ export function Modal({ titleId, eyebrow, title, onClose, children }: ModalProps
     style.right = "0";
     style.width = "100%";
 
+    // The bottom nav is its own backdrop-filter'd glass bar. On iOS Safari a
+    // backdrop-filter element isn't darkened by the sheet's dim painted above
+    // it, so the white bar bled through under the floating panel as a milky
+    // slab. Hiding it while any sheet is open leaves one even dim around the
+    // glass block.
+    document.body.classList.add("modal-open");
+
     return () => {
       document.removeEventListener("keydown", onKeyDown);
+      document.body.classList.remove("modal-open");
       style.position = previous.position;
       style.top = previous.top;
       style.left = previous.left;
