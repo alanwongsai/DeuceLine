@@ -38,6 +38,16 @@
 
 ## Log
 
+### v0.7.5 — 2026-07-04
+- **Sheet backdrop is frosted glass again, not a solid scrim** (Alan: v0.7.4's near-opaque
+  field felt 割裂 — the sheet should open naturally, just blur what's behind). The backdrop
+  now covers with heavy blur instead of alpha: `blur(28px) saturate(1.3)` under a light
+  `rgba(10,24,18,0.45)` tint. The page's dark-masthead/cream split still reads through, but
+  at this blur it's a soft gradient — the accepted trade for the glass look, distinct from
+  the hard dark-vs-milky band of the 0.72 era. The `html:has(body.modal-open)` safe-area
+  canvas keeps its job but now matches the glass composite over cream (`rgb(138,144,135)`)
+  instead of near-black, so an uncovered iOS fringe blends in rather than flipping dark.
+
 ### v0.7.4 — 2026-07-04
 - **Add-match sheet backdrop is now one even dark field, top to bottom** (Alan: after v0.7.3
   the dim still looked dark up top and milky at the bottom — the three circled spots on his
