@@ -11,7 +11,9 @@ The app should feel like a polished mobile sports notebook, not a generic dashbo
 ## Current V1 Scope
 
 - Single rivalry only.
-- Static GitHub Pages deployment.
+- Static Cloudflare Pages deployment (custom domain `deuceline.meltcado.com`), plus a thin
+  stateless commit-proxy Function for one-tap match publishing. The GitHub Pages workflow is
+  being retired. See ENGINE.md (Data Update Flow) for the write path.
 - Read the shared dataset from `public/data/deuceline-data.json`.
 - Display Overview and Matches pages.
 - The center add button opens the add-match form. The app itself never writes

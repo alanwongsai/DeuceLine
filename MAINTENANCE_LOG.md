@@ -38,6 +38,16 @@
 
 ## Log
 
+### v0.7.1 — 2026-07-04
+- **Hosting moved to Cloudflare Pages; docs synced.** The site now builds/deploys on
+  Cloudflare Pages (which runs the v0.7.0 one-tap publish Function), reachable at the custom
+  domain `deuceline.meltcado.com` (a Cloudflare-managed CNAME → `deuceline.pages.dev`). No
+  code changes were needed — `base: "./"`, the manifest `start_url`/`scope`, and the
+  `/api/add-match` fetch are all relative, so the app runs on any host. Updated README
+  (deploy section, data-update flow, stale limitations), AGENTS.md scope line, and the
+  ENGINE.md hosting-constraints heading to match. The `deploy-pages.yml` GitHub Pages
+  workflow is being retired but is left in place until the custom domain is confirmed live.
+
 ### v0.7.0 — 2026-07-03
 - **One-tap publish for adding a match** (Alan: on his phone, fill → review → one tap →
   saved, without the copy-paste-to-GitHub dance). The review screen now POSTs the new match

@@ -11,7 +11,7 @@ Tagline: **Track the rivalry. Set by set.**
 - Shows match history newest first.
 - Tracks match score down to set-score level when those details are known.
 - Reads data from `public/data/deuceline-data.json`.
-- Runs as a static GitHub Pages-friendly PWA.
+- Runs as a static PWA, deployed on Cloudflare Pages (live at `deuceline.meltcado.com`).
 
 V1 is not a tournament app, coaching analytics app, social network, live scoring app, or multi-player product.
 
@@ -35,7 +35,15 @@ Matches support two fidelity levels so partially-remembered history can still be
 
 ## Update Data
 
-For v1, update matches manually by editing `public/data/deuceline-data.json`.
+The canonical data always lives in `public/data/deuceline-data.json`; every update is a
+commit to that file.
+
+- **In-app (primary):** the center add button opens a form → review → **Submit & publish**,
+  which POSTs the new match to a Cloudflare Pages Function (`functions/api/add-match.ts`)
+  that commits it for you (password-gated, append-only). Pushing to `main` redeploys the site.
+- **Fallback / manual:** edit `public/data/deuceline-data.json` directly and commit. The
+  in-app form also falls back to opening the GitHub web editor if the publish endpoint is
+  unavailable.
 
 Each match should include:
 
@@ -67,18 +75,23 @@ npm run dev
 npm run build
 ```
 
-## Deploy To GitHub Pages
+## Deploy (Cloudflare Pages)
 
-The Vite config uses `base: "./"` so the built app can run under a GitHub Pages project path.
+The site is hosted on **Cloudflare Pages**, built from this repo: build command
+`npm run build`, output directory `dist`. Pushing to `main` triggers a rebuild and deploy,
+and the write path (`functions/api/add-match.ts`) runs as a Cloudflare Pages Function using
+two secrets set in the dashboard: `GITHUB_TOKEN` (a repo-scoped, Contents-only fine-grained
+PAT) and `ADD_MATCH_PASSWORD`. Live at the custom domain `deuceline.meltcado.com`.
 
-This repo includes `.github/workflows/deploy-pages.yml`. Push to `main`, then configure GitHub Pages source to **GitHub Actions** in the repository settings.
+The Vite config uses `base: "./"`, so nothing is hardcoded to a host — the app runs
+correctly on the `*.pages.dev` URL, the custom domain, or a GitHub Pages project path.
 
-Build output is generated in `dist/` during the workflow. Do not commit `dist/`.
+`.github/workflows/deploy-pages.yml` (GitHub Pages) is being retired in favour of Cloudflare
+Pages; only the Cloudflare host runs the one-tap publish Function. Do not commit `dist/`.
 
 ## Current Limitations
 
-- The center add button is a placeholder.
-- Browser edits are intentionally not persisted.
-- No authentication or backend.
-- No cloud sync.
-- No multi-rivalry support yet.
+- Single fixed rivalry; no multi-rivalry support yet.
+- The only backend is a thin, stateless commit-proxy Function — no database, no live sync.
+  The repo JSON stays the single source of truth, and every change is a git commit.
+- Auth is a single shared publish password (Cloudflare Access is a parked upgrade).

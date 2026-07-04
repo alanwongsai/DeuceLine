@@ -14,7 +14,7 @@ The app has three clear layers:
 
 Do not mix domain calculations into React components when they can live in pure functions.
 
-## Static GitHub Pages Constraints
+## Static Hosting Constraints
 
 The read path has no app backend: everyone opening the published link fetches the same repo-hosted JSON, so browser-local writes are never the source of truth. The only server-side piece is a thin, stateless commit-proxy Function (see Data Update Flow) that writes back to that same JSON and stores nothing itself — the repo remains the single source of truth.
 
