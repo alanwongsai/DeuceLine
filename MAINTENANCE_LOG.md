@@ -38,6 +38,14 @@
 
 ## Log
 
+### v0.7.2 — 2026-07-04
+- **Add-match sheet no longer wobbles sideways** (Alan: the modal content could be dragged
+  left/right on his phone — ugly). Root cause: `.modal-panel` set only `overflow-y: auto`,
+  which makes the browser compute `overflow-x` to `auto` too, turning the sheet into a
+  horizontal scroll container that touch rubber-bands. Added `overflow-x: hidden` so it
+  scrolls vertically only. Verified nothing overflows horizontally at 375px and down to
+  320px (default, tiebreak, and tally states), so hiding overflow-x clips nothing.
+
 ### v0.7.1 — 2026-07-04
 - **Hosting moved to Cloudflare Pages; docs synced.** The site now builds/deploys on
   Cloudflare Pages (which runs the v0.7.0 one-tap publish Function), reachable at the custom

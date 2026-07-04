@@ -647,6 +647,12 @@ button.surface-row:focus-visible {
 .modal-panel {
   width: min(100%, 496px);
   max-height: 100%;
+  /* Vertical scroll only. Setting overflow-y:auto alone makes the browser
+     compute overflow-x to `auto` too, turning the sheet into a horizontal
+     scroll container that touch can rubber-band left/right (the "wobble").
+     Nothing ever overflows horizontally (verified down to 320px), so hiding
+     overflow-x clips nothing — it just kills the sideways drag. */
+  overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 20px 18px 22px;
