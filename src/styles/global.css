@@ -625,16 +625,18 @@ button.surface-row:focus-visible {
   justify-items: center;
   /* This padding is the margin the glass floats inside: it detaches the sheet
      from every screen edge, so the panel never meets a screen seam. Bottom
-     clears the home indicator; top leaves a tappable strip to dismiss. */
-  padding: max(var(--shell-pad), env(safe-area-inset-top)) var(--shell-pad)
-    calc(var(--shell-pad) + env(safe-area-inset-bottom));
-  /* A strong, uniform dim + blur swamps the page's own light/dark structure
-     behind it (dark masthead up top, light content below), so the whole
-     backdrop reads as one even field around the floating glass — no lighter
-     band at the bottom to mismatch the top. */
-  background: rgba(8, 20, 15, 0.72);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+     clears the home indicator; top clears the status bar with real breathing
+     room (safe-area alone puts the sheet flush against the clock). */
+  padding: max(var(--shell-pad), calc(env(safe-area-inset-top) + 10px))
+    var(--shell-pad) calc(var(--shell-pad) + env(safe-area-inset-bottom));
+  /* Near-opaque scrim. A translucent dim (tried at 0.72) can never look even:
+     the page behind is dark masthead up top and cream content below, and any
+     alpha lets that split show through as a dark band over a light band
+     ("上下对不齐"). Only an effectively opaque field is uniform top to bottom;
+     the blur softens the last few percent that still leaks. */
+  background: rgba(8, 20, 15, 0.96);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   /* Keep sheet scrolling from chaining into the page behind it. */
   overscroll-behavior: contain;
 }
@@ -644,6 +646,15 @@ button.surface-row:focus-visible {
    bleed through as a milky slab under the floating panel. */
 body.modal-open .bottom-nav {
   display: none;
+}
+
+/* iOS paints the screen's safe-area fringes (behind the home indicator, and
+   any strip a dynamic viewport briefly uncovers) with the ROOT background —
+   normally cream — and a fixed backdrop can't reach there. While a sheet is
+   open, match the root canvas to the scrim so those fringes can't show up as
+   a milky band under the floating panel. */
+html:has(body.modal-open) {
+  background: rgb(10, 22, 17);
 }
 
 /* Floating glass sheet (Apple Liquid Glass): detached on all four edges, fully
@@ -755,13 +766,21 @@ input[type="date"].text-input::-webkit-calendar-picker-indicator {
   padding: 4px;
 }
 
-/* The native date control lays out its value + picker inside the box with no
-   way to ellipsize, so at the default 1rem bold the value ("4 Jul 2026") could
-   run into the picker icon and get clipped on narrower iPhones. A slightly
-   smaller, width-adaptive size (vw scales with screen width, never with the
-   browser-chrome-cropped height) keeps it comfortably inside the field. */
+/* iOS Safari sizes the native date control from its own intrinsic layout and
+   lets it render wider than `width: 100%`, so the field poked out past the
+   sheet's right edge on real iPhones no matter the font size. Stripping the
+   native appearance is the one reliable cure: the control becomes a normal
+   box that obeys its width. The whole field stays tappable and still opens
+   the system date picker; iOS just stops drawing its oversized chrome. */
 input[type="date"].text-input {
-  font-size: clamp(0.88rem, 3.7vw, 1rem);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* With appearance off, iOS still centres the value via this inner pseudo —
+   left-align it so Date lines up with Location and the other text fields. */
+input[type="date"].text-input::-webkit-date-and-time-value {
+  text-align: left;
 }
 
 .text-input:focus-visible,

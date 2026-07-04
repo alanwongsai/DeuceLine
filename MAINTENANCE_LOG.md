@@ -38,6 +38,25 @@
 
 ## Log
 
+### v0.7.4 — 2026-07-04
+- **Add-match sheet backdrop is now one even dark field, top to bottom** (Alan: after v0.7.3
+  the dim still looked dark up top and milky at the bottom — the three circled spots on his
+  screenshot). Real root cause, reproduced in a desktop browser too: any *translucent* dim
+  (v0.7.3 used 0.72 alpha) lets the page's own split — dark masthead above, cream content
+  below — show through, so the backdrop can never look uniform. Fix: near-opaque scrim
+  (`rgba(8,20,15,0.96)` + `blur(16px)`). Also darkened the root canvas via
+  `html:has(body.modal-open)` so iOS safe-area fringes (home-indicator strip) can't paint
+  cream under the sheet, and gave the sheet 10px breathing room below the status bar.
+- **Date field no longer pokes past the sheet's right edge on iPhones.** The v0.7.3 font
+  clamp didn't help because iOS sizes the native date control from its own intrinsic
+  layout, ignoring `width: 100%`. Shipped the real cure: `-webkit-appearance: none` (the
+  field stays tappable and still opens the system picker) with the value left-aligned via
+  `::-webkit-date-and-time-value` to line up with Location. NOTE: this fix was written
+  during the v0.7.3 session but never committed — Alan re-tested live v0.7.3 and correctly
+  reported it unfixed.
+- Dev tooling: `vite.config.ts` now honors a harness-assigned `PORT` in dev (no effect on
+  builds); `.claude/launch.json` gained `autoPort` so previews work when 5173 is busy.
+
 ### v0.7.3 — 2026-07-04
 - **Add-match sheet: killed the milky slab under the floating panel** (Alan: on his iPhone a
   cream band showed below the sheet, and the dim looked dark up top but light at the bottom —
