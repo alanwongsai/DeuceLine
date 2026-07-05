@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { appendMatch, serializeDataset } from "./addMatch";
+import { appendMatch, replaceMatch, serializeDataset } from "./addMatch";
 import { DeucelineDataset } from "./schema";
 import { DatasetValidationError, validateDataset } from "./validateDataset";
 
@@ -92,6 +92,73 @@ describe("appendMatch", () => {
     });
 
     expect(() => validateDataset(next)).toThrow(DatasetValidationError);
+  });
+});
+
+describe("appendMatch — status", () => {
+  it("emits status when unfinished and omits it otherwise", () => {
+    const unfinished = appendMatch(baseDataset(), {
+      surface: "clay",
+      status: "unfinished",
+      fidelity: "sets",
+      sets: [
+        { alan: 6, opponent: 4 },
+        { alan: 3, opponent: 6 },
+      ],
+    });
+    expect(unfinished.matches[1]).toMatchObject({ status: "unfinished" });
+    expect(() => validateDataset(unfinished)).not.toThrow();
+
+    const finished = appendMatch(baseDataset(), {
+      surface: "clay",
+      fidelity: "matchScore",
+      matchScore: { alan: 2, opponent: 0 },
+    });
+    expect(finished.matches[1]).not.toHaveProperty("status");
+  });
+});
+
+describe("replaceMatch", () => {
+  const withUnfinished = (): DeucelineDataset => {
+    const dataset = baseDataset();
+    dataset.matches.push({
+      id: "match-2",
+      seq: 2,
+      surface: "clay",
+      status: "unfinished",
+      fidelity: "sets",
+      sets: [
+        { alan: 6, opponent: 4 },
+        { alan: 3, opponent: 6 },
+      ],
+    });
+    return dataset;
+  };
+
+  it("swaps the body while preserving the original id and seq", () => {
+    const dataset = withUnfinished();
+    const next = replaceMatch(dataset, "match-2", {
+      date: "2026-07-05",
+      surface: "grass",
+      fidelity: "sets",
+      sets: [
+        { alan: 6, opponent: 4 },
+        { alan: 3, opponent: 6 },
+        { alan: 6, opponent: 2 },
+      ],
+    });
+
+    const updated = next.matches[1];
+    expect(updated).toMatchObject({ id: "match-2", seq: 2, surface: "grass" });
+    // Completing it drops the unfinished status, and it now validates as decided.
+    expect(updated).not.toHaveProperty("status");
+    expect(() => validateDataset(next)).not.toThrow();
+    // Original is untouched (immutability).
+    expect(dataset.matches[1]).toMatchObject({ status: "unfinished" });
+  });
+
+  it("throws on an unknown id", () => {
+    expect(() => replaceMatch(baseDataset(), "match-99", { surface: "clay", fidelity: "matchScore", matchScore: { alan: 2, opponent: 0 } })).toThrow();
   });
 });
 

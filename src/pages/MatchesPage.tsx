@@ -4,7 +4,12 @@ import { MatchDetail } from "../components/MatchDetail";
 import { sortMatchesNewestFirst } from "../domain/deriveStats";
 import { DeucelineDataset, Match } from "../domain/schema";
 
-export function MatchesPage({ dataset }: { dataset: DeucelineDataset }) {
+type MatchesPageProps = {
+  dataset: DeucelineDataset;
+  onUpdateMatch?: (match: Match) => void;
+};
+
+export function MatchesPage({ dataset, onUpdateMatch }: MatchesPageProps) {
   const sortedMatches = sortMatchesNewestFirst(dataset.matches);
   const players = dataset.rivalry.players;
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
@@ -29,6 +34,15 @@ export function MatchesPage({ dataset }: { dataset: DeucelineDataset }) {
           players={players}
           matches={dataset.matches}
           onClose={() => setSelectedMatch(null)}
+          onUpdate={
+            onUpdateMatch
+              ? () => {
+                  const target = selectedMatch;
+                  setSelectedMatch(null);
+                  onUpdateMatch(target);
+                }
+              : undefined
+          }
         />
       ) : null}
     </main>

@@ -1,4 +1,11 @@
-import { deriveMatchContext, deriveMatchResult, deriveSetWinner, formatWinnerScoreline } from "../domain/deriveStats";
+import {
+  deriveMatchContext,
+  deriveMatchResult,
+  deriveSetWinner,
+  formatNeutralScoreline,
+  formatWinnerScoreline,
+  isUnfinished,
+} from "../domain/deriveStats";
 import { Match, Player, PlayerKey } from "../domain/schema";
 import { Modal } from "./Modal";
 import { SurfaceBadge } from "./SurfaceBadge";
@@ -8,13 +15,21 @@ type MatchDetailProps = {
   players: Record<PlayerKey, Player>;
   matches: Match[];
   onClose: () => void;
+  // Present when this match can be updated (i.e. it is unfinished) — opens the
+  // edit form to record the final result.
+  onUpdate?: () => void;
 };
 
-export function MatchDetail({ match, players, matches, onClose }: MatchDetailProps) {
+export function MatchDetail({ match, players, matches, onClose, onUpdate }: MatchDetailProps) {
+  if (isUnfinished(match)) {
+    return <UnfinishedDetail match={match} players={players} onClose={onClose} onUpdate={onUpdate} />;
+  }
+
   const result = deriveMatchResult(match);
   const scoreline = formatWinnerScoreline(match);
   const context = deriveMatchContext(matches, match.id);
-  const winner = players[result.winner];
+  // Finished match: winner is always known.
+  const winner = players[result.winner as PlayerKey];
 
   const narrative: string[] = [];
   if (context.snappedStreak) {
@@ -48,26 +63,7 @@ export function MatchDetail({ match, players, matches, onClose }: MatchDetailPro
       </div>
 
       {match.fidelity === "sets" ? (
-        <ol className="detail-sets">
-          {match.sets.map((set, index) => {
-            const setWinner = deriveSetWinner(set);
-            return (
-              <li key={index}>
-                <span className="detail-set-label">Set {index + 1}</span>
-                <span className="detail-set-score">
-                  <b style={{ color: setWinner === "alan" ? players.alan.color : undefined }}>{set.alan}</b>
-                  <i aria-hidden="true">–</i>
-                  <b style={{ color: setWinner === "opponent" ? players.opponent.color : undefined }}>{set.opponent}</b>
-                  {set.tiebreak ? (
-                    <em>
-                      ({set.tiebreak.alan}-{set.tiebreak.opponent})
-                    </em>
-                  ) : null}
-                </span>
-              </li>
-            );
-          })}
-        </ol>
+        <SetList match={match} players={players} />
       ) : (
         <p className="set-line set-line-missing">
           Set scores not recorded · final {scoreline.score}
@@ -97,6 +93,84 @@ export function MatchDetail({ match, players, matches, onClose }: MatchDetailPro
         ))}
       </div>
     </Modal>
+  );
+}
+
+// Detail view for an unfinished match: no winner, no rivalry impact yet, and a
+// call to action to record the final result.
+function UnfinishedDetail({
+  match,
+  players,
+  onClose,
+  onUpdate,
+}: Omit<MatchDetailProps, "matches">) {
+  const neutral = formatNeutralScoreline(match);
+
+  return (
+    <Modal
+      titleId="matchDetailTitle"
+      eyebrow={match.date ? formatDate(match.date) : `Match ${match.seq}`}
+      title={
+        <>
+          In progress · {neutral.alan}—{neutral.opponent}
+        </>
+      }
+      onClose={onClose}
+    >
+      <div className="detail-meta">
+        <span className="status-pill">In progress</span>
+        <SurfaceBadge surface={match.surface} />
+        {match.location ? <span>{match.location}</span> : null}
+      </div>
+
+      {match.fidelity === "sets" ? (
+        <SetList match={match} players={players} />
+      ) : (
+        <p className="set-line set-line-missing">
+          Set scores not recorded · {neutral.alan}—{neutral.opponent} so far
+        </p>
+      )}
+
+      {match.notes ? <p className="match-notes">{match.notes}</p> : null}
+
+      <div className="detail-impact">
+        <p className="eyebrow">Rivalry impact</p>
+        <p className="detail-sub">This match is still in progress — it won't count in the record until it's finished.</p>
+      </div>
+
+      {onUpdate ? (
+        <button className="primary-button" type="button" onClick={onUpdate}>
+          Update result
+        </button>
+      ) : null}
+    </Modal>
+  );
+}
+
+// Per-set list with the set winner's games in their identity colour. For an
+// unfinished match this still reads correctly set by set.
+function SetList({ match, players }: { match: Extract<Match, { fidelity: "sets" }>; players: Record<PlayerKey, Player> }) {
+  return (
+    <ol className="detail-sets">
+      {match.sets.map((set, index) => {
+        const setWinner = deriveSetWinner(set);
+        return (
+          <li key={index}>
+            <span className="detail-set-label">Set {index + 1}</span>
+            <span className="detail-set-score">
+              <b style={{ color: setWinner === "alan" ? players.alan.color : undefined }}>{set.alan}</b>
+              <i aria-hidden="true">–</i>
+              <b style={{ color: setWinner === "opponent" ? players.opponent.color : undefined }}>{set.opponent}</b>
+              {set.tiebreak ? (
+                <em>
+                  ({set.tiebreak.alan}-{set.tiebreak.opponent})
+                </em>
+              ) : null}
+            </span>
+          </li>
+        );
+      })}
+    </ol>
   );
 }
 

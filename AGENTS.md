@@ -16,9 +16,12 @@ The app should feel like a polished mobile sports notebook, not a generic dashbo
   being retired. See ENGINE.md (Data Update Flow) for the write path.
 - Read the shared dataset from `public/data/deuceline-data.json`.
 - Display Overview and Matches pages.
-- The center add button opens the add-match form. The app itself never writes
-  anywhere: the form validates, then copies the updated JSON and hands off to the
-  GitHub web editor for the actual commit (see ENGINE.md, Data Update Flow).
+- The center add button opens the add-match form; an unfinished match can also be
+  completed later via "Update result". The app itself never holds a write token: the
+  form validates, then one-tap publishes through a stateless commit-proxy Function
+  (add / update) that commits on the app's behalf. If that Function is unavailable it
+  falls back to copying the JSON and handing off to the GitHub web editor (see
+  ENGINE.md, Data Update Flow).
 
 Do not overbuild this into a tournament, coaching analytics, social, or live scoring platform.
 
@@ -26,8 +29,10 @@ Do not overbuild this into a tournament, coaching analytics, social, or live sco
 
 - Store only raw match input, never derived values. Each match records its score at one of
   two fidelity levels: `fidelity: "sets"` (per-set scores) or `fidelity: "matchScore"` (set
-  tally only, for partially-remembered matches).
+  tally only, for partially-remembered matches). A match may also carry raw
+  `status: "unfinished"` (absent = finished) for one suspended before a winner was decided.
 - Never store match winner, records, streaks, or surface splits — always derive them.
+  Unfinished matches have no winner and are excluded from every derived stat until completed.
 - Each player carries identity config — `displayName`, `color` (hex), and `abbr` — in the
   dataset. The UI is colored by **player identity** (Alan = terracotta `#b85c3d`, Andy = grass
   `#2d7c46`), not by win/loss. Read those values from the dataset; do not hardcode them in CSS.

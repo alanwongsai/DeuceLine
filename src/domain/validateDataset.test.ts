@@ -150,3 +150,38 @@ describe("validateDataset", () => {
     expect(expectIssues(data).some((i) => i.includes("cannot end with a tied match score"))).toBe(true);
   });
 });
+
+describe("validateDataset — unfinished matches", () => {
+  it("accepts a 1–1 unfinished match (a tied match score is allowed while suspended)", () => {
+    const data = validDataset();
+    const match = data.matches[1] as Record<string, unknown>;
+    match.status = "unfinished";
+    (match as { sets: Array<{ alan: number; opponent: number }> }).sets = [
+      { alan: 6, opponent: 4 },
+      { alan: 3, opponent: 6 },
+    ];
+    expect(() => validateDataset(data)).not.toThrow();
+  });
+
+  it("accepts a tied matchScore tally only when unfinished", () => {
+    const data = validDataset();
+    const match = data.matches[0] as Record<string, unknown>;
+    match.status = "unfinished";
+    (match as { matchScore: { alan: number; opponent: number } }).matchScore = { alan: 1, opponent: 1 };
+    expect(() => validateDataset(data)).not.toThrow();
+  });
+
+  it("still rejects a tied individual set even when unfinished", () => {
+    const data = validDataset();
+    const match = data.matches[1] as Record<string, unknown>;
+    match.status = "unfinished";
+    (match as { sets: Array<{ alan: number; opponent: number }> }).sets = [{ alan: 6, opponent: 6 }];
+    expect(expectIssues(data).some((i) => i.includes("cannot include a tied set"))).toBe(true);
+  });
+
+  it("rejects a status value other than \"unfinished\"", () => {
+    const data = validDataset();
+    (data.matches[0] as Record<string, unknown>).status = "retired";
+    expect(expectIssues(data).some((i) => i.includes('status must be "unfinished"'))).toBe(true);
+  });
+});

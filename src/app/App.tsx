@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { AddMatchSheet } from "../components/AddMatchSheet";
 import { BottomNav } from "../components/BottomNav";
 import { loadDataset } from "../data/loadDataset";
-import { DeucelineDataset } from "../domain/schema";
+import { DeucelineDataset, Match } from "../domain/schema";
 import { DatasetValidationError } from "../domain/validateDataset";
 import { MatchesPage } from "../pages/MatchesPage";
 import { OverviewPage } from "../pages/OverviewPage";
@@ -14,6 +14,9 @@ export function App() {
   const [error, setError] = useState<string | null>(null);
   const [activeView, setActiveView] = useState<ViewKey>("overview");
   const [isAddOpen, setIsAddOpen] = useState(false);
+  // App is the single owner of the edit sheet, so an unfinished match can be
+  // updated from either page without two competing edit-sheet routes.
+  const [editingMatch, setEditingMatch] = useState<Match | null>(null);
 
   useEffect(() => {
     loadDataset()
@@ -30,15 +33,25 @@ export function App() {
   const content = useMemo(() => {
     if (error) return <ErrorState message={error} />;
     if (!dataset) return <LoadingState />;
-    if (activeView === "matches") return <MatchesPage dataset={dataset} />;
-    return <OverviewPage dataset={dataset} />;
+    if (activeView === "matches") return <MatchesPage dataset={dataset} onUpdateMatch={setEditingMatch} />;
+    return <OverviewPage dataset={dataset} onUpdateMatch={setEditingMatch} />;
   }, [activeView, dataset, error]);
 
   return (
     <div className="app-shell">
       {content}
       <BottomNav activeView={activeView} onAdd={() => setIsAddOpen(true)} onChange={setActiveView} />
-      {isAddOpen && dataset ? <AddMatchSheet dataset={dataset} onClose={() => setIsAddOpen(false)} /> : null}
+      {isAddOpen && dataset ? (
+        <AddMatchSheet dataset={dataset} onClose={() => setIsAddOpen(false)} onPublished={setDataset} />
+      ) : null}
+      {editingMatch && dataset ? (
+        <AddMatchSheet
+          dataset={dataset}
+          editMatch={editingMatch}
+          onClose={() => setEditingMatch(null)}
+          onPublished={setDataset}
+        />
+      ) : null}
     </div>
   );
 }

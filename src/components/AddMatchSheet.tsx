@@ -1,14 +1,21 @@
 import { useMemo, useState } from "react";
 import { DATASET_EDIT_URL } from "../data/datasetSource";
-import { appendMatch, NewMatchInput, serializeDataset } from "../domain/addMatch";
-import { deriveOverviewStats, formatWinnerScoreline, sortMatchesNewestFirst } from "../domain/deriveStats";
-import { DeucelineDataset, PlayerKey, SetScore, Surface, SURFACES } from "../domain/schema";
+import { appendMatch, NewMatchInput, replaceMatch, serializeDataset } from "../domain/addMatch";
+import {
+  deriveOverviewStats,
+  formatNeutralScoreline,
+  formatWinnerScoreline,
+  isUnfinished,
+  sortMatchesNewestFirst,
+} from "../domain/deriveStats";
+import { DeucelineDataset, Match, PlayerKey, SetScore, Surface, SURFACES } from "../domain/schema";
 import { DatasetValidationError, validateDataset } from "../domain/validateDataset";
 import { Modal } from "./Modal";
 import { SurfaceBadge } from "./SurfaceBadge";
 
-// The Cloudflare Pages Function that commits the match for us (one-tap publish).
+// The Cloudflare Pages Functions that commit for us (one-tap publish / update).
 const PUBLISH_ENDPOINT = "/api/add-match";
+const UPDATE_ENDPOINT = "/api/update-match";
 // The publish password is stored on this device only — never in the bundle — so
 // a visitor with just the link can't reach the write path. It's a credential,
 // not canonical data, so localStorage is fine here (see AGENTS.md).
@@ -51,6 +58,22 @@ type SetRowState = { alan: string; opponent: string; tbAlan: string; tbOpponent:
 
 const emptySetRow = (): SetRowState => ({ alan: "", opponent: "", tbAlan: "", tbOpponent: "" });
 
+// Seed the set-row fields from an existing match being edited (finished or not).
+const setRowsFromMatch = (match?: Match): SetRowState[] => {
+  if (!match || match.fidelity !== "sets") return [emptySetRow(), emptySetRow()];
+  return match.sets.map((set) => ({
+    alan: String(set.alan),
+    opponent: String(set.opponent),
+    tbAlan: set.tiebreak ? String(set.tiebreak.alan) : "",
+    tbOpponent: set.tiebreak ? String(set.tiebreak.opponent) : "",
+  }));
+};
+
+const tallyFromMatch = (match?: Match): Record<PlayerKey, string> =>
+  match && match.fidelity === "matchScore"
+    ? { alan: String(match.matchScore.alan), opponent: String(match.matchScore.opponent) }
+    : { alan: "", opponent: "" };
+
 // Empty string means "not entered" — Number("") is 0, which would silently
 // invent a score, so map it to NaN and let validateDataset reject it loudly.
 const parseScore = (value: string): number => (value.trim() === "" ? Number.NaN : Number(value));
@@ -67,19 +90,33 @@ function todayIso(): string {
 type AddMatchSheetProps = {
   dataset: DeucelineDataset;
   onClose: () => void;
+  // When set, the sheet edits this existing match (used to complete an
+  // unfinished one) instead of adding a new match.
+  editMatch?: Match;
+  // Called with the fresh dataset the server returns after a successful publish,
+  // so the caller can refresh in-memory state without waiting for a redeploy.
+  onPublished?: (next: DeucelineDataset) => void;
 };
 
-export function AddMatchSheet({ dataset, onClose }: AddMatchSheetProps) {
+export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddMatchSheetProps) {
   const players = dataset.rivalry.players;
+  const isEdit = Boolean(editMatch);
   const lastMatch = useMemo(() => sortMatchesNewestFirst(dataset.matches)[0], [dataset.matches]);
+  // In edit mode seed from the match; otherwise carry the last match's context.
+  const seed = editMatch ?? lastMatch;
 
-  const [date, setDate] = useState(todayIso);
-  const [surface, setSurface] = useState<Surface>(lastMatch?.surface ?? "hard");
-  const [location, setLocation] = useState(lastMatch?.location ?? "");
-  const [fidelity, setFidelity] = useState<"sets" | "matchScore">("sets");
-  const [setRows, setSetRows] = useState<SetRowState[]>([emptySetRow(), emptySetRow()]);
-  const [tally, setTally] = useState<Record<PlayerKey, string>>({ alan: "", opponent: "" });
-  const [notes, setNotes] = useState("");
+  const [date, setDate] = useState(editMatch?.date ?? todayIso);
+  const [surface, setSurface] = useState<Surface>(seed?.surface ?? "hard");
+  const [location, setLocation] = useState(seed?.location ?? "");
+  const [fidelity, setFidelity] = useState<"sets" | "matchScore">(editMatch?.fidelity ?? "sets");
+  // Default to Finished. The only edit entry is "Update result" on an unfinished
+  // match, where the intent is to complete it — defaulting to Unfinished would
+  // silently re-save it as still in progress. The toggle is there if it really is
+  // still suspended.
+  const [status, setStatus] = useState<"finished" | "unfinished">("finished");
+  const [setRows, setSetRows] = useState<SetRowState[]>(() => setRowsFromMatch(editMatch));
+  const [tally, setTally] = useState<Record<PlayerKey, string>>(() => tallyFromMatch(editMatch));
+  const [notes, setNotes] = useState(editMatch?.notes ?? "");
   const [issues, setIssues] = useState<string[] | null>(null);
   const [candidate, setCandidate] = useState<DeucelineDataset | null>(null);
   const [copied, setCopied] = useState(false);
@@ -89,13 +126,16 @@ export function AddMatchSheet({ dataset, onClose }: AddMatchSheetProps) {
   const [needsPassword, setNeedsPassword] = useState(false);
   const [publishState, setPublishState] = useState<"idle" | "publishing" | "done">("idle");
   const [publishError, setPublishError] = useState<string | null>(null);
+  // Whether the committed dataset was successfully applied to local state, so the
+  // "done" message doesn't promise an instant refresh that didn't happen.
+  const [refreshed, setRefreshed] = useState(false);
 
   const updateSetRow = (index: number, patch: Partial<SetRowState>) => {
     setSetRows((rows) => rows.map((row, i) => (i === index ? { ...row, ...patch } : row)));
   };
 
   const buildInput = (): NewMatchInput => {
-    const shared = { date, surface, location, notes };
+    const shared = { date, surface, location, notes, ...(status === "unfinished" ? { status } : {}) } as const;
     if (fidelity === "matchScore") {
       return {
         ...shared,
@@ -118,7 +158,9 @@ export function AddMatchSheet({ dataset, onClose }: AddMatchSheetProps) {
   const onReview = () => {
     try {
       const input = buildInput();
-      setCandidate(validateDataset(appendMatch(dataset, input)));
+      // Edit mode replaces the match in place; add mode appends. Both re-validate.
+      const nextDataset = editMatch ? replaceMatch(dataset, editMatch.id, input) : appendMatch(dataset, input);
+      setCandidate(validateDataset(nextDataset));
       setPendingInput(input);
       setIssues(null);
       setCopied(false);
@@ -143,9 +185,10 @@ export function AddMatchSheet({ dataset, onClose }: AddMatchSheetProps) {
     window.open(DATASET_EDIT_URL, "_blank", "noopener");
   };
 
-  // One-tap publish: send only the new match to the Cloudflare Function, which
-  // re-appends + re-validates server-side and commits. The whole domain flow
-  // (validate → review) already ran; this just replaces the manual hand-off.
+  // One-tap publish: send only the new/updated match to the Cloudflare Function,
+  // which re-appends (or replaces an unfinished match) + re-validates server-side
+  // and commits. The whole domain flow (validate → review) already ran; this just
+  // replaces the manual hand-off.
   const onSubmit = async () => {
     if (!pendingInput) return;
     const key = password.trim();
@@ -157,10 +200,10 @@ export function AddMatchSheet({ dataset, onClose }: AddMatchSheetProps) {
     setPublishState("publishing");
     setPublishError(null);
     try {
-      const response = await fetch(PUBLISH_ENDPOINT, {
+      const response = await fetch(isEdit ? UPDATE_ENDPOINT : PUBLISH_ENDPOINT, {
         method: "POST",
         headers: { "content-type": "application/json", "x-deuceline-key": key },
-        body: JSON.stringify({ match: pendingInput }),
+        body: JSON.stringify(isEdit ? { id: editMatch!.id, match: pendingInput } : { match: pendingInput }),
       });
 
       if (response.status === 401) {
@@ -177,8 +220,24 @@ export function AddMatchSheet({ dataset, onClose }: AddMatchSheetProps) {
         return;
       }
 
+      // Refresh in-memory state from the server's fresh dataset so the UI updates
+      // immediately (no wait for the redeploy). The commit already succeeded, so a
+      // malformed/invalid body must not error the flow (that would risk a
+      // duplicate re-submit) — we just fall back to a "reload to refresh" message.
+      const payload = (await response.json().catch(() => null)) as { dataset?: unknown } | null;
+      let didRefresh = false;
+      if (payload?.dataset && onPublished) {
+        try {
+          onPublished(validateDataset(payload.dataset));
+          didRefresh = true;
+        } catch {
+          didRefresh = false;
+        }
+      }
+
       storePassword(key);
       setNeedsPassword(false);
+      setRefreshed(didRefresh);
       setPublishState("done");
     } catch {
       setPublishState("idle");
@@ -187,30 +246,50 @@ export function AddMatchSheet({ dataset, onClose }: AddMatchSheetProps) {
   };
 
   if (candidate) {
-    const newMatch = candidate.matches[candidate.matches.length - 1];
-    const scoreline = formatWinnerScoreline(newMatch);
+    // In edit mode the replaced match keeps its id; in add mode it's the last one.
+    const newMatch = editMatch
+      ? candidate.matches.find((match) => match.id === editMatch.id)!
+      : candidate.matches[candidate.matches.length - 1];
+    const unfinished = isUnfinished(newMatch);
     const record = deriveOverviewStats(candidate.matches).matchRecord;
+    const neutral = unfinished ? formatNeutralScoreline(newMatch) : null;
+    const scoreline = unfinished ? null : formatWinnerScoreline(newMatch);
 
     return (
-      <Modal titleId="addMatchTitle" eyebrow="Add match · Review" title="Looks right?" onClose={onClose}>
+      <Modal titleId="addMatchTitle" eyebrow={isEdit ? "Update match · Review" : "Add match · Review"} title="Looks right?" onClose={onClose}>
         <div className="review-result">
-          <p className="review-headline">
-            {players[scoreline.winner].displayName} won {scoreline.score}
-          </p>
-          {scoreline.setScores ? <p className="set-line">{scoreline.setScores.join("   ")}</p> : null}
+          {unfinished && neutral ? (
+            <>
+              <p className="review-headline">
+                In progress · {players.alan.displayName} {neutral.alan}—{neutral.opponent} {players.opponent.displayName}
+              </p>
+              {neutral.setScores ? <p className="set-line">{neutral.setScores.join("   ")}</p> : null}
+            </>
+          ) : (
+            <>
+              <p className="review-headline">
+                {players[scoreline!.winner].displayName} won {scoreline!.score}
+              </p>
+              {scoreline!.setScores ? <p className="set-line">{scoreline!.setScores.join("   ")}</p> : null}
+            </>
+          )}
           <p className="review-meta">
             <SurfaceBadge surface={newMatch.surface} />
             {newMatch.location ? <span>{newMatch.location}</span> : null}
             {newMatch.date ? <span>{newMatch.date}</span> : null}
           </p>
           <p className="review-h2h">
-            H2H becomes {record.alan}—{record.opponent}
+            {unfinished ? "H2H unchanged — counts once finished" : `H2H becomes ${record.alan}—${record.opponent}`}
           </p>
         </div>
 
         {publishState === "done" ? (
           <>
-            <p className="review-copied">Published ✓ — the site updates in about a minute.</p>
+            <p className="review-copied">
+              {refreshed
+                ? "Published ✓ — updated here, and live on the site in about a minute."
+                : "Published ✓ — live on the site in about a minute. Reload to see it here."}
+            </p>
             <button className="primary-button" type="button" onClick={onClose}>
               Done
             </button>
@@ -281,7 +360,12 @@ export function AddMatchSheet({ dataset, onClose }: AddMatchSheetProps) {
   }
 
   return (
-    <Modal titleId="addMatchTitle" eyebrow="Add match" title={`Match ${(lastMatch?.seq ?? 0) + 1}`} onClose={onClose}>
+    <Modal
+      titleId="addMatchTitle"
+      eyebrow={isEdit ? "Update match" : "Add match"}
+      title={`Match ${editMatch?.seq ?? (lastMatch?.seq ?? 0) + 1}`}
+      onClose={onClose}
+    >
       <div className="add-form">
         <label className="field">
           <span className="field-label">Date</span>
@@ -339,6 +423,33 @@ export function AddMatchSheet({ dataset, onClose }: AddMatchSheetProps) {
               Sets tally only
             </button>
           </div>
+        </div>
+
+        <div className="field">
+          <span className="field-label">Result</span>
+          <div className="segmented" role="radiogroup" aria-label="Result">
+            <button
+              type="button"
+              role="radio"
+              aria-checked={status === "finished"}
+              className={`segment ${status === "finished" ? "segment-active" : ""}`}
+              onClick={() => setStatus("finished")}
+            >
+              Finished
+            </button>
+            <button
+              type="button"
+              role="radio"
+              aria-checked={status === "unfinished"}
+              className={`segment ${status === "unfinished" ? "segment-active" : ""}`}
+              onClick={() => setStatus("unfinished")}
+            >
+              Unfinished
+            </button>
+          </div>
+          {status === "unfinished" ? (
+            <p className="field-hint">No winner yet — a tied score is allowed. It won't count in stats until you finish it.</p>
+          ) : null}
         </div>
 
         <div className="field">

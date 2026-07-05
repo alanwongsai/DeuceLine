@@ -33,6 +33,10 @@ type MatchBase = {
   surface: Surface;
   location?: string;
   notes?: string;
+  // Raw input, not a derived value: an unfinished match was suspended before a
+  // winner was decided (e.g. 1–1 in sets, more to play). Absent = finished.
+  // Unfinished matches are excluded from every derived stat until completed.
+  status?: "unfinished";
 };
 
 // Highest fidelity: we know the game score of every set.
@@ -61,7 +65,10 @@ export type SetScore = {
 };
 
 export type MatchResult = {
-  winner: PlayerKey;
+  // null when the match is unfinished — there is no winner yet. Every consumer
+  // must handle null rather than silently attributing a win.
+  winner: PlayerKey | null;
+  isUnfinished: boolean;
   matchScore: Record<PlayerKey, number>;
   // Per-set display strings, or null when the match only has a set tally.
   setScores: string[] | null;

@@ -25,7 +25,12 @@ type SheetState = { kind: MetricKind } | { kind: "streak" } | { kind: "surface";
 
 type SurfaceRow = OverviewStats["surfaceSplit"][Surface];
 
-export function OverviewPage({ dataset }: { dataset: DeucelineDataset }) {
+type OverviewPageProps = {
+  dataset: DeucelineDataset;
+  onUpdateMatch?: (match: Match) => void;
+};
+
+export function OverviewPage({ dataset, onUpdateMatch }: OverviewPageProps) {
   const stats = deriveOverviewStats(dataset.matches);
   const players = dataset.rivalry.players;
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
@@ -257,6 +262,15 @@ export function OverviewPage({ dataset }: { dataset: DeucelineDataset }) {
           players={players}
           matches={dataset.matches}
           onClose={() => setSelectedMatch(null)}
+          onUpdate={
+            onUpdateMatch
+              ? () => {
+                  const target = selectedMatch;
+                  setSelectedMatch(null);
+                  onUpdateMatch(target);
+                }
+              : undefined
+          }
         />
       ) : null}
 

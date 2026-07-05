@@ -436,6 +436,23 @@ button.surface-row:focus-visible {
   font-weight: 950;
 }
 
+/* Neutral, outlined pill for a match with no winner yet. Deliberately not a
+   player colour — "in progress" belongs to neither side. */
+.status-pill {
+  display: inline-grid;
+  place-items: center;
+  padding: 3px 9px;
+  border-radius: 999px;
+  color: var(--muted);
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--line);
+  font-size: 0.68rem;
+  font-weight: 950;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
 .match-list {
   display: grid;
   gap: 10px;
@@ -739,6 +756,14 @@ html:has(body.modal-open) {
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+}
+
+/* Inline helper text under a control (e.g. what "Unfinished" means). */
+.field-hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.35;
 }
 
 .text-input,

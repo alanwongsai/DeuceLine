@@ -16,20 +16,8 @@
 //     Contents-only. Every write is a commit, so any bad write is git-revertible.
 
 import { appendMatch, NewMatchInput, serializeDataset } from "../../src/domain/addMatch";
-import { DeucelineDataset } from "../../src/domain/schema";
 import { DatasetValidationError, validateDataset } from "../../src/domain/validateDataset";
-
-interface Env {
-  GITHUB_TOKEN: string;
-  ADD_MATCH_PASSWORD: string;
-}
-
-// The canonical dataset location — mirrors DATASET_EDIT_URL in src/data/datasetSource.ts.
-const OWNER = "alanwongsai";
-const REPO = "DeuceLine";
-const BRANCH = "main";
-const PATH = "public/data/deuceline-data.json";
-const CONTENTS_API = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`;
+import { commitDataset, constantTimeEqual, Env, GitHubOpError, json, readCurrentDataset } from "./_github";
 
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   if (!env.GITHUB_TOKEN || !env.ADD_MATCH_PASSWORD) {
@@ -52,79 +40,31 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     return json({ error: "Expected a JSON body like { match: … }." }, 400);
   }
 
-  // 3. Read the current canonical dataset (content + sha).
-  let current: DeucelineDataset;
-  let sha: string;
   try {
-    const res = await fetch(`${CONTENTS_API}?ref=${BRANCH}`, { headers: githubHeaders(env.GITHUB_TOKEN) });
-    if (!res.ok) return json({ error: `Could not read dataset (${res.status}).` }, 502);
-    const file = (await res.json()) as { content?: string; sha?: string };
-    if (!file.content || !file.sha) return json({ error: "Dataset response was malformed." }, 502);
-    sha = file.sha;
-    current = validateDataset(JSON.parse(decodeBase64(file.content)));
-  } catch {
-    return json({ error: "Current dataset is unreadable." }, 502);
-  }
+    // 3. Read the current canonical dataset (content + sha).
+    const { current, sha } = await readCurrentDataset(env.GITHUB_TOKEN);
 
-  // 4. Append-only: re-append and re-validate server-side. This is the guard that
-  //    makes deletion / history rewrites impossible through this endpoint.
-  let next: DeucelineDataset;
-  try {
-    next = validateDataset(appendMatch(current, input));
+    // 4. Append-only: re-append and re-validate server-side. This is the guard
+    //    that makes deletion / history rewrites impossible through this endpoint.
+    let next;
+    try {
+      next = validateDataset(appendMatch(current, input));
+    } catch (reason) {
+      const issues = reason instanceof DatasetValidationError ? reason.issues : ["Invalid match."];
+      return json({ error: "Match rejected.", issues }, 422);
+    }
+
+    // 5. Commit. Pushing to main triggers the Cloudflare Pages rebuild. Return
+    //    the full next dataset so the client can refresh local state immediately.
+    const newMatch = next.matches[next.matches.length - 1];
+    const message = `Add match ${newMatch.seq}: ${input.surface}${input.date ? ` on ${input.date}` : ""}`;
+    await commitDataset(env.GITHUB_TOKEN, serializeDataset(next), message, sha);
+
+    return json({ ok: true, seq: newMatch.seq, dataset: next }, 200);
   } catch (reason) {
-    const issues = reason instanceof DatasetValidationError ? reason.issues : ["Invalid match."];
-    return json({ error: "Match rejected.", issues }, 422);
+    if (reason instanceof GitHubOpError) {
+      return json({ error: reason.message, ...(reason.detail ? { detail: reason.detail } : {}) }, reason.status);
+    }
+    return json({ error: "Unexpected publish failure." }, 502);
   }
-
-  // 5. Commit. Pushing to main triggers the Cloudflare Pages rebuild.
-  const newMatch = next.matches[next.matches.length - 1];
-  const message = `Add match ${newMatch.seq}: ${input.surface}${input.date ? ` on ${input.date}` : ""}`;
-  const put = await fetch(CONTENTS_API, {
-    method: "PUT",
-    headers: { ...githubHeaders(env.GITHUB_TOKEN), "content-type": "application/json" },
-    body: JSON.stringify({ message, content: encodeBase64(serializeDataset(next)), sha, branch: BRANCH }),
-  });
-  if (!put.ok) {
-    return json({ error: `Commit failed (${put.status}).`, detail: await put.text() }, 502);
-  }
-
-  return json({ ok: true, seq: newMatch.seq, matches: next.matches.length }, 200);
 };
-
-function githubHeaders(token: string): Record<string, string> {
-  return {
-    Authorization: `Bearer ${token}`,
-    Accept: "application/vnd.github+json",
-    // GitHub rejects requests without a User-Agent.
-    "User-Agent": "deuceline-add-match",
-    "X-GitHub-Api-Version": "2022-11-28",
-  };
-}
-
-function json(body: unknown, status: number): Response {
-  return new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
-}
-
-// Reject early on a length mismatch, then compare without short-circuiting so the
-// password check doesn't leak character positions through timing.
-function constantTimeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-  let mismatch = 0;
-  for (let i = 0; i < a.length; i += 1) mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return mismatch === 0;
-}
-
-// GitHub content is base64 (of UTF-8). Encode/decode through byte arrays so
-// non-ASCII (names, notes) survives the round-trip.
-function encodeBase64(text: string): string {
-  const bytes = new TextEncoder().encode(text);
-  let binary = "";
-  for (const byte of bytes) binary += String.fromCharCode(byte);
-  return btoa(binary);
-}
-
-function decodeBase64(base64: string): string {
-  const binary = atob(base64.replace(/\s/g, ""));
-  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
-  return new TextDecoder().decode(bytes);
-}

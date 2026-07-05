@@ -38,6 +38,29 @@
 
 ## Log
 
+### v0.8.0 — 2026-07-05
+- **Record and later complete an unfinished match.** A match can now be saved with no
+  winner yet — the add-match form has a **Result: Finished / Unfinished** toggle, and an
+  unfinished match may carry a tied score (e.g. today's Alan–Andy suspended at 1–1, sets
+  6-4 / 3-6). Stored as raw input `status: "unfinished"` on the match (schema still v2);
+  absent means finished, so every existing match is untouched.
+- **Unfinished matches count toward nothing until finished** — excluded from match
+  record, set record, streaks, deciders, H2H and surface splits (and from Overview's
+  "matches played"). They still appear in the Matches list with a split identity stripe
+  (Alan colour / Andy colour) and an "In progress" tag, since there is no winner to
+  colour by.
+- **One-tap update to finish it.** Match detail on an unfinished match shows **Update
+  result**, which reopens the form pre-filled and **defaults the Result toggle to Finished**
+  (the intent is to complete it — you must consciously keep it unfinished); publishing hits a
+  new `POST /api/update-match` Function that replaces the match by id **only while it is still
+  unfinished** — decided history (original or just-completed) stays immutable, preserving
+  the append-only guarantee for everything with a result.
+- **Publish now refreshes local state.** Both write endpoints return the full updated
+  dataset and the app applies it immediately, so a completed match flips from "In
+  progress" to its final result without waiting for the redeploy. Concurrent-write
+  conflicts (GitHub `409`) surface a "reload and try again" message instead of a false
+  "Published ✓". Shared GitHub plumbing extracted to `functions/api/_github.ts`.
+
 ### v0.7.5 — 2026-07-04
 - **Sheet backdrop is frosted glass again, not a solid scrim** (Alan: v0.7.4's near-opaque
   field felt 割裂 — the sheet should open naturally, just blur what's behind). The backdrop

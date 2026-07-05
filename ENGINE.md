@@ -73,6 +73,21 @@ only the public link can't write or delete:
 - **Least privilege** — the token (`GITHUB_TOKEN`) is a fine-grained PAT scoped to this repo,
   Contents-only; every write is a commit, so any bad write is git-revertible.
 
+A second Function, `functions/api/update-match.ts` (`POST /api/update-match`), completes or
+edits an **unfinished** match. It shares the password gate, least-privilege token, and GitHub
+plumbing (`functions/api/_github.ts`). Its append-only equivalent is a strict precondition:
+
+- The **sole** precondition is that the *currently stored* match at `id` has
+  `status: "unfinished"`. The submitted match may stay unfinished or become finished (drops
+  `status`). Once finished, a later call for the same `id` is rejected — the stored match is
+  no longer unfinished. So only a currently-unfinished match is mutable; all decided history
+  (original or just-completed) is immutable through this endpoint. `replaceMatch`
+  (`src/domain/addMatch.ts`) preserves the match's `id` and `seq`.
+
+Both endpoints return the full updated dataset on success, so the app refreshes in memory
+immediately instead of waiting for the redeploy. A concurrent-write conflict (GitHub `409`,
+stale `sha`) is surfaced as a "reload and try again" message rather than swallowed.
+
 The Function runs on Cloudflare Pages (`wrangler.toml`; secrets set in the Cloudflare
 dashboard, or `.dev.vars` for `wrangler pages dev`). Until hosting moves there,
 `/api/add-match` returns 404 and the app falls back to the original hand-off:
@@ -106,6 +121,14 @@ Per-set scores are the deepest score level in v1. Matches that predate detailed 
 store only a set tally via `fidelity: "matchScore"`. Do not track point-by-point data, winners,
 unforced errors, serve stats, or training data.
 
+A match may also carry `status: "unfinished"` (raw input, orthogonal to `fidelity`): a match
+suspended before a winner was decided. Absent means finished. An unfinished match has **no
+winner** and counts toward nothing derived — it is excluded from match record, set record,
+streaks, deciders, H2H and surface splits until it is completed. `deriveMatchResult` returns
+`winner: null` for it; `deriveMatchContext` refuses one (there is no rivalry impact yet). It
+still appears in the Matches list. Completing it = editing the same match to drop `status`
+(see Data Update Flow).
+
 ## Dataset Validation Strategy
 
 `src/domain/validateDataset.ts` checks:
@@ -117,8 +140,11 @@ unforced errors, serve stats, or training data.
 - optional `date`, but a real `YYYY-MM-DD` when present
 - supported surfaces
 - a valid `fidelity` ("sets" or "matchScore")
-- for "sets": non-empty, non-negative set scores, no tied set, no tied match score
-- for "matchScore": non-negative integers, not tied, at least one set recorded
+- an optional `status`, which must be exactly `"unfinished"` when present
+- for "sets": non-empty, non-negative set scores, no tied set; no tied match score **unless
+  the match is unfinished** (a suspended match may be level, e.g. 1–1)
+- for "matchScore": non-negative integers, at least one set recorded; not tied **unless the
+  match is unfinished**
 
 Validation is pragmatic. Historical tennis data may be imperfect, but obviously broken data should fail loudly.
 

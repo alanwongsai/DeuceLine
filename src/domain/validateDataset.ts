@@ -118,21 +118,29 @@ function validateMatches(matches: unknown[], issues: string[]) {
       issues.push(`${label} notes must be a string.`);
     }
 
+    // status is optional; when present it must be exactly "unfinished".
+    if (match.status !== undefined && match.status !== "unfinished") {
+      issues.push(`${label} status must be "unfinished" when present.`);
+    }
+
     validateFidelity(match, label, issues);
   });
 }
 
 function validateFidelity(match: Record<string, unknown>, label: string, issues: string[]) {
+  // An unfinished match has no winner yet, so the "must be decisive" checks are
+  // relaxed for it (a tied match score is allowed). Bad-data checks still apply.
+  const isUnfinished = match.status === "unfinished";
   if (match.fidelity === "sets") {
-    validateSets(match.sets, label, issues);
+    validateSets(match.sets, label, issues, isUnfinished);
   } else if (match.fidelity === "matchScore") {
-    validateMatchScore(match.matchScore, label, issues);
+    validateMatchScore(match.matchScore, label, issues, isUnfinished);
   } else {
     issues.push(`${label} fidelity must be "sets" or "matchScore".`);
   }
 }
 
-function validateSets(value: unknown, label: string, issues: string[]) {
+function validateSets(value: unknown, label: string, issues: string[], isUnfinished: boolean) {
   if (!Array.isArray(value) || value.length === 0) {
     issues.push(`${label} sets must be a non-empty array.`);
     return;
@@ -145,10 +153,13 @@ function validateSets(value: unknown, label: string, issues: string[]) {
   const typedSets = value.filter(isValidSetShape) as SetScore[];
   if (typedSets.length !== value.length) return;
 
+  // A single tied set is bad data regardless of match status.
   if (typedSets.some((set) => set.alan === set.opponent)) {
     issues.push(`${label} cannot include a tied set.`);
     return;
   }
+
+  if (isUnfinished) return;
 
   const tally = { alan: 0, opponent: 0 };
   typedSets.forEach((set) => {
@@ -159,7 +170,7 @@ function validateSets(value: unknown, label: string, issues: string[]) {
   }
 }
 
-function validateMatchScore(value: unknown, label: string, issues: string[]) {
+function validateMatchScore(value: unknown, label: string, issues: string[], isUnfinished: boolean) {
   if (!isRecord(value)) {
     issues.push(`${label} matchScore must be an object.`);
     return;
@@ -174,7 +185,8 @@ function validateMatchScore(value: unknown, label: string, issues: string[]) {
     return;
   }
 
-  if (alan === opponent) {
+  // A tied tally is only allowed while the match is unfinished.
+  if (!isUnfinished && alan === opponent) {
     issues.push(`${label} matchScore cannot be tied.`);
   }
   if (alan + opponent === 0) {
@@ -214,7 +226,7 @@ function validateKnownKeys(value: Record<string, unknown>, label: string, allowe
 }
 
 function matchKeys(match: Record<string, unknown>): string[] {
-  const baseKeys = ["id", "seq", "date", "surface", "location", "notes", "fidelity"];
+  const baseKeys = ["id", "seq", "date", "surface", "location", "notes", "status", "fidelity"];
   if (match.fidelity === "sets") return [...baseKeys, "sets"];
   if (match.fidelity === "matchScore") return [...baseKeys, "matchScore"];
   return [...baseKeys, "sets", "matchScore"];

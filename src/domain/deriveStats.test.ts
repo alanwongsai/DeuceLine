@@ -5,7 +5,9 @@ import {
   deriveMatchResult,
   deriveOverviewStats,
   formatMatchScore,
+  formatNeutralScoreline,
   formatWinnerScoreline,
+  isUnfinished,
   sortMatchesNewestFirst,
 } from "./deriveStats";
 
@@ -246,5 +248,63 @@ describe("deriveOverviewStats (empty)", () => {
     expect(stats.currentStreak).toEqual({ winner: null, count: 0 });
     expect(stats.matchRecord).toEqual({ alan: 0, opponent: 0 });
     expect(stats.streakHistory).toEqual([]);
+  });
+});
+
+// An in-progress match: full set detail, 1–1, no winner yet.
+const unfinished = (seq: number, surface: Match["surface"]): DetailedMatch => ({
+  id: `u-${seq}`,
+  seq,
+  surface,
+  fidelity: "sets",
+  status: "unfinished",
+  sets: [
+    { alan: 6, opponent: 4 },
+    { alan: 3, opponent: 6 },
+  ],
+});
+
+describe("unfinished matches", () => {
+  it("deriveMatchResult reports no winner and never a decider", () => {
+    const result = deriveMatchResult(unfinished(1, "clay"));
+    expect(result.winner).toBeNull();
+    expect(result.isUnfinished).toBe(true);
+    expect(result.isDecider).toBe(false);
+    // The running tally is still meaningful for display.
+    expect(result.matchScore).toEqual({ alan: 1, opponent: 1 });
+    expect(result.setScores).toEqual(["6-4", "3-6"]);
+  });
+
+  it("isUnfinished flags only status:unfinished matches", () => {
+    expect(isUnfinished(unfinished(1, "clay"))).toBe(true);
+    expect(isUnfinished(score(1, "clay", 2, 0))).toBe(false);
+  });
+
+  it("formatNeutralScoreline reads Alan-left / Andy-right", () => {
+    expect(formatNeutralScoreline(unfinished(1, "clay"))).toEqual({
+      alan: 1,
+      opponent: 1,
+      setScores: ["6-4", "3-6"],
+    });
+  });
+
+  it("formatWinnerScoreline refuses an unfinished match", () => {
+    expect(() => formatWinnerScoreline(unfinished(1, "clay"))).toThrow();
+  });
+
+  it("deriveMatchContext refuses an unfinished match", () => {
+    const matches: Match[] = [score(1, "clay", 2, 0), unfinished(2, "clay")];
+    expect(() => deriveMatchContext(matches, "u-2")).toThrow();
+  });
+
+  it("is excluded from every record, streak and the played total", () => {
+    // One finished match (Alan 2–0) plus one unfinished — only the finished one counts.
+    const stats = deriveOverviewStats([score(1, "clay", 2, 0), unfinished(2, "clay")]);
+    expect(stats.totalMatches).toBe(1);
+    expect(stats.matchRecord).toEqual({ alan: 1, opponent: 0 });
+    expect(stats.setRecord).toEqual({ alan: 2, opponent: 0 });
+    expect(stats.currentStreak).toEqual({ winner: "alan", count: 1 });
+    expect(stats.recentForm).toEqual([{ matchId: "s-1", winner: "alan" }]);
+    expect(stats.surfaceSplit.clay.played).toBe(1);
   });
 });

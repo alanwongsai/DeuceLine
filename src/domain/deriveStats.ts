@@ -14,6 +14,10 @@ export function sortMatchesNewestFirst(matches: Match[]): Match[] {
   return [...matches].sort((a, b) => b.seq - a.seq);
 }
 
+// A match suspended before a winner was decided. Excluded from every derived
+// stat (record, sets, streaks, deciders, H2H, surface split) until completed.
+export const isUnfinished = (match: Match): boolean => match.status === "unfinished";
+
 export function deriveSetWinner(set: SetScore): PlayerKey {
   // Tied sets are rejected by validateDataset, so a strict comparison is safe.
   return set.alan > set.opponent ? "alan" : "opponent";
@@ -36,13 +40,22 @@ function matchScoreFromSets(sets: SetScore[]): Record<PlayerKey, number> {
 export function deriveMatchResult(match: Match): MatchResult {
   const matchScore = match.fidelity === "sets" ? matchScoreFromSets(match.sets) : { ...match.matchScore };
   const totalSets = matchScore.alan + matchScore.opponent;
+  const setScores = match.fidelity === "sets" ? match.sets.map(formatSetScore) : null;
+  const hasSetDetail = match.fidelity === "sets";
+
+  // An unfinished match has no winner yet — the running set tally is still
+  // meaningful for display, but nothing is decided.
+  if (isUnfinished(match)) {
+    return { winner: null, isUnfinished: true, matchScore, setScores, hasSetDetail, isDecider: false };
+  }
 
   return {
-    // Tied match scores are rejected by validateDataset.
+    // Tied match scores are rejected by validateDataset (for finished matches).
     winner: matchScore.alan > matchScore.opponent ? "alan" : "opponent",
+    isUnfinished: false,
     matchScore,
-    setScores: match.fidelity === "sets" ? match.sets.map(formatSetScore) : null,
-    hasSetDetail: match.fidelity === "sets",
+    setScores,
+    hasSetDetail,
     isDecider: totalSets >= 3 && Math.abs(matchScore.alan - matchScore.opponent) === 1,
   };
 }
@@ -62,6 +75,10 @@ export function formatWinnerScoreline(match: Match): {
   setScores: string[] | null;
 } {
   const result = deriveMatchResult(match);
+  if (result.winner === null) {
+    // Fail loud: callers must branch on isUnfinished and use formatNeutralScoreline.
+    throw new Error(`formatWinnerScoreline called on an unfinished match: ${match.id}`);
+  }
   const loser: PlayerKey = result.winner === "alan" ? "opponent" : "alan";
   const setScores =
     match.fidelity !== "sets"
@@ -85,10 +102,36 @@ export function formatWinnerScoreline(match: Match): {
   };
 }
 
+// Fixed Alan-left / Andy-right scoreline for an unfinished match — there is no
+// winner to read from, so orientation is anchored and names/colours make it
+// explicit. Set scores stay in the stored (Alan-first) orientation.
+export function formatNeutralScoreline(match: Match): {
+  alan: number;
+  opponent: number;
+  setScores: string[] | null;
+} {
+  const result = deriveMatchResult(match);
+  return {
+    alan: result.matchScore.alan,
+    opponent: result.matchScore.opponent,
+    setScores: match.fidelity === "sets" ? match.sets.map(formatSetScore) : null,
+  };
+}
+
+// A derived result whose winner is known — unfinished matches are filtered out
+// before this, so every stat below can index by winner without a null check.
+type FinishedEntry = { match: Match; result: MatchResult & { winner: PlayerKey } };
+
 export function deriveOverviewStats(matches: Match[]): OverviewStats {
-  const sortedMatches = sortMatchesNewestFirst(matches);
+  // Unfinished matches count toward nothing until completed: exclude them from
+  // every record, streak, split and the played total. They still show in the
+  // Matches list, which reads dataset.matches directly.
+  const sortedMatches = sortMatchesNewestFirst(matches).filter((match) => !isUnfinished(match));
   // Compute each result once, then fold every stat from it in a single pass.
-  const results = sortedMatches.map((match) => ({ match, result: deriveMatchResult(match) }));
+  const results = sortedMatches.map((match) => ({
+    match,
+    result: deriveMatchResult(match) as MatchResult & { winner: PlayerKey },
+  })) as FinishedEntry[];
 
   const matchRecord = emptyRecord();
   const setRecord = emptyRecord();
@@ -124,7 +167,8 @@ export function deriveOverviewStats(matches: Match[]): OverviewStats {
   ) as OverviewStats["surfaceStreak"];
 
   return {
-    totalMatches: matches.length,
+    // Finished matches only — sortedMatches already excludes unfinished ones.
+    totalMatches: sortedMatches.length,
     detailedMatchCount,
     matchRecord,
     setRecord,
@@ -142,11 +186,19 @@ export function deriveOverviewStats(matches: Match[]): OverviewStats {
 // it belongs to, and whether it snapped the other player's run. Chronological
 // (seq-ascending) so "before"/"after" mean what they say.
 export function deriveMatchContext(matches: Match[], matchId: string): MatchContext {
-  const ordered = [...matches].sort((a, b) => a.seq - b.seq);
-  const index = ordered.findIndex((match) => match.id === matchId);
-  if (index === -1) throw new Error(`Unknown match id: ${matchId}`);
+  const target = matches.find((match) => match.id === matchId);
+  if (!target) throw new Error(`Unknown match id: ${matchId}`);
+  // Domain-level guard (not just a UI convention): an unfinished match has no
+  // winner, so it has no rivalry impact to derive. Refuse rather than leak a null.
+  if (isUnfinished(target)) {
+    throw new Error(`Cannot derive rivalry impact for an unfinished match: ${matchId}`);
+  }
 
-  const winners = ordered.map((match) => deriveMatchResult(match).winner);
+  // Records and "Match N of M" count decided matches only.
+  const ordered = matches.filter((match) => !isUnfinished(match)).sort((a, b) => a.seq - b.seq);
+  const index = ordered.findIndex((match) => match.id === matchId);
+
+  const winners = ordered.map((match) => deriveMatchResult(match).winner as PlayerKey);
   const winner = winners[index];
 
   const recordBefore = emptyRecord();
@@ -177,7 +229,7 @@ export function deriveMatchContext(matches: Match[], matchId: string): MatchCont
 }
 
 // Groups newest-first results into consecutive-winner runs, newest run first.
-function deriveStreakHistory(results: Array<{ result: MatchResult }>): OverviewStats["streakHistory"] {
+function deriveStreakHistory(results: ReadonlyArray<{ result: { winner: PlayerKey } }>): OverviewStats["streakHistory"] {
   const runs: OverviewStats["streakHistory"] = [];
   for (const { result } of results) {
     const lastRun = runs[runs.length - 1];
@@ -190,7 +242,7 @@ function deriveStreakHistory(results: Array<{ result: MatchResult }>): OverviewS
   return runs;
 }
 
-function deriveCurrentStreak(results: Array<{ result: MatchResult }>): OverviewStats["currentStreak"] {
+function deriveCurrentStreak(results: ReadonlyArray<{ result: { winner: PlayerKey } }>): OverviewStats["currentStreak"] {
   if (results.length === 0) return { winner: null, count: 0 };
 
   const winner = results[0].result.winner;

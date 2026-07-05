@@ -121,8 +121,29 @@ Deferred / parked from this phase:
   player's identity colour, and Wimbledon is itself a grass event (theme ↔ surface semantic
   overlap). Revisit when a skin-switcher or surface-colour rework lands.
 
+## Phase 9: Unfinished matches + one-tap update
+
+Support recording a match that was suspended before a winner was decided, and completing it
+later — the first workflow that edits an existing match rather than only appending.
+
+- Raw `status: "unfinished"` on a match (absent = finished); validation allows a tied score
+  only while unfinished. — done
+- Unfinished matches excluded from every derived stat until completed; shown in the Matches
+  list with a split identity stripe + "In progress" tag. — done
+- Add-match form gains a **Result: Finished / Unfinished** toggle. — done
+- **Update result** on an unfinished match reopens the form pre-filled and publishes via a
+  new `POST /api/update-match` Function, which replaces the match by id **only while it is
+  still unfinished** (decided history stays immutable). — done
+- Write endpoints return the full updated dataset so the app refreshes immediately; GitHub
+  `409` conflicts surface a reload prompt. — done
+
+Status: complete. Boundary that stays parked: the update endpoint intentionally cannot edit a
+*finished* match (no general match-editing / deletion in v1) — a mis-entered finished match is
+still corrected via the GitHub-editor hand-off or a manual commit.
+
 ## Future Phases
 
+- General match editing / correction of finished matches (beyond completing an unfinished one).
 - Future Grand Slam skins (Roland-Garros / US Open / Australian Open) + skin-switcher UI.
 - Multi-rivalry support.
 - Import/export as a non-canonical helper.
