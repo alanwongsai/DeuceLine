@@ -1,3 +1,9 @@
+# Retired GitHub Pages deployment workflow.
+#
+# Kept for project history only. GitHub Actions only auto-discovers workflow
+# files under `.github/workflows/`, so this archived copy is inert and will not
+# run on pushes. Cloudflare Pages is the active deployment path.
+
 name: Deploy GitHub Pages
 
 on:

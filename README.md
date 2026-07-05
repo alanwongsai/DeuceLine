@@ -86,8 +86,10 @@ PAT) and `ADD_MATCH_PASSWORD`. Live at the custom domain `deuceline.meltcado.com
 The Vite config uses `base: "./"`, so nothing is hardcoded to a host — the app runs
 correctly on the `*.pages.dev` URL, the custom domain, or a GitHub Pages project path.
 
-`.github/workflows/deploy-pages.yml` (GitHub Pages) is being retired in favour of Cloudflare
-Pages; only the Cloudflare host runs the one-tap publish Function. Do not commit `dist/`.
+The old GitHub Pages workflow is archived at `.github/retired-workflows/deploy-pages.yml` for
+history only. It is outside `.github/workflows/`, so GitHub Actions will not run it on pushes.
+Only Cloudflare Pages deploys the site and runs the one-tap publish/update Functions. Do not
+commit `dist/`.
 
 ## Current Limitations
 

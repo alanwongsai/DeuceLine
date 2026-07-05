@@ -38,6 +38,14 @@
 
 ## Log
 
+### v0.8.1 — 2026-07-05
+- **Retired the old GitHub Pages workflow without deleting its history.** The former
+  `.github/workflows/deploy-pages.yml` now lives at
+  `.github/retired-workflows/deploy-pages.yml`, outside GitHub Actions' auto-discovery path,
+  so pushes to `main` no longer trigger a stale GitHub Pages deploy that can fail after the
+  Cloudflare Pages migration. Docs now state that Cloudflare Pages is the only active deploy
+  target, with the retired workflow kept as an inert archive.
+
 ### v0.8.0 — 2026-07-05
 - **Record and later complete an unfinished match.** A match can now be saved with no
   winner yet — the add-match form has a **Result: Finished / Unfinished** toggle, and an

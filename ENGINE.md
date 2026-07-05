@@ -21,7 +21,7 @@ The read path has no app backend: everyone opening the published link fetches th
 Use this v1 flow:
 
 ```text
-GitHub Pages static page
+Cloudflare Pages static site
   -> fetch public/data/deuceline-data.json
   -> validate dataset
   -> derive stats
@@ -89,10 +89,14 @@ immediately instead of waiting for the redeploy. A concurrent-write conflict (Gi
 stale `sha`) is surfaced as a "reload and try again" message rather than swallowed.
 
 The Function runs on Cloudflare Pages (`wrangler.toml`; secrets set in the Cloudflare
-dashboard, or `.dev.vars` for `wrangler pages dev`). Until hosting moves there,
-`/api/add-match` returns 404 and the app falls back to the original hand-off:
-`serializeDataset` to the clipboard + open `DATASET_EDIT_URL` (`src/data/datasetSource.ts`)
-— paste over the file, commit, Pages redeploys.
+dashboard, or `.dev.vars` for `wrangler pages dev`). If a local/dev host does not provide the
+Function, the app falls back to the original hand-off: `serializeDataset` to the clipboard +
+open `DATASET_EDIT_URL` (`src/data/datasetSource.ts`) — paste over the file, commit, and let
+Cloudflare Pages redeploy from `main`.
+
+The previous GitHub Pages deployment workflow is intentionally retired: the historical YAML is
+kept at `.github/retired-workflows/deploy-pages.yml`, outside `.github/workflows/`, so GitHub
+Actions will not auto-run it on pushes. Cloudflare Pages is the only active deploy target.
 
 Empty numeric fields map to `NaN` (never `0` — `Number("")` is `0`), so a half-filled
 set is rejected loudly by the validator instead of silently scoring a bagel.

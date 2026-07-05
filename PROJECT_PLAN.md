@@ -80,7 +80,7 @@ Status: initial scaffold complete.
 - Real data loaded: 7 Bishop matches (Alan vs Andy).
 - Domain layer covered by Vitest tests (`npm test`).
 - Add-match modal has Escape / focus / scroll handling (still a placeholder for real editing).
-- GitHub Pages deploy workflow is in place.
+- GitHub Pages deploy workflow existed for the scaffold; after the Cloudflare Pages move it is archived under `.github/retired-workflows/`.
 
 ## Phase 7: V-next Visual Refresh
 
