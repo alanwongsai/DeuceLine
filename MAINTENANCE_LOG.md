@@ -39,29 +39,30 @@
 ## Log
 
 ### v0.9.0 — 2026-07-07
-- **Wide-screen adaptation for iPad and desktop.** Below 768px the app is byte-for-byte
-  unchanged (mobile-first preserved); at ≥768px the shell widens to 900px and Overview
-  reflows into two columns (hero + stat grid on the left, Recent form + By surface on the
-  right, masthead spanning the top), with the Matches list going to a 2-column grid. At
-  ≥1128px the shell reaches 1080px and Matches becomes a 3-column grid. The bottom nav
-  stays a centered floating pill at every width — no desktop sidebar.
-- **Two independent columns, not a shared grid.** Overview's sections are wrapped in
-  `overview-main` (hero + stat grid) and `overview-rail` (Recent form + By surface). On
-  phones both wrappers are `display: contents`, so the sections flow as the single column
-  exactly as before — CSS `order` pins the shipped mobile sequence (hero → recent form →
-  stats → by surface) regardless of the column-grouped DOM order. At ≥768px the wrappers
-  become real column stacks, so the shorter rail no longer inherits the hero's height as a
-  mid-column gap; trailing space falls to the bottom.
-- **Modals float centered on wide screens.** `.modal-backdrop` switches from bottom-anchored
-  (`align-items: end`, the phone bottom-sheet affordance) to `align-items: center` at ≥768px;
-  mobile keeps the bottom sheet.
+- **Wide-screen adaptation for iPad and desktop.** Below 768px the phone layout is unchanged
+  (mobile-first preserved); at ≥768px the shell widens to 900px and Overview reflows into two
+  columns, with the Matches list going to a 2-column grid. At ≥1128px the shell reaches 1080px
+  and Matches becomes a 3-column grid. The bottom nav stays a centered floating pill at every
+  width — no desktop sidebar.
+- **Two independent columns that keep mobile reading order.** Overview's sections are wrapped
+  in `overview-main` (hero + Recent form) and `overview-rail` (stat grid + By surface). This
+  pairing is deliberate: the DOM stays in the canonical mobile reading order (hero → recent
+  form → stats → by surface), so on phones — where both wrappers are `display: contents` —
+  source, tab, and visual order all agree with **no CSS `order` reshuffling** (an earlier draft
+  used `order` and was rejected as a screen-reader/keyboard regression). At ≥768px the wrappers
+  become real column stacks; the pairing also balances the two columns' heights, so neither
+  inherits the other's height as a mid-column gap.
+- **Modals float centered on wide screens** (requested by Alan alongside the layout work, so a
+  deliberate extension of the original layout-only plan). `.modal-backdrop` switches from
+  bottom-anchored (`align-items: end`, the phone bottom-sheet affordance) to `align-items:
+  center` at ≥768px; mobile keeps the bottom sheet.
 - **Implementation is CSS-only plus className hooks.** Layers added to `src/styles/global.css`;
   no domain logic, data, or dependencies changed. Overview's two same-classed panels gained
   `panel-form` / `panel-surface` modifiers, the two column wrappers were added, and each
   page's `<main>` gained a `screen-overview` / `screen-matches` class so the breakpoints can
-  target them. Verified in-browser at 375 / 768 / 1280 (mobile order & bottom-sheet
-  unchanged, no horizontal overflow, desktop modal vertically centered); typecheck, 57 tests,
-  and build all pass.
+  target them. Verified in-browser at 375 / 768 / 1280 (mobile DOM = tab = visual order and
+  bottom-sheet unchanged, no horizontal overflow, desktop columns balanced and modal centered);
+  typecheck, 57 tests, and build all pass.
 
 ### v0.8.1 — 2026-07-05
 - **Retired the old GitHub Pages workflow without deleting its history.** The former

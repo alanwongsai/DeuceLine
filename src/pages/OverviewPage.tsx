@@ -147,11 +147,11 @@ export function OverviewPage({ dataset, onUpdateMatch }: OverviewPageProps) {
         <p>{dataset.rivalry.title}</p>
       </header>
 
-      {/* Wide screens split Overview into two columns (see global.css): this
-          wrapper is the left/main stack. On mobile both wrappers are
-          display:contents, so the four sections flow as one column exactly as
-          before; `order` (in CSS) preserves the shipped mobile sequence
-          hero → recent form → stats → by surface regardless of DOM order. */}
+      {/* Wide screens split Overview into two columns (see global.css): left =
+          hero + Recent form, right = stat grid + By surface. DOM order is the
+          canonical mobile reading order (hero → recent form → stats → by
+          surface), so on phones — where both wrappers are display:contents —
+          source, tab, and visual order all agree with no CSS reshuffling. */}
       <div className="overview-main">
         <section className="hero-score" aria-label="Head-to-head score">
           <CourtBackdrop players={players} />
@@ -168,6 +168,32 @@ export function OverviewPage({ dataset, onUpdateMatch }: OverviewPageProps) {
           <span>{stats.totalMatches} matches played</span>
         </section>
 
+        <section className="panel panel-form">
+          <div className="panel-header">
+            <h2>Recent form</h2>
+            <span>Newest first</span>
+          </div>
+          <div className="form-row" aria-label="Recent form newest first">
+            {stats.recentForm.map((item) => {
+              const match = dataset.matches.find((candidate) => candidate.id === item.matchId);
+              return (
+                <button
+                  type="button"
+                  className="form-dot"
+                  key={item.matchId}
+                  style={{ background: players[item.winner].color }}
+                  onClick={() => match && setSelectedMatch(match)}
+                  aria-label={`${playerNames[item.winner]} won — open match detail`}
+                >
+                  {players[item.winner].abbr}
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      </div>
+
+      <div className="overview-rail">
         <section className="stat-grid" aria-label="Rivalry statistics">
           <StatCard
             label="Match record"
@@ -191,32 +217,6 @@ export function OverviewPage({ dataset, onUpdateMatch }: OverviewPageProps) {
             accentColor={streakWinner ? players[streakWinner].color : undefined}
             onClick={hasMatches ? () => setSheet({ kind: "streak" }) : undefined}
           />
-        </section>
-      </div>
-
-      <div className="overview-rail">
-        <section className="panel panel-form">
-          <div className="panel-header">
-            <h2>Recent form</h2>
-            <span>Newest first</span>
-          </div>
-          <div className="form-row" aria-label="Recent form newest first">
-            {stats.recentForm.map((item) => {
-              const match = dataset.matches.find((candidate) => candidate.id === item.matchId);
-              return (
-                <button
-                  type="button"
-                  className="form-dot"
-                  key={item.matchId}
-                  style={{ background: players[item.winner].color }}
-                  onClick={() => match && setSelectedMatch(match)}
-                  aria-label={`${playerNames[item.winner]} won — open match detail`}
-                >
-                  {players[item.winner].abbr}
-                </button>
-              );
-            })}
-          </div>
         </section>
 
         <section className="panel panel-surface">

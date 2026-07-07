@@ -1107,31 +1107,13 @@ input[type="date"].text-input::-webkit-date-and-time-value {
    --------------------------------------------------------------------------- */
 
 /* Overview's two column wrappers (overview-main / overview-rail in
-   OverviewPage.tsx). On phones they're display:contents, so their sections flow
-   directly in the single-column .screen grid exactly as before the split. The
-   `order` values below are the canonical visual sequence — hero → recent form →
-   stats → by surface — pinned independent of DOM order (the DOM groups by
-   column, which differs). At >=768px the wrappers become real column grids and
-   these same orders keep each column's internal order correct. */
+   OverviewPage.tsx). On phones they're display:contents, so their four sections
+   flow directly in the single-column .screen grid in DOM order — which is the
+   canonical mobile reading order (hero → recent form → stats → by surface), so
+   source, tab, and visual order all agree. No CSS `order` reshuffling. */
 .overview-main,
 .overview-rail {
   display: contents;
-}
-
-.screen-overview > .app-header {
-  order: 0;
-}
-.screen-overview .hero-score {
-  order: 1;
-}
-.screen-overview .panel-form {
-  order: 2;
-}
-.screen-overview .stat-grid {
-  order: 3;
-}
-.screen-overview .panel-surface {
-  order: 4;
 }
 
 @media (min-width: 768px) {
@@ -1143,10 +1125,10 @@ input[type="date"].text-input::-webkit-date-and-time-value {
     width: min(100%, 900px);
   }
 
-  /* Two independent columns: main (hero + stat grid) and rail (the two panels),
-     each its own stack so the shorter rail no longer inherits the hero's height
-     as a mid-column gap — trailing space falls to the bottom, magazine-style.
-     The masthead spans the full width on top. */
+  /* Two independent columns: main (hero + Recent form) and rail (stat grid + By
+     surface), each its own stack so neither inherits the other's height as a
+     mid-column gap. This pairing keeps the DOM in mobile reading order AND
+     balances the two columns' heights. The masthead spans the full width. */
   .screen-overview {
     grid-template-columns: 1.15fr 1fr;
     align-items: start;
