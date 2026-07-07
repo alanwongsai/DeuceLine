@@ -45,12 +45,23 @@
   right, masthead spanning the top), with the Matches list going to a 2-column grid. At
   ≥1128px the shell reaches 1080px and Matches becomes a 3-column grid. The bottom nav
   stays a centered floating pill at every width — no desktop sidebar.
-- **Implementation is CSS-only plus className hooks.** Two `min-width` layers were added to
-  `src/styles/global.css`; no domain logic, data, or dependencies changed. Overview's two
-  same-classed panels gained `panel-form` / `panel-surface` modifiers and each page's
-  `<main>` gained a `screen-overview` / `screen-matches` class so the breakpoints can target
-  them. Verified in-browser at 375 / 768 / 1280 (no horizontal overflow, modals unaffected
-  by the grid); typecheck, 57 tests, and build all pass.
+- **Two independent columns, not a shared grid.** Overview's sections are wrapped in
+  `overview-main` (hero + stat grid) and `overview-rail` (Recent form + By surface). On
+  phones both wrappers are `display: contents`, so the sections flow as the single column
+  exactly as before — CSS `order` pins the shipped mobile sequence (hero → recent form →
+  stats → by surface) regardless of the column-grouped DOM order. At ≥768px the wrappers
+  become real column stacks, so the shorter rail no longer inherits the hero's height as a
+  mid-column gap; trailing space falls to the bottom.
+- **Modals float centered on wide screens.** `.modal-backdrop` switches from bottom-anchored
+  (`align-items: end`, the phone bottom-sheet affordance) to `align-items: center` at ≥768px;
+  mobile keeps the bottom sheet.
+- **Implementation is CSS-only plus className hooks.** Layers added to `src/styles/global.css`;
+  no domain logic, data, or dependencies changed. Overview's two same-classed panels gained
+  `panel-form` / `panel-surface` modifiers, the two column wrappers were added, and each
+  page's `<main>` gained a `screen-overview` / `screen-matches` class so the breakpoints can
+  target them. Verified in-browser at 375 / 768 / 1280 (mobile order & bottom-sheet
+  unchanged, no horizontal overflow, desktop modal vertically centered); typecheck, 57 tests,
+  and build all pass.
 
 ### v0.8.1 — 2026-07-05
 - **Retired the old GitHub Pages workflow without deleting its history.** The former

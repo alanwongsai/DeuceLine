@@ -1105,6 +1105,35 @@ input[type="date"].text-input::-webkit-date-and-time-value {
    a centered 520px phone strip. The bottom nav stays a centered floating pill
    at every width (settled decision — no desktop sidebar).
    --------------------------------------------------------------------------- */
+
+/* Overview's two column wrappers (overview-main / overview-rail in
+   OverviewPage.tsx). On phones they're display:contents, so their sections flow
+   directly in the single-column .screen grid exactly as before the split. The
+   `order` values below are the canonical visual sequence — hero → recent form →
+   stats → by surface — pinned independent of DOM order (the DOM groups by
+   column, which differs). At >=768px the wrappers become real column grids and
+   these same orders keep each column's internal order correct. */
+.overview-main,
+.overview-rail {
+  display: contents;
+}
+
+.screen-overview > .app-header {
+  order: 0;
+}
+.screen-overview .hero-score {
+  order: 1;
+}
+.screen-overview .panel-form {
+  order: 2;
+}
+.screen-overview .stat-grid {
+  order: 3;
+}
+.screen-overview .panel-surface {
+  order: 4;
+}
+
 @media (min-width: 768px) {
   :root {
     --shell-pad: 20px;
@@ -1114,43 +1143,41 @@ input[type="date"].text-input::-webkit-date-and-time-value {
     width: min(100%, 900px);
   }
 
-  /* Overview reflows to two columns: the hero + stat grid on the left, the two
-     panels stacked on the right. The masthead spans the full width on top.
-     Explicit grid-template-areas need the panel-form / panel-surface modifier
-     classes added in OverviewPage.tsx — plain .panel can't be told apart. */
+  /* Two independent columns: main (hero + stat grid) and rail (the two panels),
+     each its own stack so the shorter rail no longer inherits the hero's height
+     as a mid-column gap — trailing space falls to the bottom, magazine-style.
+     The masthead spans the full width on top. */
   .screen-overview {
     grid-template-columns: 1.15fr 1fr;
     align-items: start;
     grid-template-areas:
       "header header"
-      "hero   form"
-      "stats  surface";
+      "main   rail";
+  }
+
+  .overview-main,
+  .overview-rail {
+    display: grid;
+    gap: 14px;
+    align-content: start;
   }
 
   .screen-overview > .app-header {
     grid-area: header;
   }
 
-  .screen-overview > .hero-score {
-    grid-area: hero;
+  .screen-overview > .overview-main {
+    grid-area: main;
   }
 
-  .screen-overview > .stat-grid {
-    grid-area: stats;
-  }
-
-  .screen-overview > .panel-form {
-    grid-area: form;
-  }
-
-  .screen-overview > .panel-surface {
-    grid-area: surface;
+  .screen-overview > .overview-rail {
+    grid-area: rail;
   }
 
   /* The MatchDetail / StatDetailSheet modals are later children of the grid but
      render a position:fixed backdrop, so they're out of flow and claim no
-     track. Belt-and-braces: keep any non-area child spanning full width so an
-     accidentally in-flow node can't wedge itself into one column. */
+     track. Belt-and-braces: keep any stray in-flow child spanning full width so
+     it can't wedge itself into one column. */
   .screen-overview > .modal-backdrop {
     grid-column: 1 / -1;
   }
@@ -1158,6 +1185,12 @@ input[type="date"].text-input::-webkit-date-and-time-value {
   /* Matches: the list is already a grid — just give it two columns. */
   .screen-matches .match-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* On a roomy screen the sheet floats centered rather than clinging to the
+     bottom edge (that anchor is a phone affordance). Mobile keeps align:end. */
+  .modal-backdrop {
+    align-items: center;
   }
 }
 

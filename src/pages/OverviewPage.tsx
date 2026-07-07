@@ -147,71 +147,79 @@ export function OverviewPage({ dataset, onUpdateMatch }: OverviewPageProps) {
         <p>{dataset.rivalry.title}</p>
       </header>
 
-      <section className="hero-score" aria-label="Head-to-head score">
-        <CourtBackdrop players={players} />
-        <div className="score-grid">
-          <span className="score-name score-name-left">{playerNames.alan}</span>
-          <span className="score-name score-name-right">{playerNames.opponent}</span>
-          <strong className="score-val score-val-left">{stats.matchRecord.alan}</strong>
-          <span className="score-divider" aria-hidden="true">
-            —
-          </span>
-          <strong className="score-val score-val-right">{stats.matchRecord.opponent}</strong>
-        </div>
-        <p>{leaderText}</p>
-        <span>{stats.totalMatches} matches played</span>
-      </section>
+      {/* Wide screens split Overview into two columns (see global.css): this
+          wrapper is the left/main stack. On mobile both wrappers are
+          display:contents, so the four sections flow as one column exactly as
+          before; `order` (in CSS) preserves the shipped mobile sequence
+          hero → recent form → stats → by surface regardless of DOM order. */}
+      <div className="overview-main">
+        <section className="hero-score" aria-label="Head-to-head score">
+          <CourtBackdrop players={players} />
+          <div className="score-grid">
+            <span className="score-name score-name-left">{playerNames.alan}</span>
+            <span className="score-name score-name-right">{playerNames.opponent}</span>
+            <strong className="score-val score-val-left">{stats.matchRecord.alan}</strong>
+            <span className="score-divider" aria-hidden="true">
+              —
+            </span>
+            <strong className="score-val score-val-right">{stats.matchRecord.opponent}</strong>
+          </div>
+          <p>{leaderText}</p>
+          <span>{stats.totalMatches} matches played</span>
+        </section>
 
-      <section className="panel panel-form">
-        <div className="panel-header">
-          <h2>Recent form</h2>
-          <span>Newest first</span>
-        </div>
-        <div className="form-row" aria-label="Recent form newest first">
-          {stats.recentForm.map((item) => {
-            const match = dataset.matches.find((candidate) => candidate.id === item.matchId);
-            return (
-              <button
-                type="button"
-                className="form-dot"
-                key={item.matchId}
-                style={{ background: players[item.winner].color }}
-                onClick={() => match && setSelectedMatch(match)}
-                aria-label={`${playerNames[item.winner]} won — open match detail`}
-              >
-                {players[item.winner].abbr}
-              </button>
-            );
-          })}
-        </div>
-      </section>
+        <section className="stat-grid" aria-label="Rivalry statistics">
+          <StatCard
+            label="Match record"
+            value={`${stats.matchRecord.alan}—${stats.matchRecord.opponent}`}
+            onClick={hasMatches ? () => setSheet({ kind: "matchRecord" }) : undefined}
+          />
+          <StatCard
+            label="Set record"
+            value={`${stats.setRecord.alan}—${stats.setRecord.opponent}`}
+            onClick={hasMatches ? () => setSheet({ kind: "setRecord" }) : undefined}
+          />
+          <StatCard
+            label="Win rate"
+            value={`${winRate("alan")}% · ${winRate("opponent")}%`}
+            onClick={hasMatches ? () => setSheet({ kind: "winRate" }) : undefined}
+          />
+          <StatCard
+            label="Current streak"
+            value={streakWinner ? String(stats.currentStreak.count) : "—"}
+            detail={streakWinner ? playerNames[streakWinner] : undefined}
+            accentColor={streakWinner ? players[streakWinner].color : undefined}
+            onClick={hasMatches ? () => setSheet({ kind: "streak" }) : undefined}
+          />
+        </section>
+      </div>
 
-      <section className="stat-grid" aria-label="Rivalry statistics">
-        <StatCard
-          label="Match record"
-          value={`${stats.matchRecord.alan}—${stats.matchRecord.opponent}`}
-          onClick={hasMatches ? () => setSheet({ kind: "matchRecord" }) : undefined}
-        />
-        <StatCard
-          label="Set record"
-          value={`${stats.setRecord.alan}—${stats.setRecord.opponent}`}
-          onClick={hasMatches ? () => setSheet({ kind: "setRecord" }) : undefined}
-        />
-        <StatCard
-          label="Win rate"
-          value={`${winRate("alan")}% · ${winRate("opponent")}%`}
-          onClick={hasMatches ? () => setSheet({ kind: "winRate" }) : undefined}
-        />
-        <StatCard
-          label="Current streak"
-          value={streakWinner ? String(stats.currentStreak.count) : "—"}
-          detail={streakWinner ? playerNames[streakWinner] : undefined}
-          accentColor={streakWinner ? players[streakWinner].color : undefined}
-          onClick={hasMatches ? () => setSheet({ kind: "streak" }) : undefined}
-        />
-      </section>
+      <div className="overview-rail">
+        <section className="panel panel-form">
+          <div className="panel-header">
+            <h2>Recent form</h2>
+            <span>Newest first</span>
+          </div>
+          <div className="form-row" aria-label="Recent form newest first">
+            {stats.recentForm.map((item) => {
+              const match = dataset.matches.find((candidate) => candidate.id === item.matchId);
+              return (
+                <button
+                  type="button"
+                  className="form-dot"
+                  key={item.matchId}
+                  style={{ background: players[item.winner].color }}
+                  onClick={() => match && setSelectedMatch(match)}
+                  aria-label={`${playerNames[item.winner]} won — open match detail`}
+                >
+                  {players[item.winner].abbr}
+                </button>
+              );
+            })}
+          </div>
+        </section>
 
-      <section className="panel panel-surface">
+        <section className="panel panel-surface">
         <div className="panel-header">
           <h2>By surface</h2>
           <span className="surface-legend">
@@ -254,7 +262,8 @@ export function OverviewPage({ dataset, onUpdateMatch }: OverviewPageProps) {
             );
           })}
         </div>
-      </section>
+        </section>
+      </div>
 
       {selectedMatch ? (
         <MatchDetail
