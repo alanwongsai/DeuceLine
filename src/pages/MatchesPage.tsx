@@ -15,7 +15,7 @@ export function MatchesPage({ dataset, onUpdateMatch }: MatchesPageProps) {
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
 
   return (
-    <main className="screen">
+    <main className="screen screen-matches">
       <header className="page-header">
         <div>
           <p className="eyebrow">Match History</p>

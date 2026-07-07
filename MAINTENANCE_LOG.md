@@ -38,6 +38,20 @@
 
 ## Log
 
+### v0.9.0 — 2026-07-07
+- **Wide-screen adaptation for iPad and desktop.** Below 768px the app is byte-for-byte
+  unchanged (mobile-first preserved); at ≥768px the shell widens to 900px and Overview
+  reflows into two columns (hero + stat grid on the left, Recent form + By surface on the
+  right, masthead spanning the top), with the Matches list going to a 2-column grid. At
+  ≥1128px the shell reaches 1080px and Matches becomes a 3-column grid. The bottom nav
+  stays a centered floating pill at every width — no desktop sidebar.
+- **Implementation is CSS-only plus className hooks.** Two `min-width` layers were added to
+  `src/styles/global.css`; no domain logic, data, or dependencies changed. Overview's two
+  same-classed panels gained `panel-form` / `panel-surface` modifiers and each page's
+  `<main>` gained a `screen-overview` / `screen-matches` class so the breakpoints can target
+  them. Verified in-browser at 375 / 768 / 1280 (no horizontal overflow, modals unaffected
+  by the grid); typecheck, 57 tests, and build all pass.
+
 ### v0.8.1 — 2026-07-05
 - **Retired the old GitHub Pages workflow without deleting its history.** The former
   `.github/workflows/deploy-pages.yml` now lives at

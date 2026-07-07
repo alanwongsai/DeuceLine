@@ -1096,6 +1096,86 @@ input[type="date"].text-input::-webkit-date-and-time-value {
   }
 }
 
+/* ---------------------------------------------------------------------------
+   Wide-screen adaptation (tablet + desktop).
+
+   Deuceline is mobile-first: below 768px NOTHING here applies, so the phone
+   layout is untouched. These min-width layers only widen the shell and reflow
+   content into columns so an iPad or laptop uses the screen instead of showing
+   a centered 520px phone strip. The bottom nav stays a centered floating pill
+   at every width (settled decision — no desktop sidebar).
+   --------------------------------------------------------------------------- */
+@media (min-width: 768px) {
+  :root {
+    --shell-pad: 20px;
+  }
+
+  .app-shell {
+    width: min(100%, 900px);
+  }
+
+  /* Overview reflows to two columns: the hero + stat grid on the left, the two
+     panels stacked on the right. The masthead spans the full width on top.
+     Explicit grid-template-areas need the panel-form / panel-surface modifier
+     classes added in OverviewPage.tsx — plain .panel can't be told apart. */
+  .screen-overview {
+    grid-template-columns: 1.15fr 1fr;
+    align-items: start;
+    grid-template-areas:
+      "header header"
+      "hero   form"
+      "stats  surface";
+  }
+
+  .screen-overview > .app-header {
+    grid-area: header;
+  }
+
+  .screen-overview > .hero-score {
+    grid-area: hero;
+  }
+
+  .screen-overview > .stat-grid {
+    grid-area: stats;
+  }
+
+  .screen-overview > .panel-form {
+    grid-area: form;
+  }
+
+  .screen-overview > .panel-surface {
+    grid-area: surface;
+  }
+
+  /* The MatchDetail / StatDetailSheet modals are later children of the grid but
+     render a position:fixed backdrop, so they're out of flow and claim no
+     track. Belt-and-braces: keep any non-area child spanning full width so an
+     accidentally in-flow node can't wedge itself into one column. */
+  .screen-overview > .modal-backdrop {
+    grid-column: 1 / -1;
+  }
+
+  /* Matches: the list is already a grid — just give it two columns. */
+  .screen-matches .match-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1128px) {
+  .app-shell {
+    width: min(100%, 1080px);
+  }
+
+  /* A touch more weight to the hero/stats column so the hero doesn't sprawl. */
+  .screen-overview {
+    grid-template-columns: 1.3fr 1fr;
+  }
+
+  .screen-matches .match-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 /* Material fallbacks: anyone who asks for less transparency — or a browser
    without backdrop-filter — gets the solid panel instead of glass. */
 @supports not (backdrop-filter: blur(1px)) {

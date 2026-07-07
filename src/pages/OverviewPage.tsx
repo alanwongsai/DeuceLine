@@ -140,7 +140,7 @@ export function OverviewPage({ dataset, onUpdateMatch }: OverviewPageProps) {
     }));
 
   return (
-    <main className="screen">
+    <main className="screen screen-overview">
       <header className="app-header">
         <p className="eyebrow">Track the rivalry. Set by set.</p>
         <h1>Deuceline</h1>
@@ -162,7 +162,7 @@ export function OverviewPage({ dataset, onUpdateMatch }: OverviewPageProps) {
         <span>{stats.totalMatches} matches played</span>
       </section>
 
-      <section className="panel">
+      <section className="panel panel-form">
         <div className="panel-header">
           <h2>Recent form</h2>
           <span>Newest first</span>
@@ -211,7 +211,7 @@ export function OverviewPage({ dataset, onUpdateMatch }: OverviewPageProps) {
         />
       </section>
 
-      <section className="panel">
+      <section className="panel panel-surface">
         <div className="panel-header">
           <h2>By surface</h2>
           <span className="surface-legend">
