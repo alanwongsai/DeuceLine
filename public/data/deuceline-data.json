@@ -120,9 +120,12 @@
         {
           "alan": 3,
           "opponent": 6
+        },
+        {
+          "alan": 6,
+          "opponent": 4
         }
-      ],
-      "status": "unfinished"
+      ]
     }
   ]
 }
