@@ -92,6 +92,37 @@ export type StreakState = {
   count: number;
 };
 
+// One point on the rivalry timeline — the state of the rivalry *after* a given
+// finished match. Ordered oldest→newest so the lead curve reads left→right.
+// `seq` is the x-axis (always present); `date` is display-only and may be null
+// for early matches recorded before dates were tracked.
+export type TimelinePoint = {
+  seq: number;
+  matchId: string;
+  date: string | null;
+  winner: PlayerKey;
+  // Running head-to-head after this match, and the signed lead (Alan − opponent:
+  // positive = Alan ahead). The curve plots `lead`.
+  cumulative: Record<PlayerKey, number>;
+  lead: number;
+  // Alan's win share over the last up-to-five finished matches ending here (0–1)
+  // — the rolling form trend.
+  rollingWinRateAlan: number;
+};
+
+// Date-derived rhythm of the rivalry. Computed only from finished matches that
+// carry a date; undated early matches are counted separately, never guessed.
+export type Cadence = {
+  datedCount: number;
+  undatedCount: number;
+  lastMatchDate: string | null;
+  daysSinceLast: number | null;
+  playedLast30: number;
+  playedLast90: number;
+  longestGapDays: number | null;
+  longestGap: { fromDate: string; toDate: string } | null;
+};
+
 export type OverviewStats = {
   totalMatches: number;
   detailedMatchCount: number;
@@ -122,5 +153,7 @@ export type OverviewStats = {
   }>;
   // The current win streak within each surface alone (e.g. "on grass, Alan has won the last 2").
   surfaceStreak: Record<Surface, StreakState>;
+  // The rivalry as it built up, oldest→newest: cumulative lead + rolling form.
+  timeline: TimelinePoint[];
   sortedMatches: Match[];
 };

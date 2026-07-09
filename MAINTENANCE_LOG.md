@@ -38,6 +38,18 @@
 
 ## Log
 
+### v0.9.1 — 2026-07-09
+- **Rivalry timeline on Overview — time-dimension analysis from existing data.** A new panel
+  (`RivalryTimeline`) under Recent form adds three views, all derived, no new stored fields:
+  (1) a **cumulative lead curve** — Alan−Andy net matches over the rivalry, dots coloured by
+  the match winner, indexed by `seq` so it reads correctly even when early matches lack a
+  date; (2) a **cadence strip** — days since last (finished) match, plus matches in the last
+  30/90 days, counting only dated finished matches and footnoting the count of undated ones;
+  (3) a **rolling-form sparkline** — Alan's win share over the last five matches. New domain
+  derivations `deriveTimeline` and `deriveCadence` (`deriveCadence` takes an injected `now`);
+  covered by new tests. Charts are inline SVG scaled proportionally (round dots, no
+  distortion), coloured from identity/skin tokens only. typecheck + 63 tests + build pass.
+
 ### v0.9.0 — 2026-07-07
 - **Wide-screen adaptation for iPad and desktop.** Below 768px the phone layout is unchanged
   (mobile-first preserved); at ≥768px the shell widens to 900px and Overview reflows into two

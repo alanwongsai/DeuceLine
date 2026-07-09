@@ -1,4 +1,4 @@
-import { Match, MatchContext, MatchResult, OverviewStats, PlayerKey, SetScore, SURFACES } from "./schema";
+import { Cadence, Match, MatchContext, MatchResult, OverviewStats, PlayerKey, SetScore, SURFACES, TimelinePoint } from "./schema";
 
 const emptyRecord = (): Record<PlayerKey, number> => ({ alan: 0, opponent: 0 });
 
@@ -160,6 +160,8 @@ export function deriveOverviewStats(matches: Match[]): OverviewStats {
     winner: result.winner,
   }));
 
+  const timeline = deriveTimeline(matches);
+
   const currentStreak = deriveCurrentStreak(results);
   const streakHistory = deriveStreakHistory(results);
   const surfaceStreak = Object.fromEntries(
@@ -178,6 +180,7 @@ export function deriveOverviewStats(matches: Match[]): OverviewStats {
     surfaceSplit,
     streakHistory,
     surfaceStreak,
+    timeline,
     sortedMatches,
   };
 }
@@ -252,4 +255,98 @@ function deriveCurrentStreak(results: ReadonlyArray<{ result: { winner: PlayerKe
     count += 1;
   }
   return { winner, count };
+}
+
+// The rivalry built up match by match, oldest→newest. Ordered by seq (always
+// present) so the lead curve reads left→right even when early matches have no
+// date. Unfinished matches contribute nothing until completed.
+export function deriveTimeline(matches: Match[]): TimelinePoint[] {
+  const ordered = matches.filter((match) => !isUnfinished(match)).sort((a, b) => a.seq - b.seq);
+  const cumulative = emptyRecord();
+  const winners: PlayerKey[] = [];
+
+  return ordered.map((match) => {
+    const winner = deriveMatchResult(match).winner as PlayerKey;
+    winners.push(winner);
+    cumulative[winner] += 1;
+    // Rolling form over the last up-to-five finished matches ending here.
+    const window = winners.slice(-5);
+    const alanWins = window.filter((w) => w === "alan").length;
+    return {
+      seq: match.seq,
+      matchId: match.id,
+      date: match.date ?? null,
+      winner,
+      cumulative: { ...cumulative },
+      lead: cumulative.alan - cumulative.opponent,
+      rollingWinRateAlan: alanWins / window.length,
+    };
+  });
+}
+
+const MS_PER_DAY = 86_400_000;
+
+// Parse a `YYYY-MM-DD` string as a *local* calendar day (not UTC), so day-count
+// arithmetic against `now` never drifts by a timezone offset.
+function parseIsoDay(iso: string): Date {
+  const [year, month, day] = iso.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+const startOfDay = (date: Date): Date => new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+// The date-derived rhythm of the rivalry. Only finished matches that carry a
+// date feed the counts and gaps; undated early matches are tallied separately
+// (`undatedCount`) and never assigned a guessed date. `now` is injected so the
+// derivation stays pure and testable.
+export function deriveCadence(matches: Match[], now: Date): Cadence {
+  const finished = matches.filter((match) => !isUnfinished(match));
+  const dated = finished
+    .filter((match) => typeof match.date === "string")
+    .map((match) => ({ date: match.date as string, day: parseIsoDay(match.date as string) }))
+    .sort((a, b) => a.day.getTime() - b.day.getTime());
+  const undatedCount = finished.length - dated.length;
+
+  if (dated.length === 0) {
+    return {
+      datedCount: 0,
+      undatedCount,
+      lastMatchDate: null,
+      daysSinceLast: null,
+      playedLast30: 0,
+      playedLast90: 0,
+      longestGapDays: null,
+      longestGap: null,
+    };
+  }
+
+  const today = startOfDay(now).getTime();
+  const last = dated[dated.length - 1];
+  const daysAgo = (day: Date) => Math.round((today - day.getTime()) / MS_PER_DAY);
+  const within = (days: number) =>
+    dated.filter((entry) => {
+      const ago = daysAgo(entry.day);
+      return ago >= 0 && ago <= days;
+    }).length;
+
+  let longestGapDays: number | null = null;
+  let longestGap: Cadence["longestGap"] = null;
+  for (let i = 1; i < dated.length; i += 1) {
+    const gap = Math.round((dated[i].day.getTime() - dated[i - 1].day.getTime()) / MS_PER_DAY);
+    if (longestGapDays === null || gap > longestGapDays) {
+      longestGapDays = gap;
+      longestGap = { fromDate: dated[i - 1].date, toDate: dated[i].date };
+    }
+  }
+
+  return {
+    datedCount: dated.length,
+    undatedCount,
+    lastMatchDate: last.date,
+    daysSinceLast: daysAgo(last.day),
+    playedLast30: within(30),
+    playedLast90: within(90),
+    longestGapDays,
+    longestGap,
+  };
 }

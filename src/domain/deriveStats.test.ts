@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { DetailedMatch, Match, ScoreMatch } from "./schema";
 import {
+  deriveCadence,
   deriveMatchContext,
   deriveMatchResult,
   deriveOverviewStats,
+  deriveTimeline,
   formatMatchScore,
   formatNeutralScoreline,
   formatWinnerScoreline,
@@ -211,6 +213,62 @@ describe("deriveOverviewStats (full Bishop rivalry)", () => {
       { winner: "alan", count: 3 },
       { winner: "opponent", count: 2 },
     ]);
+  });
+});
+
+describe("deriveTimeline", () => {
+  const timeline = deriveTimeline(bishop);
+
+  it("returns one point per finished match, oldest first", () => {
+    expect(timeline.map((p) => p.seq)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+  });
+
+  it("tracks the cumulative lead as the rivalry swings", () => {
+    expect(timeline.map((p) => p.lead)).toEqual([-1, -2, -1, 0, 1, 0, 1]);
+    expect(timeline[timeline.length - 1].cumulative).toEqual({ alan: 4, opponent: 3 });
+  });
+
+  it("computes Alan's rolling win rate over the last five matches", () => {
+    expect(timeline[0].rollingWinRateAlan).toBeCloseTo(0);
+    expect(timeline[3].rollingWinRateAlan).toBeCloseTo(0.5);
+    expect(timeline[6].rollingWinRateAlan).toBeCloseTo(0.8);
+  });
+
+  it("excludes unfinished matches", () => {
+    const withPending = deriveTimeline([...bishop, unfinished(8, "hard")]);
+    expect(withPending.map((p) => p.seq)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+  });
+});
+
+describe("deriveCadence", () => {
+  const dated = (seq: number, date: string): ScoreMatch => ({ ...score(seq, "hard", 2, 0), date });
+  const now = new Date(2026, 6, 9); // 2026-07-09, local
+
+  it("counts only dated finished matches and tallies undated ones separately", () => {
+    const matches: Match[] = [
+      dated(1, "2026-06-01"),
+      dated(2, "2026-06-20"),
+      dated(3, "2026-07-05"),
+      score(4, "clay", 2, 0), // undated
+      { ...score(5, "hard", 1, 1), status: "unfinished" } as Match, // ignored entirely
+    ];
+    const cadence = deriveCadence(matches, now);
+    expect(cadence.datedCount).toBe(3);
+    expect(cadence.undatedCount).toBe(1);
+    expect(cadence.lastMatchDate).toBe("2026-07-05");
+    expect(cadence.daysSinceLast).toBe(4);
+    expect(cadence.playedLast30).toBe(2);
+    expect(cadence.playedLast90).toBe(3);
+    expect(cadence.longestGapDays).toBe(19);
+    expect(cadence.longestGap).toEqual({ fromDate: "2026-06-01", toDate: "2026-06-20" });
+  });
+
+  it("returns nulls when no finished match carries a date", () => {
+    const cadence = deriveCadence(bishop, now);
+    expect(cadence.datedCount).toBe(0);
+    expect(cadence.undatedCount).toBe(7);
+    expect(cadence.daysSinceLast).toBeNull();
+    expect(cadence.longestGapDays).toBeNull();
   });
 });
 

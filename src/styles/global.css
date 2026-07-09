@@ -397,6 +397,116 @@ button.surface-row:focus-visible {
   border-radius: 50%;
 }
 
+/* Rivalry timeline — the lead curve, cadence strip, and rolling-form sparkline.
+   Charts are inline SVG scaled to the panel width (viewBox + preserveAspectRatio
+   none); colours come from identity/skin tokens, never hardcoded. */
+.panel-timeline {
+  display: grid;
+  gap: 12px;
+}
+
+.timeline-figure {
+  margin: 0;
+}
+
+.timeline-lead {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.timeline-baseline {
+  stroke: var(--line);
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+  vector-effect: non-scaling-stroke;
+}
+
+.timeline-line {
+  stroke: var(--muted);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.timeline-line-form {
+  stroke-width: 2;
+  opacity: 0.85;
+}
+
+.timeline-axis {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.timeline-caption {
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.cadence-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.cadence-cell {
+  display: grid;
+  gap: 2px;
+  padding: 10px;
+  border-radius: var(--radius-md);
+  background: var(--bg);
+  text-align: center;
+}
+
+.cadence-cell strong {
+  color: var(--ink);
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.cadence-cell span {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.cadence-note {
+  margin-top: -4px;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.form-trend {
+  display: grid;
+  gap: 6px;
+}
+
+.form-trend-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.form-trend-head span:last-child {
+  color: var(--muted);
+}
+
+.timeline-form {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
 .surface-badge {
   display: inline-grid;
   place-items: center;

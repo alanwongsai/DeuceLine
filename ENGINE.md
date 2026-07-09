@@ -169,6 +169,13 @@ Validation is pragmatic. Historical tennis data may be imperfect, but obviously 
   (`--masthead-*` skin tokens), white type, gold eyebrow. The shell gutter it bleeds
   across is the structural token `--shell-pad` in `global.css`.
 - Overview stat cards: Match record, Set record, Win rate, Current streak.
+- Overview also carries a **Rivalry timeline** panel (`src/components/RivalryTimeline.tsx`):
+  a cumulative lead curve, a match-cadence strip, and a rolling-form sparkline. The curve
+  is indexed by match order (`seq`, always present) so it reads correctly even when early
+  matches have no `date`; dates only feed the cadence strip. It stores no new raw data —
+  `deriveTimeline` and `deriveCadence` (`src/domain/deriveStats.ts`) derive everything from
+  the existing dataset. `deriveCadence` takes an injected `now` to stay pure/testable, and
+  counts only dated finished matches (undated ones are tallied separately, never guessed).
 - Stat cards and By-surface rows are tappable: each opens a shared detail sheet
   (`StatDetailSheet`) that slices the same derived stats a different way — a stat card
   breaks its metric down by surface, a surface row breaks that surface down by metric,

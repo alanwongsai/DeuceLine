@@ -3,7 +3,8 @@ import { CourtBackdrop } from "../components/CourtBackdrop";
 import { MatchDetail } from "../components/MatchDetail";
 import { DetailRow, StatDetailSheet } from "../components/StatDetailSheet";
 import { StatCard } from "../components/StatCard";
-import { deriveOverviewStats } from "../domain/deriveStats";
+import { RivalryTimeline } from "../components/RivalryTimeline";
+import { deriveCadence, deriveOverviewStats } from "../domain/deriveStats";
 import { DeucelineDataset, Match, OverviewStats, PlayerKey, Surface, SURFACES } from "../domain/schema";
 
 const surfaceLabels: Record<Surface, string> = {
@@ -32,6 +33,7 @@ type OverviewPageProps = {
 
 export function OverviewPage({ dataset, onUpdateMatch }: OverviewPageProps) {
   const stats = deriveOverviewStats(dataset.matches);
+  const cadence = deriveCadence(dataset.matches, new Date());
   const players = dataset.rivalry.players;
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [sheet, setSheet] = useState<SheetState | null>(null);
@@ -191,6 +193,10 @@ export function OverviewPage({ dataset, onUpdateMatch }: OverviewPageProps) {
             })}
           </div>
         </section>
+
+        {hasMatches ? (
+          <RivalryTimeline timeline={stats.timeline} cadence={cadence} players={players} />
+        ) : null}
       </div>
 
       <div className="overview-rail">
