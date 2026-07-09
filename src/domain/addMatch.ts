@@ -1,4 +1,4 @@
-import { DeucelineDataset, Match, PlayerKey, SetScore, Surface } from "./schema";
+import { DeucelineDataset, Match, PlayerKey, SetScore, Surface, WeatherTag } from "./schema";
 
 // Raw form input for one new match. Empty optional fields are omitted from the
 // stored match, matching the hand-written style of the dataset file.
@@ -6,6 +6,11 @@ export type NewMatchInput = {
   date?: string;
   surface: Surface;
   location?: string;
+  // Optional weather context. `conditions` omitted/empty and `tempC` undefined
+  // both mean "not recorded". A NaN tempC is passed through so validateDataset
+  // rejects it loudly rather than silently dropping a mistyped reading.
+  conditions?: WeatherTag[];
+  tempC?: number;
   notes?: string;
   // Present only for a match suspended before a winner was decided; omitted for
   // a normal finished match.
@@ -26,6 +31,8 @@ function buildMatchBody(input: NewMatchInput, identity: { id: string; seq: numbe
     ...(input.date ? { date: input.date } : {}),
     surface: input.surface,
     ...(input.location?.trim() ? { location: input.location.trim() } : {}),
+    ...(input.conditions && input.conditions.length > 0 ? { conditions: input.conditions } : {}),
+    ...(input.tempC !== undefined ? { tempC: input.tempC } : {}),
     fidelity: input.fidelity,
     ...(input.fidelity === "sets" ? { sets: input.sets } : { matchScore: input.matchScore }),
     ...(input.status ? { status: input.status } : {}),

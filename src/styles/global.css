@@ -959,6 +959,76 @@ input[type="date"].text-input::-webkit-date-and-time-value {
   box-shadow: 0 1px 4px rgba(12, 47, 34, 0.14);
 }
 
+/* Weather condition chips — a multi-select toggle group (overlapping tags are
+   valid), and the temperature field with its unit suffix. */
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  min-height: 36px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  background: var(--bg);
+  font-size: 0.85rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.chip:active {
+  transform: scale(0.96);
+}
+
+.chip-active {
+  color: var(--panel);
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.chip:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.temp-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.temp-input .text-input {
+  flex: 0 1 140px;
+}
+
+.temp-unit {
+  color: var(--muted);
+  font-weight: 900;
+}
+
+/* Read-only weather summary shown alongside surface/location in detail and
+   review meta rows. */
+.weather-badges {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.weather-badge {
+  padding: 2px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 0.8rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
 .score-head {
   display: grid;
   grid-template-columns: 72px 1fr 1fr;
@@ -1044,6 +1114,7 @@ input[type="date"].text-input::-webkit-date-and-time-value {
 
 .review-meta {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
   margin: 8px 0 0;
@@ -1110,6 +1181,7 @@ input[type="date"].text-input::-webkit-date-and-time-value {
 
 .detail-meta {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
   margin-bottom: 14px;

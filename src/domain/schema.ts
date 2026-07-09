@@ -2,6 +2,13 @@ export const SURFACES = ["hard", "clay", "grass", "astro"] as const;
 
 export type Surface = (typeof SURFACES)[number];
 
+// Felt weather conditions — a small, editable vocabulary. Recorded as a set of
+// tags (overlapping is fine: hot AND windy), never derived. Extend by adding a
+// tag here and a label in src/components/weather.tsx.
+export const WEATHER_TAGS = ["sunny", "cloudy", "windy", "hot"] as const;
+
+export type WeatherTag = (typeof WEATHER_TAGS)[number];
+
 export type PlayerKey = "alan" | "opponent";
 
 export type DeucelineDataset = {
@@ -32,6 +39,11 @@ type MatchBase = {
   date?: string;
   surface: Surface;
   location?: string;
+  // Raw input, both optional and absent by default (early matches have neither):
+  // felt weather as a set of tags (overlapping allowed), and a rough temperature
+  // in °C glanced off a phone. Never derived.
+  conditions?: WeatherTag[];
+  tempC?: number;
   notes?: string;
   // Raw input, not a derived value: an unfinished match was suspended before a
   // winner was decided (e.g. 1–1 in sets, more to play). Absent = finished.

@@ -77,6 +77,41 @@ describe("validateDataset", () => {
     expect(expectIssues(bad).some((i) => i.includes("date must be YYYY-MM-DD"))).toBe(true);
   });
 
+  it("accepts optional weather: condition tags and a temperature", () => {
+    const data = validDataset();
+    (data.matches[0] as Record<string, unknown>).conditions = ["sunny", "windy"];
+    (data.matches[0] as Record<string, unknown>).tempC = 24;
+    expect(() => validateDataset(data)).not.toThrow();
+  });
+
+  it("rejects an unknown weather tag", () => {
+    const data = validDataset();
+    (data.matches[0] as Record<string, unknown>).conditions = ["sunny", "snowing"];
+    expect(expectIssues(data).some((i) => i.includes("unknown weather tag: snowing"))).toBe(true);
+  });
+
+  it("rejects a duplicate weather tag", () => {
+    const data = validDataset();
+    (data.matches[0] as Record<string, unknown>).conditions = ["hot", "hot"];
+    expect(expectIssues(data).some((i) => i.includes("duplicate weather tag: hot"))).toBe(true);
+  });
+
+  it("rejects conditions that aren't an array", () => {
+    const data = validDataset();
+    (data.matches[0] as Record<string, unknown>).conditions = "sunny";
+    expect(expectIssues(data).some((i) => i.includes("conditions must be an array"))).toBe(true);
+  });
+
+  it("rejects an out-of-range or non-numeric temperature", () => {
+    const hot = validDataset();
+    (hot.matches[0] as Record<string, unknown>).tempC = 120;
+    expect(expectIssues(hot).some((i) => i.includes("tempC must be a number between -30 and 55"))).toBe(true);
+
+    const nan = validDataset();
+    (nan.matches[0] as Record<string, unknown>).tempC = Number.NaN;
+    expect(expectIssues(nan).some((i) => i.includes("tempC must be a number"))).toBe(true);
+  });
+
   it("rejects an unknown fidelity", () => {
     const data = validDataset();
     (data.matches[0] as { fidelity: string }).fidelity = "winner";

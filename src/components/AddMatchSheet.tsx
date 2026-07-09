@@ -8,10 +8,11 @@ import {
   isUnfinished,
   sortMatchesNewestFirst,
 } from "../domain/deriveStats";
-import { DeucelineDataset, Match, PlayerKey, SetScore, Surface, SURFACES } from "../domain/schema";
+import { DeucelineDataset, Match, PlayerKey, SetScore, Surface, SURFACES, WeatherTag, WEATHER_TAGS } from "../domain/schema";
 import { DatasetValidationError, validateDataset } from "../domain/validateDataset";
 import { Modal } from "./Modal";
 import { SurfaceBadge } from "./SurfaceBadge";
+import { WEATHER_LABELS, WeatherBadges } from "./weather";
 
 // The Cloudflare Pages Functions that commit for us (one-tap publish / update).
 const PUBLISH_ENDPOINT = "/api/add-match";
@@ -108,6 +109,10 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
   const [date, setDate] = useState(editMatch?.date ?? todayIso);
   const [surface, setSurface] = useState<Surface>(seed?.surface ?? "hard");
   const [location, setLocation] = useState(seed?.location ?? "");
+  // Weather is per-occasion, so (unlike surface/location) it never carries over
+  // from the last match — only an edited match reseeds its own recorded weather.
+  const [conditions, setConditions] = useState<WeatherTag[]>(editMatch?.conditions ?? []);
+  const [tempC, setTempC] = useState(editMatch?.tempC !== undefined ? String(editMatch.tempC) : "");
   const [fidelity, setFidelity] = useState<"sets" | "matchScore">(editMatch?.fidelity ?? "sets");
   // Default to Finished. The only edit entry is "Update result" on an unfinished
   // match, where the intent is to complete it — defaulting to Unfinished would
@@ -134,8 +139,22 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
     setSetRows((rows) => rows.map((row, i) => (i === index ? { ...row, ...patch } : row)));
   };
 
+  const toggleCondition = (tag: WeatherTag) =>
+    setConditions((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
+
   const buildInput = (): NewMatchInput => {
-    const shared = { date, surface, location, notes, ...(status === "unfinished" ? { status } : {}) } as const;
+    // Blank temp → not recorded; a non-empty but unparseable value becomes NaN so
+    // validateDataset rejects it loudly rather than silently discarding it.
+    const tempValue = tempC.trim() === "" ? undefined : Number(tempC);
+    const shared = {
+      date,
+      surface,
+      location,
+      conditions,
+      ...(tempValue !== undefined ? { tempC: tempValue } : {}),
+      notes,
+      ...(status === "unfinished" ? { status } : {}),
+    } as const;
     if (fidelity === "matchScore") {
       return {
         ...shared,
@@ -277,6 +296,7 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
             <SurfaceBadge surface={newMatch.surface} />
             {newMatch.location ? <span>{newMatch.location}</span> : null}
             {newMatch.date ? <span>{newMatch.date}</span> : null}
+            <WeatherBadges conditions={newMatch.conditions} tempC={newMatch.tempC} />
           </p>
           <p className="review-h2h">
             {unfinished ? "H2H unchanged — counts once finished" : `H2H becomes ${record.alan}—${record.opponent}`}
@@ -399,6 +419,41 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
             placeholder="Bishop"
             onChange={(event) => setLocation(event.target.value)}
           />
+        </label>
+
+        <div className="field">
+          <span className="field-label">Conditions (optional)</span>
+          <div className="chip-row" role="group" aria-label="Weather conditions">
+            {WEATHER_TAGS.map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                aria-pressed={conditions.includes(tag)}
+                className={`chip ${conditions.includes(tag) ? "chip-active" : ""}`}
+                onClick={() => toggleCondition(tag)}
+              >
+                {WEATHER_LABELS[tag]}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <label className="field">
+          <span className="field-label">Temperature (optional)</span>
+          <div className="temp-input">
+            <input
+              className="text-input"
+              type="number"
+              inputMode="numeric"
+              value={tempC}
+              placeholder="e.g. 24"
+              onChange={(event) => setTempC(event.target.value)}
+              aria-label="Temperature in degrees Celsius"
+            />
+            <span className="temp-unit" aria-hidden="true">
+              °C
+            </span>
+          </div>
         </label>
 
         <div className="field">

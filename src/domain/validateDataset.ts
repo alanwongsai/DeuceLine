@@ -1,4 +1,4 @@
-import { DeucelineDataset, PlayerKey, SetScore, SURFACES } from "./schema";
+import { DeucelineDataset, PlayerKey, SetScore, SURFACES, WEATHER_TAGS } from "./schema";
 import { deriveSetWinner } from "./deriveStats";
 
 export class DatasetValidationError extends Error {
@@ -118,12 +118,37 @@ function validateMatches(matches: unknown[], issues: string[]) {
       issues.push(`${label} notes must be a string.`);
     }
 
+    validateConditions(match.conditions, label, issues);
+
+    // tempC is optional; a rough phone reading, so a wide sane range, no decimals rule.
+    if (match.tempC !== undefined && (typeof match.tempC !== "number" || !Number.isFinite(match.tempC) || match.tempC < -30 || match.tempC > 55)) {
+      issues.push(`${label} tempC must be a number between -30 and 55 when present.`);
+    }
+
     // status is optional; when present it must be exactly "unfinished".
     if (match.status !== undefined && match.status !== "unfinished") {
       issues.push(`${label} status must be "unfinished" when present.`);
     }
 
     validateFidelity(match, label, issues);
+  });
+}
+
+function validateConditions(value: unknown, label: string, issues: string[]) {
+  if (value === undefined) return;
+  if (!Array.isArray(value)) {
+    issues.push(`${label} conditions must be an array when present.`);
+    return;
+  }
+  const seen = new Set<unknown>();
+  value.forEach((tag) => {
+    if (typeof tag !== "string" || !WEATHER_TAGS.includes(tag as never)) {
+      issues.push(`${label} conditions has unknown weather tag: ${String(tag)}.`);
+    } else if (seen.has(tag)) {
+      issues.push(`${label} conditions has a duplicate weather tag: ${tag}.`);
+    } else {
+      seen.add(tag);
+    }
   });
 }
 
@@ -226,7 +251,7 @@ function validateKnownKeys(value: Record<string, unknown>, label: string, allowe
 }
 
 function matchKeys(match: Record<string, unknown>): string[] {
-  const baseKeys = ["id", "seq", "date", "surface", "location", "notes", "status", "fidelity"];
+  const baseKeys = ["id", "seq", "date", "surface", "location", "conditions", "tempC", "notes", "status", "fidelity"];
   if (match.fidelity === "sets") return [...baseKeys, "sets"];
   if (match.fidelity === "matchScore") return [...baseKeys, "matchScore"];
   return [...baseKeys, "sets", "matchScore"];

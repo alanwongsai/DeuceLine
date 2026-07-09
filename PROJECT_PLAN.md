@@ -141,6 +141,26 @@ Status: complete. Boundary that stays parked: the update endpoint intentionally 
 *finished* match (no general match-editing / deletion in v1) — a mis-entered finished match is
 still corrected via the GitHub-editor hand-off or a manual commit.
 
+## Phase 10: Time & weather dimensions
+
+Add analytical depth from time and weather without overbuilding into coaching analytics —
+still deriving from raw match input, only one small new stored field.
+
+- **Rivalry timeline** on Overview (v0.9.1): cumulative lead curve (indexed by `seq` so it
+  reads correctly when early matches lack a date), match cadence (days since last, last
+  30/90 days — dated finished matches only), and a rolling last-5 form sparkline. Pure
+  derivation, no new stored data. — done
+- **Weather capture** (v0.9.2): optional raw `conditions` tags + `tempC` per match, entered
+  manually (no weather API). Shown in the add-match form, review, and match detail. — done
+
+Deferred / parked from this phase:
+- **"By weather" analytical breakdown** (win rate / record per condition tag, like the
+  surface split). Intentionally deferred until matches actually carry weather — the split is
+  empty and its overlapping-tag UI is best designed against real data. Trigger: once a
+  handful of matches have `conditions` recorded.
+- **Backfilling dates on the six undated early matches** stays optional; the timeline/cadence
+  tolerate missing dates by design (undated finished matches are counted but off the time axis).
+
 ## Future Phases
 
 - General match editing / correction of finished matches (beyond completing an unfinished one).

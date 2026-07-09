@@ -38,6 +38,20 @@
 
 ## Log
 
+### v0.9.2 — 2026-07-09
+- **Optional weather per match — manual capture, no API.** Matches can now carry two new
+  optional raw fields: `conditions` (a multi-select of felt-condition tags — ☀️ sunny /
+  ⛅ cloudy / 💨 windy / 🥵 hot, overlapping allowed) and `tempC` (a rough °C reading glanced
+  off a phone). Both are absent by default, so old matches need no backfill (same pattern as
+  `date`). The add-match form gains a chip group + a temperature field (weather does **not**
+  carry over from the last match — it's per-occasion); weather shows in the review summary and
+  in match detail. Vocabulary lives in `WEATHER_TAGS` (`schema.ts`) + labels in
+  `src/components/weather.tsx` — extend by adding one tag + one label. Validation (shared by
+  the publish Function) rejects unknown/duplicate tags and out-of-range temperatures; a
+  mistyped temp fails loudly rather than being silently dropped. New tests; typecheck (app +
+  functions) + 71 tests + build pass, verified end-to-end in the browser. The "By weather"
+  analytical split is intentionally deferred until matches carry weather (see PROJECT_PLAN.md).
+
 ### v0.9.1 — 2026-07-09
 - **Rivalry timeline on Overview — time-dimension analysis from existing data.** A new panel
   (`RivalryTimeline`) under Recent form adds three views, all derived, no new stored fields:

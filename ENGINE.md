@@ -125,6 +125,14 @@ Per-set scores are the deepest score level in v1. Matches that predate detailed 
 store only a set tally via `fidelity: "matchScore"`. Do not track point-by-point data, winners,
 unforced errors, serve stats, or training data.
 
+A match may also carry optional **weather** as raw input: `conditions` (a set of felt-condition
+tags from `WEATHER_TAGS` in `schema.ts` — `sunny`/`cloudy`/`windy`/`hot`, overlapping allowed)
+and `tempC` (a rough temperature in °C). Both are absent by default (early matches have neither),
+recorded manually — no weather API. Display labels live in `src/components/weather.tsx`; extend
+the vocabulary by adding a tag in `schema.ts` and its label there. These are captured and shown
+(add-match form, review, match detail) but not yet sliced analytically — a "By weather" breakdown
+is a deferred follow-up (see [PROJECT_PLAN.md](PROJECT_PLAN.md)), meaningful once matches carry it.
+
 A match may also carry `status: "unfinished"` (raw input, orthogonal to `fidelity`): a match
 suspended before a winner was decided. Absent means finished. An unfinished match has **no
 winner** and counts toward nothing derived — it is excluded from match record, set record,
@@ -142,6 +150,8 @@ still appears in the Matches list. Completing it = editing the same match to dro
 - unique match IDs
 - unique, positive `seq` ordering
 - optional `date`, but a real `YYYY-MM-DD` when present
+- optional weather: `conditions` must be an array of known, non-duplicate `WEATHER_TAGS`;
+  `tempC` must be a number in −30…55
 - supported surfaces
 - a valid `fidelity` ("sets" or "matchScore")
 - an optional `status`, which must be exactly `"unfinished"` when present

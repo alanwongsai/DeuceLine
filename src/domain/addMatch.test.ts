@@ -118,6 +118,42 @@ describe("appendMatch — status", () => {
   });
 });
 
+describe("appendMatch — weather", () => {
+  it("stores condition tags and temperature, and validates", () => {
+    const next = appendMatch(baseDataset(), {
+      surface: "hard",
+      conditions: ["sunny", "windy"],
+      tempC: 24,
+      fidelity: "matchScore",
+      matchScore: { alan: 2, opponent: 0 },
+    });
+    expect(next.matches[1]).toMatchObject({ conditions: ["sunny", "windy"], tempC: 24 });
+    expect(() => validateDataset(next)).not.toThrow();
+  });
+
+  it("omits an empty conditions list and an undefined temperature", () => {
+    const next = appendMatch(baseDataset(), {
+      surface: "hard",
+      conditions: [],
+      fidelity: "matchScore",
+      matchScore: { alan: 2, opponent: 0 },
+    });
+    expect(next.matches[1]).not.toHaveProperty("conditions");
+    expect(next.matches[1]).not.toHaveProperty("tempC");
+  });
+
+  it("passes a mistyped (NaN) temperature through for the validator to reject", () => {
+    const next = appendMatch(baseDataset(), {
+      surface: "hard",
+      tempC: Number.NaN,
+      fidelity: "matchScore",
+      matchScore: { alan: 2, opponent: 0 },
+    });
+    expect(next.matches[1]).toHaveProperty("tempC");
+    expect(() => validateDataset(next)).toThrow(DatasetValidationError);
+  });
+});
+
 describe("replaceMatch", () => {
   const withUnfinished = (): DeucelineDataset => {
     const dataset = baseDataset();

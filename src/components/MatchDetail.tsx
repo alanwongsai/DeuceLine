@@ -9,6 +9,7 @@ import {
 import { Match, Player, PlayerKey } from "../domain/schema";
 import { Modal } from "./Modal";
 import { SurfaceBadge } from "./SurfaceBadge";
+import { WeatherBadges } from "./weather";
 
 type MatchDetailProps = {
   match: Match;
@@ -60,6 +61,7 @@ export function MatchDetail({ match, players, matches, onClose, onUpdate }: Matc
       <div className="detail-meta">
         <SurfaceBadge surface={match.surface} />
         {match.location ? <span>{match.location}</span> : null}
+        <WeatherBadges conditions={match.conditions} tempC={match.tempC} />
       </div>
 
       {match.fidelity === "sets" ? (
@@ -121,6 +123,7 @@ function UnfinishedDetail({
         <span className="status-pill">In progress</span>
         <SurfaceBadge surface={match.surface} />
         {match.location ? <span>{match.location}</span> : null}
+        <WeatherBadges conditions={match.conditions} tempC={match.tempC} />
       </div>
 
       {match.fidelity === "sets" ? (
