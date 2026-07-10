@@ -49,8 +49,8 @@
   /* Surface badges — kept on the existing palette this skin. The grass/Andy and
      clay/Alan collisions are a known, deferred issue (see PROJECT_PLAN.md). */
   --hard: #446a87;
-  --clay: #b85c3d;
-  --grass: #2d7c46;
+  --clay: #a96a50;
+  --grass: #5a7f70;
   --astro: #24867c;
 
   /* Suggested player palette for this skin (reference only; dataset is source of truth) */

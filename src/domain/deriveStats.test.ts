@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { DetailedMatch, Match, ScoreMatch } from "./schema";
 import {
   deriveCadence,
+  deriveDataCoverage,
   deriveMatchContext,
   deriveMatchResult,
   deriveOverviewStats,
@@ -269,6 +270,23 @@ describe("deriveCadence", () => {
     expect(cadence.undatedCount).toBe(7);
     expect(cadence.daysSinceLast).toBeNull();
     expect(cadence.longestGapDays).toBeNull();
+  });
+});
+
+describe("deriveDataCoverage", () => {
+  it("counts only finished matches with recorded supporting detail", () => {
+    const coverage = deriveDataCoverage([
+      { ...score(1, "hard", 2, 0), date: "2026-07-01", conditions: ["sunny"], tempC: 21 },
+      detailed(2, "clay", [{ alan: 6, opponent: 3 }, { alan: 6, opponent: 4 }]),
+      unfinished(3, "astro"),
+    ]);
+
+    expect(coverage).toEqual({
+      finishedMatches: 2,
+      datedMatches: 1,
+      detailedScoreMatches: 1,
+      weatherMatches: 1,
+    });
   });
 });
 

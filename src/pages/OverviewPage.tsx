@@ -53,6 +53,10 @@ export function OverviewPage({ dataset, onUpdateMatch }: OverviewPageProps) {
   const surfacesByPlayed = [...SURFACES].sort(
     (a, b) => stats.surfaceSplit[b].played - stats.surfaceSplit[a].played,
   );
+  const recentRecord = stats.recentForm.reduce(
+    (record, item) => ({ ...record, [item.winner]: record[item.winner] + 1 }),
+    { alan: 0, opponent: 0 },
+  );
 
   const recordBar = (alanCount: number, opponentCount: number, total: number) =>
     total === 0
@@ -149,13 +153,9 @@ export function OverviewPage({ dataset, onUpdateMatch }: OverviewPageProps) {
         <p>{dataset.rivalry.title}</p>
       </header>
 
-      {/* Wide screens split Overview into two columns (see global.css): left =
-          hero + Recent form, right = stat grid + By surface. DOM order is the
-          canonical mobile reading order (hero → recent form → stats → by
-          surface), so on phones — where both wrappers are display:contents —
-          source, tab, and visual order all agree with no CSS reshuffling. */}
-      <div className="overview-main">
-        <section className="hero-score" aria-label="Head-to-head score">
+      {/* DOM follows the phone's decisive reading order. Wide-screen CSS places
+          the same direct children into two columns without a visual/AT-order split. */}
+      <section className="hero-score overview-hero" aria-label="Head-to-head score">
           <CourtBackdrop players={players} />
           <div className="score-grid">
             <span className="score-name score-name-left">{playerNames.alan}</span>
@@ -168,39 +168,9 @@ export function OverviewPage({ dataset, onUpdateMatch }: OverviewPageProps) {
           </div>
           <p>{leaderText}</p>
           <span>{stats.totalMatches} matches played</span>
-        </section>
+      </section>
 
-        <section className="panel panel-form">
-          <div className="panel-header">
-            <h2>Recent form</h2>
-            <span>Newest first</span>
-          </div>
-          <div className="form-row" aria-label="Recent form newest first">
-            {stats.recentForm.map((item) => {
-              const match = dataset.matches.find((candidate) => candidate.id === item.matchId);
-              return (
-                <button
-                  type="button"
-                  className="form-dot"
-                  key={item.matchId}
-                  style={{ background: players[item.winner].color }}
-                  onClick={() => match && setSelectedMatch(match)}
-                  aria-label={`${playerNames[item.winner]} won — open match detail`}
-                >
-                  {players[item.winner].abbr}
-                </button>
-              );
-            })}
-          </div>
-        </section>
-
-        {hasMatches ? (
-          <RivalryTimeline timeline={stats.timeline} cadence={cadence} players={players} />
-        ) : null}
-      </div>
-
-      <div className="overview-rail">
-        <section className="stat-grid" aria-label="Rivalry statistics">
+      <section className="stat-grid overview-stats" aria-label="Rivalry statistics">
           <StatCard
             label="Match record"
             value={`${stats.matchRecord.alan}—${stats.matchRecord.opponent}`}
@@ -223,9 +193,37 @@ export function OverviewPage({ dataset, onUpdateMatch }: OverviewPageProps) {
             accentColor={streakWinner ? players[streakWinner].color : undefined}
             onClick={hasMatches ? () => setSheet({ kind: "streak" }) : undefined}
           />
-        </section>
+      </section>
 
-        <section className="panel panel-surface">
+      <section className="panel panel-form overview-form">
+        <div className="panel-header">
+          <h2>Recent form</h2>
+          <span>
+            {playerNames.alan} {recentRecord.alan} · {playerNames.opponent} {recentRecord.opponent}
+          </span>
+        </div>
+        <div className="form-row" aria-label={`Recent form: ${playerNames.alan} ${recentRecord.alan}, ${playerNames.opponent} ${recentRecord.opponent}`}>
+          {stats.recentForm.map((item) => {
+            const match = dataset.matches.find((candidate) => candidate.id === item.matchId);
+            return (
+              <button
+                type="button"
+                className="form-dot"
+                key={item.matchId}
+                style={{ background: players[item.winner].color }}
+                onClick={() => match && setSelectedMatch(match)}
+                aria-label={`${playerNames[item.winner]} won — open match detail`}
+              >
+                {players[item.winner].abbr}
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      {hasMatches ? <RivalryTimeline timeline={stats.timeline} cadence={cadence} coverage={stats.coverage} players={players} /> : null}
+
+      <section className="panel panel-surface overview-surface">
         <div className="panel-header">
           <h2>By surface</h2>
           <span className="surface-legend">
@@ -268,8 +266,7 @@ export function OverviewPage({ dataset, onUpdateMatch }: OverviewPageProps) {
             );
           })}
         </div>
-        </section>
-      </div>
+      </section>
 
       {selectedMatch ? (
         <MatchDetail

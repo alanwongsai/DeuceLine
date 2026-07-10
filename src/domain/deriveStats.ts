@@ -1,4 +1,4 @@
-import { Cadence, Match, MatchContext, MatchResult, OverviewStats, PlayerKey, SetScore, SURFACES, TimelinePoint } from "./schema";
+import { Cadence, DataCoverage, Match, MatchContext, MatchResult, OverviewStats, PlayerKey, SetScore, SURFACES, TimelinePoint } from "./schema";
 
 const emptyRecord = (): Record<PlayerKey, number> => ({ alan: 0, opponent: 0 });
 
@@ -181,7 +181,21 @@ export function deriveOverviewStats(matches: Match[]): OverviewStats {
     streakHistory,
     surfaceStreak,
     timeline,
+    coverage: deriveDataCoverage(matches),
     sortedMatches,
+  };
+}
+
+// Report which analytical dimensions are grounded in recorded raw input. An
+// unfinished match has no settled result, so it is excluded just as it is from
+// every other derived stat.
+export function deriveDataCoverage(matches: Match[]): DataCoverage {
+  const finished = matches.filter((match) => !isUnfinished(match));
+  return {
+    finishedMatches: finished.length,
+    datedMatches: finished.filter((match) => match.date !== undefined).length,
+    detailedScoreMatches: finished.filter((match) => match.fidelity === "sets").length,
+    weatherMatches: finished.filter((match) => (match.conditions?.length ?? 0) > 0 || match.tempC !== undefined).length,
   };
 }
 

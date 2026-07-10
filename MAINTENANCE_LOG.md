@@ -38,6 +38,25 @@
 
 ## Log
 
+### v0.10.0 — 2026-07-10
+- **Record-first overview and entry flow.** Mobile now reads score → core stats → recent
+  form → insights → surface breakdown in one semantic DOM order; desktop uses grid areas to
+  retain a two-column view without a screen-reader/keyboard mismatch. Recent form gives the
+  explicit last-five balance, and the duplicate rolling-form sparkline is gone.
+- **Evidence-aware analysis from existing raw data only.** New derived `DataCoverage` shows
+  date, detailed-score and weather coverage next to the cumulative-lead/cadence insight, so
+  partial date history cannot look like complete cadence evidence. No raw schema field or
+  coaching-style metric was added; by-weather remains parked until the defined sample gate.
+- **Faster, safer match recording.** Set tally is the default fidelity; per-set games are
+  an opt-in expansion and optional context is folded into Add details. Sheets now trap and
+  restore focus; an in-progress draft gets a discard confirmation. Publish completion names
+  the saved match and offers Record another; weather now reads as a quiet text summary.
+- **Resilient data refresh.** Dataset reads request a fresh online response, PWA cache moved
+  to v5, and a failed validation presents Reload data with collapsed technical detail instead
+  of a dead-end error wall. Surface colour tokens were retuned so player identity remains the
+  stronger visual cue. Typecheck, 72 tests, browser layout checks at 375/768/1280, and build
+  pass.
+
 ### v0.9.2 — 2026-07-09
 - **Optional weather per match — manual capture, no API.** Matches can now carry two new
   optional raw fields: `conditions` (a multi-select of felt-condition tags — ☀️ sunny /

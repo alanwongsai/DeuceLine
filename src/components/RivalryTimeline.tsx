@@ -1,8 +1,9 @@
-import { Cadence, Player, PlayerKey, TimelinePoint } from "../domain/schema";
+import { Cadence, DataCoverage, Player, PlayerKey, TimelinePoint } from "../domain/schema";
 
 type RivalryTimelineProps = {
   timeline: TimelinePoint[];
   cadence: Cadence;
+  coverage: DataCoverage;
   players: Record<PlayerKey, Player>;
 };
 
@@ -17,10 +18,10 @@ const xAt = (index: number, count: number) =>
   count <= 1 ? W / 2 : PAD_X + (index / (count - 1)) * (W - PAD_X * 2);
 
 // The rivalry timeline: a lead curve (cumulative Alan−Andy over every finished
-// match), a rolling-form sparkline, and the date-derived cadence. The curve is
-// indexed by match order, so it reads correctly even when early matches have no
-// date — dates only enrich the cadence strip below.
-export function RivalryTimeline({ timeline, cadence, players }: RivalryTimelineProps) {
+// match) plus date-derived cadence. The curve is indexed by match order, so it
+// reads correctly even when early matches have no date — dates only enrich the
+// cadence strip below.
+export function RivalryTimeline({ timeline, cadence, coverage, players }: RivalryTimelineProps) {
   const count = timeline.length;
   const last = timeline[count - 1];
   const maxAbsLead = Math.max(1, ...timeline.map((p) => Math.abs(p.lead)));
@@ -86,34 +87,13 @@ export function RivalryTimeline({ timeline, cadence, players }: RivalryTimelineP
       </div>
       {cadence.undatedCount > 0 ? (
         <p className="cadence-note">
-          + {cadence.undatedCount} earlier match{cadence.undatedCount === 1 ? "" : "es"} without a recorded date
+          Date coverage: {coverage.datedMatches} of {coverage.finishedMatches} finished matches. {cadence.undatedCount} earlier match
+          {cadence.undatedCount === 1 ? "" : "es"} are excluded from cadence.
         </p>
       ) : null}
-
-      {count > 1 ? (
-        <div className="form-trend">
-          <div className="form-trend-head">
-            <span style={{ color: players.alan.color }}>{players.alan.displayName} form</span>
-            <span>Rolling last 5 · {Math.round(last.rollingWinRateAlan * 100)}%</span>
-          </div>
-          <svg
-            className="timeline-form"
-            viewBox={`0 0 ${W} 48`}
-            role="img"
-            aria-label={`${players.alan.displayName} rolling win rate over the last five matches, currently ${Math.round(
-              last.rollingWinRateAlan * 100,
-            )} percent.`}
-          >
-            <line x1={PAD_X} y1={24} x2={W - PAD_X} y2={24} className="timeline-baseline" />
-            <polyline
-              points={timeline.map((p, i) => `${xAt(i, count)},${48 - PAD_Y - p.rollingWinRateAlan * (48 - PAD_Y * 2)}`).join(" ")}
-              className="timeline-line timeline-line-form"
-              fill="none"
-              style={{ stroke: players.alan.color }}
-            />
-          </svg>
-        </div>
-      ) : null}
+      <p className="coverage-note">
+        Detailed set scores: {coverage.detailedScoreMatches} of {coverage.finishedMatches} · Weather recorded: {coverage.weatherMatches} of {coverage.finishedMatches}
+      </p>
     </section>
   );
 }

@@ -18,7 +18,8 @@ export function App() {
   // updated from either page without two competing edit-sheet routes.
   const [editingMatch, setEditingMatch] = useState<Match | null>(null);
 
-  useEffect(() => {
+  const refreshDataset = () => {
+    setError(null);
     loadDataset()
       .then(setDataset)
       .catch((reason: unknown) => {
@@ -28,10 +29,14 @@ export function App() {
         }
         setError(reason instanceof Error ? reason.message : "Unknown dataset error.");
       });
+  };
+
+  useEffect(() => {
+    refreshDataset();
   }, []);
 
   const content = useMemo(() => {
-    if (error) return <ErrorState message={error} />;
+    if (error) return <ErrorState message={error} onRetry={refreshDataset} />;
     if (!dataset) return <LoadingState />;
     if (activeView === "matches") return <MatchesPage dataset={dataset} onUpdateMatch={setEditingMatch} />;
     return <OverviewPage dataset={dataset} onUpdateMatch={setEditingMatch} />;
@@ -66,13 +71,19 @@ function LoadingState() {
   );
 }
 
-function ErrorState({ message }: { message: string }) {
+function ErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
     <main className="state-panel error-panel">
       <p className="eyebrow">Dataset Error</p>
       <h1>Data needs attention</h1>
-      <pre>{message}</pre>
+      <p>Deuceline couldn&apos;t read the latest shared match data. Reload it, then try again.</p>
+      <button className="primary-button" type="button" onClick={onRetry}>
+        Reload data
+      </button>
+      <details className="error-details">
+        <summary>Technical details</summary>
+        <pre>{message}</pre>
+      </details>
     </main>
   );
 }
-

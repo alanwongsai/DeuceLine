@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { DATASET_EDIT_URL } from "../data/datasetSource";
 import { appendMatch, NewMatchInput, replaceMatch, serializeDataset } from "../domain/addMatch";
 import {
@@ -113,7 +113,9 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
   // from the last match — only an edited match reseeds its own recorded weather.
   const [conditions, setConditions] = useState<WeatherTag[]>(editMatch?.conditions ?? []);
   const [tempC, setTempC] = useState(editMatch?.tempC !== undefined ? String(editMatch.tempC) : "");
-  const [fidelity, setFidelity] = useState<"sets" | "matchScore">(editMatch?.fidelity ?? "sets");
+  // A decisive set tally is the quickest trustworthy record. Per-set game
+  // scores remain one clear expansion rather than the default entry burden.
+  const [fidelity, setFidelity] = useState<"sets" | "matchScore">(editMatch?.fidelity ?? "matchScore");
   // Default to Finished. The only edit entry is "Update result" on an unfinished
   // match, where the intent is to complete it — defaulting to Unfinished would
   // silently re-save it as still in progress. The toggle is there if it really is
@@ -122,6 +124,7 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
   const [setRows, setSetRows] = useState<SetRowState[]>(() => setRowsFromMatch(editMatch));
   const [tally, setTally] = useState<Record<PlayerKey, string>>(() => tallyFromMatch(editMatch));
   const [notes, setNotes] = useState(editMatch?.notes ?? "");
+  const [detailsOpen, setDetailsOpen] = useState(Boolean(editMatch && (editMatch.location || editMatch.conditions?.length || editMatch.tempC !== undefined || editMatch.notes)));
   const [issues, setIssues] = useState<string[] | null>(null);
   const [candidate, setCandidate] = useState<DeucelineDataset | null>(null);
   const [copied, setCopied] = useState(false);
@@ -134,6 +137,12 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
   // Whether the committed dataset was successfully applied to local state, so the
   // "done" message doesn't promise an instant refresh that didn't happen.
   const [refreshed, setRefreshed] = useState(false);
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
+
+  const draftKey = JSON.stringify({ date, surface, location, conditions, tempC, fidelity, status, setRows, tally, notes });
+  const initialDraftKey = useRef<string | null>(null);
+  if (initialDraftKey.current === null) initialDraftKey.current = draftKey;
+  const hasDraft = draftKey !== initialDraftKey.current;
 
   const updateSetRow = (index: number, patch: Partial<SetRowState>) => {
     setSetRows((rows) => rows.map((row, i) => (i === index ? { ...row, ...patch } : row)));
@@ -264,6 +273,51 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
     }
   };
 
+  const requestClose = () => {
+    if ((hasDraft || candidate) && publishState !== "done") {
+      setConfirmDiscard(true);
+      return;
+    }
+    onClose();
+  };
+
+  const recordAnother = () => {
+    setCandidate(null);
+    setDate(todayIso());
+    setSurface(lastMatch?.surface ?? "hard");
+    setLocation(lastMatch?.location ?? "");
+    setConditions([]);
+    setTempC("");
+    setFidelity("matchScore");
+    setStatus("finished");
+    setSetRows([emptySetRow(), emptySetRow()]);
+    setTally({ alan: "", opponent: "" });
+    setNotes("");
+    setDetailsOpen(false);
+    setIssues(null);
+    setPendingInput(null);
+    setPublishState("idle");
+    setPublishError(null);
+    setRefreshed(false);
+    initialDraftKey.current = null;
+  };
+
+  if (confirmDiscard) {
+    return (
+      <Modal titleId="discardMatchTitle" eyebrow="Add match" title="Discard this match?" onClose={onClose}>
+        <p className="review-steps">Your unsaved score and details will be lost.</p>
+        <div className="sheet-actions">
+          <button className="primary-button" type="button" onClick={() => setConfirmDiscard(false)}>
+            Keep editing
+          </button>
+          <button className="secondary-button" type="button" onClick={onClose}>
+            Discard match
+          </button>
+        </div>
+      </Modal>
+    );
+  }
+
   if (candidate) {
     // In edit mode the replaced match keeps its id; in add mode it's the last one.
     const newMatch = editMatch
@@ -275,7 +329,13 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
     const scoreline = unfinished ? null : formatWinnerScoreline(newMatch);
 
     return (
-      <Modal titleId="addMatchTitle" eyebrow={isEdit ? "Update match · Review" : "Add match · Review"} title="Looks right?" onClose={onClose}>
+      <Modal
+        titleId="addMatchTitle"
+        eyebrow={isEdit ? "Update match · Review" : "Add match · Review"}
+        title="Looks right?"
+        onClose={onClose}
+        onRequestClose={requestClose}
+      >
         <div className="review-result">
           {unfinished && neutral ? (
             <>
@@ -305,14 +365,21 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
 
         {publishState === "done" ? (
           <>
-            <p className="review-copied">
+            <p className="review-copied" role="status">
               {refreshed
-                ? "Published ✓ — updated here, and live on the site in about a minute."
-                : "Published ✓ — live on the site in about a minute. Reload to see it here."}
+                ? `Match ${newMatch.seq} published — this rivalry is updated here, and live on the site in about a minute.`
+                : `Match ${newMatch.seq} published — live on the site in about a minute. Reload to see it here.`}
             </p>
-            <button className="primary-button" type="button" onClick={onClose}>
-              Done
-            </button>
+            <div className="sheet-actions">
+              <button className="primary-button" type="button" onClick={onClose}>
+                Done
+              </button>
+              {!isEdit && refreshed ? (
+                <button className="secondary-button" type="button" onClick={recordAnother}>
+                  Record another
+                </button>
+              ) : null}
+            </div>
           </>
         ) : (
           <>
@@ -385,6 +452,7 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
       eyebrow={isEdit ? "Update match" : "Add match"}
       title={`Match ${editMatch?.seq ?? (lastMatch?.seq ?? 0) + 1}`}
       onClose={onClose}
+      onRequestClose={requestClose}
     >
       <div className="add-form">
         <label className="field">
@@ -407,76 +475,6 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
                 {surfaceLabels[option]}
               </button>
             ))}
-          </div>
-        </div>
-
-        <label className="field">
-          <span className="field-label">Location</span>
-          <input
-            className="text-input"
-            type="text"
-            value={location}
-            placeholder="Bishop"
-            onChange={(event) => setLocation(event.target.value)}
-          />
-        </label>
-
-        <div className="field">
-          <span className="field-label">Conditions (optional)</span>
-          <div className="chip-row" role="group" aria-label="Weather conditions">
-            {WEATHER_TAGS.map((tag) => (
-              <button
-                key={tag}
-                type="button"
-                aria-pressed={conditions.includes(tag)}
-                className={`chip ${conditions.includes(tag) ? "chip-active" : ""}`}
-                onClick={() => toggleCondition(tag)}
-              >
-                {WEATHER_LABELS[tag]}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <label className="field">
-          <span className="field-label">Temperature (optional)</span>
-          <div className="temp-input">
-            <input
-              className="text-input"
-              type="number"
-              inputMode="numeric"
-              value={tempC}
-              placeholder="e.g. 24"
-              onChange={(event) => setTempC(event.target.value)}
-              aria-label="Temperature in degrees Celsius"
-            />
-            <span className="temp-unit" aria-hidden="true">
-              °C
-            </span>
-          </div>
-        </label>
-
-        <div className="field">
-          <span className="field-label">Score detail</span>
-          <div className="segmented" role="radiogroup" aria-label="Score detail">
-            <button
-              type="button"
-              role="radio"
-              aria-checked={fidelity === "sets"}
-              className={`segment ${fidelity === "sets" ? "segment-active" : ""}`}
-              onClick={() => setFidelity("sets")}
-            >
-              Full set scores
-            </button>
-            <button
-              type="button"
-              role="radio"
-              aria-checked={fidelity === "matchScore"}
-              className={`segment ${fidelity === "matchScore" ? "segment-active" : ""}`}
-              onClick={() => setFidelity("matchScore")}
-            >
-              Sets tally only
-            </button>
           </div>
         </div>
 
@@ -505,6 +503,18 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
           {status === "unfinished" ? (
             <p className="field-hint">No winner yet — a tied score is allowed. It won't count in stats until you finish it.</p>
           ) : null}
+        </div>
+
+        <div className="score-detail-toggle">
+          {fidelity === "sets" ? (
+            <button className="secondary-button" type="button" onClick={() => setFidelity("matchScore")}>
+              Use match score only
+            </button>
+          ) : (
+            <button className="secondary-button" type="button" onClick={() => setFidelity("sets")}>
+              + Add set scores
+            </button>
+          )}
         </div>
 
         <div className="field">
@@ -594,16 +604,67 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
           )}
         </div>
 
-        <label className="field">
-          <span className="field-label">Notes (optional)</span>
-          <input
-            className="text-input"
-            type="text"
-            value={notes}
-            placeholder="Windy day, new racket…"
-            onChange={(event) => setNotes(event.target.value)}
-          />
-        </label>
+        <details className="add-details" open={detailsOpen} onToggle={(event) => setDetailsOpen(event.currentTarget.open)}>
+          <summary>Add details</summary>
+          <div className="add-details-fields">
+            <label className="field">
+              <span className="field-label">Location</span>
+              <input
+                className="text-input"
+                type="text"
+                value={location}
+                placeholder="Bishop"
+                onChange={(event) => setLocation(event.target.value)}
+              />
+            </label>
+
+            <div className="field">
+              <span className="field-label">Conditions (optional)</span>
+              <div className="chip-row" role="group" aria-label="Weather conditions">
+                {WEATHER_TAGS.map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    aria-pressed={conditions.includes(tag)}
+                    className={`chip ${conditions.includes(tag) ? "chip-active" : ""}`}
+                    onClick={() => toggleCondition(tag)}
+                  >
+                    {WEATHER_LABELS[tag]}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <label className="field">
+              <span className="field-label">Temperature (optional)</span>
+              <div className="temp-input">
+                <input
+                  className="text-input"
+                  type="number"
+                  inputMode="numeric"
+                  value={tempC}
+                  placeholder="e.g. 24"
+                  onChange={(event) => setTempC(event.target.value)}
+                  aria-label="Temperature in degrees Celsius"
+                />
+                <span className="temp-unit" aria-hidden="true">
+                  °C
+                </span>
+              </div>
+            </label>
+
+            <label className="field">
+              <span className="field-label">Notes (optional)</span>
+              <input
+                className="text-input"
+                type="text"
+                value={notes}
+                placeholder="Windy day, new racket…"
+                onChange={(event) => setNotes(event.target.value)}
+              />
+            </label>
+          </div>
+        </details>
 
         {issues ? (
           <ul className="issue-list" aria-label="Problems with this match">

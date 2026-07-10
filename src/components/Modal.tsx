@@ -5,17 +5,43 @@ type ModalProps = {
   eyebrow?: string;
   title: ReactNode;
   onClose: () => void;
+  // Lets a caller protect an in-progress form from accidental dismissal while
+  // keeping the shared sheet behavior identical for read-only detail views.
+  onRequestClose?: () => void;
   children: ReactNode;
 };
 
-export function Modal({ titleId, eyebrow, title, onClose, children }: ModalProps) {
+export function Modal({ titleId, eyebrow, title, onClose, onRequestClose = onClose, children }: ModalProps) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
+    // Capture the trigger before moving focus into the sheet so close restores
+    // the user to the control that opened it, not to the removed close button.
+    const returnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     closeButtonRef.current?.focus();
 
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") {
+        onRequestClose();
+        return;
+      }
+
+      if (event.key !== "Tab") return;
+      const focusable = panelRef.current?.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+      if (!focusable || focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     document.addEventListener("keydown", onKeyDown);
 
@@ -54,12 +80,14 @@ export function Modal({ titleId, eyebrow, title, onClose, children }: ModalProps
       style.right = previous.right;
       style.width = previous.width;
       window.scrollTo(0, scrollY);
+      returnFocus?.focus();
     };
-  }, [onClose]);
+  }, [onRequestClose]);
 
   return (
-    <div className="modal-backdrop" role="presentation" onMouseDown={onClose}>
+    <div className="modal-backdrop" role="presentation" onMouseDown={onRequestClose}>
       <section
+        ref={panelRef}
         className="modal-panel"
         role="dialog"
         aria-modal="true"
@@ -71,7 +99,7 @@ export function Modal({ titleId, eyebrow, title, onClose, children }: ModalProps
             {eyebrow ? <p className="eyebrow">{eyebrow}</p> : null}
             <h2 id={titleId}>{title}</h2>
           </div>
-          <button ref={closeButtonRef} className="icon-button" type="button" onClick={onClose} aria-label="Close">
+          <button ref={closeButtonRef} className="icon-button" type="button" onClick={onRequestClose} aria-label="Close">
             ×
           </button>
         </div>

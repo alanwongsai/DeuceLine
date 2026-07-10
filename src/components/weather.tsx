@@ -3,10 +3,10 @@ import { WeatherTag } from "../domain/schema";
 // Display labels for the weather vocabulary. The tag set itself lives in
 // schema.ts (WEATHER_TAGS); add a tag there and its label here to extend.
 export const WEATHER_LABELS: Record<WeatherTag, string> = {
-  sunny: "☀️ Sunny",
-  cloudy: "⛅ Cloudy",
-  windy: "💨 Windy",
-  hot: "🥵 Hot",
+  sunny: "Sunny",
+  cloudy: "Cloudy",
+  windy: "Windy",
+  hot: "Hot",
 };
 
 export const formatTemp = (tempC: number): string => `${tempC}°C`;
@@ -18,15 +18,8 @@ export function WeatherBadges({ conditions, tempC }: { conditions?: WeatherTag[]
   if (!hasConditions && tempC === undefined) return null;
 
   return (
-    <span className="weather-badges">
-      {hasConditions
-        ? conditions.map((tag) => (
-            <span className="weather-badge" key={tag}>
-              {WEATHER_LABELS[tag]}
-            </span>
-          ))
-        : null}
-      {tempC !== undefined ? <span className="weather-badge weather-temp">{formatTemp(tempC)}</span> : null}
+    <span className="weather-summary">
+      {[...(hasConditions ? conditions.map((tag) => WEATHER_LABELS[tag]) : []), ...(tempC !== undefined ? [formatTemp(tempC)] : [])].join(" · ")}
     </span>
   );
 }

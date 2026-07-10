@@ -28,6 +28,13 @@ Cloudflare Pages static site
   -> render UI
 ```
 
+The loader asks the browser for a fresh dataset while online (`cache: "no-store"`);
+the service worker remains network-first and keeps its same-version cached dataset as
+the offline fallback. When a validator or dataset compatibility change ships, bump the
+service-worker cache name in the same change. A failed validation is actionable in the
+UI: the normal state explains that data could not be refreshed, provides **Reload data**,
+and keeps raw technical validation details collapsed for diagnosis.
+
 ## Data Source Strategy
 
 Canonical data file:
@@ -49,9 +56,13 @@ surface split — derive them from the recorded score.
 
 ## Data Update Flow (add-match form)
 
-The center add button opens `AddMatchSheet`, a standardized form. The domain flow is
-unchanged; only the final hand-off changed — the app now publishes in one tap through a
-Cloudflare Pages Function, and still never holds a GitHub token itself:
+The center add button opens `AddMatchSheet`, a standardized form. Its first layer is
+date, surface, result and a set tally; per-set scores are an explicit **Add set scores**
+expansion and location/weather/temperature/notes live under **Add details**. This changes
+entry ergonomics only — both fidelity levels and all optional raw fields remain exactly
+the same. The domain flow is unchanged; only the final hand-off changed — the app now
+publishes in one tap through a Cloudflare Pages Function, and still never holds a GitHub
+token itself:
 
 ```text
 form input
@@ -180,12 +191,15 @@ Validation is pragmatic. Historical tennis data may be imperfect, but obviously 
   across is the structural token `--shell-pad` in `global.css`.
 - Overview stat cards: Match record, Set record, Win rate, Current streak.
 - Overview also carries a **Rivalry timeline** panel (`src/components/RivalryTimeline.tsx`):
-  a cumulative lead curve, a match-cadence strip, and a rolling-form sparkline. The curve
-  is indexed by match order (`seq`, always present) so it reads correctly even when early
-  matches have no `date`; dates only feed the cadence strip. It stores no new raw data —
-  `deriveTimeline` and `deriveCadence` (`src/domain/deriveStats.ts`) derive everything from
-  the existing dataset. `deriveCadence` takes an injected `now` to stay pure/testable, and
-  counts only dated finished matches (undated ones are tallied separately, never guessed).
+  a cumulative lead curve and a match-cadence strip. Recent form supplies the last-five
+  balance directly, rather than duplicating it as another small chart. The curve is indexed
+  by match order (`seq`, always present) so it reads correctly even when early matches have
+  no `date`; dates only feed the cadence strip. `DataCoverage` makes the supporting raw-data
+  counts visible (dated, detailed-score and weather matches), so date-led claims never imply
+  full coverage. It stores no new raw data — `deriveTimeline`, `deriveCadence` and
+  `deriveDataCoverage` (`src/domain/deriveStats.ts`) derive everything from the existing
+  dataset. `deriveCadence` takes an injected `now` to stay pure/testable, and counts only
+  dated finished matches (undated ones are tallied separately, never guessed).
 - Stat cards and By-surface rows are tappable: each opens a shared detail sheet
   (`StatDetailSheet`) that slices the same derived stats a different way — a stat card
   breaks its metric down by surface, a surface row breaks that surface down by metric,
@@ -193,11 +207,12 @@ Validation is pragmatic. Historical tennis data may be imperfect, but obviously 
   run first). No new raw data is stored for this — only new derived views over the
   existing dataset, consistent with the "derive, don't store" rule above.
 - `src/components/Modal.tsx` is the single shared overlay shell (backdrop, escape-to-close,
-  focus-on-open, body-scroll lock). `MatchDetail`, `StatDetailSheet` and `AddMatchSheet`
-  all build on it — new modal-style UI should reuse it rather than re-implementing that
-  chrome. The scroll lock pins the body with `position: fixed` + a remembered scroll
-  offset, because mobile WebKit (Safari *and* iPhone Chrome) ignores `overflow: hidden`
-  on body for touch scrolling.
+  focus-on-open, focus trap, return-focus, body-scroll lock). `MatchDetail`,
+  `StatDetailSheet` and `AddMatchSheet` all build on it — new modal-style UI should reuse it
+  rather than re-implementing that chrome. `AddMatchSheet` can intercept a requested close
+  and show its own discard confirmation when a draft exists. The scroll lock pins the body
+  with `position: fixed` + a remembered scroll offset, because mobile WebKit (Safari *and*
+  iPhone Chrome) ignores `overflow: hidden` on body for touch scrolling.
 - `.modal-panel` is a **bottom sheet**: flush to the screen's bottom edge, only the top
   corners rounded, `env(safe-area-inset-bottom)` folded into its own bottom padding (so
   there's no floating gap below it and no bottom corners to clip the device's rounded

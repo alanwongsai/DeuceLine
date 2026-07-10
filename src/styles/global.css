@@ -242,8 +242,8 @@ h2 {
 }
 
 .form-dot {
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
   display: grid;
   place-items: center;
   border: 0;
@@ -397,7 +397,7 @@ button.surface-row:focus-visible {
   border-radius: 50%;
 }
 
-/* Rivalry timeline — the lead curve, cadence strip, and rolling-form sparkline.
+/* Rivalry timeline — the lead curve and the date-backed cadence strip.
    Charts are inline SVG scaled to the panel width (viewBox + preserveAspectRatio
    none); colours come from identity/skin tokens, never hardcoded. */
 .panel-timeline {
@@ -428,11 +428,6 @@ button.surface-row:focus-visible {
   stroke-linejoin: round;
   stroke-linecap: round;
   vector-effect: non-scaling-stroke;
-}
-
-.timeline-line-form {
-  stroke-width: 2;
-  opacity: 0.85;
 }
 
 .timeline-axis {
@@ -484,27 +479,11 @@ button.surface-row:focus-visible {
   font-weight: 700;
 }
 
-.form-trend {
-  display: grid;
-  gap: 6px;
-}
-
-.form-trend-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  font-size: 0.76rem;
-  font-weight: 900;
-}
-
-.form-trend-head span:last-child {
+.coverage-note {
+  margin: -2px 0 0;
   color: var(--muted);
-}
-
-.timeline-form {
-  display: block;
-  width: 100%;
-  height: auto;
+  font-size: 0.74rem;
+  font-weight: 700;
 }
 
 .surface-badge {
@@ -686,7 +665,7 @@ button.surface-row:focus-visible {
   display: grid;
   place-items: center;
   gap: 2px;
-  min-height: 38px;
+  min-height: 44px;
   border: 0;
   color: var(--muted);
   background: transparent;
@@ -741,6 +720,16 @@ button.surface-row:focus-visible {
   color: #691f1f;
   background: #fff1f1;
   white-space: pre-wrap;
+}
+
+.error-details {
+  margin-top: 14px;
+}
+
+.error-details summary {
+  color: var(--muted);
+  font-weight: 800;
+  cursor: pointer;
 }
 
 .modal-backdrop {
@@ -834,6 +823,11 @@ html:has(body.modal-open) {
   font-weight: 950;
 }
 
+.sheet-actions {
+  display: grid;
+  gap: 10px;
+}
+
 .icon-button {
   width: 42px;
   min-width: 42px;
@@ -853,6 +847,28 @@ html:has(body.modal-open) {
 .add-form {
   display: grid;
   gap: 14px;
+}
+
+.add-details {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+
+.add-details summary {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.add-details-fields {
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.score-detail-toggle {
+  justify-self: start;
 }
 
 .field {
@@ -1010,20 +1026,10 @@ input[type="date"].text-input::-webkit-date-and-time-value {
   font-weight: 900;
 }
 
-/* Read-only weather summary shown alongside surface/location in detail and
-   review meta rows. */
-.weather-badges {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.weather-badge {
-  padding: 2px 9px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--bg);
-  color: var(--ink);
+/* One quiet text summary keeps weather contextual rather than a competing
+   decorative badge system. */
+.weather-summary {
+  color: var(--muted);
   font-size: 0.8rem;
   font-weight: 800;
   white-space: nowrap;
@@ -1288,16 +1294,6 @@ input[type="date"].text-input::-webkit-date-and-time-value {
    at every width (settled decision — no desktop sidebar).
    --------------------------------------------------------------------------- */
 
-/* Overview's two column wrappers (overview-main / overview-rail in
-   OverviewPage.tsx). On phones they're display:contents, so their four sections
-   flow directly in the single-column .screen grid in DOM order — which is the
-   canonical mobile reading order (hero → recent form → stats → by surface), so
-   source, tab, and visual order all agree. No CSS `order` reshuffling. */
-.overview-main,
-.overview-rail {
-  display: contents;
-}
-
 @media (min-width: 768px) {
   :root {
     --shell-pad: 20px;
@@ -1307,35 +1303,40 @@ input[type="date"].text-input::-webkit-date-and-time-value {
     width: min(100%, 900px);
   }
 
-  /* Two independent columns: main (hero + Recent form) and rail (stat grid + By
-     surface), each its own stack so neither inherits the other's height as a
-     mid-column gap. This pairing keeps the DOM in mobile reading order AND
-     balances the two columns' heights. The masthead spans the full width. */
+  /* Direct children keep their phone DOM order (hero → stats → recent form →
+     insights → surface) while the grid gives each desktop column a clean role. */
   .screen-overview {
     grid-template-columns: 1.15fr 1fr;
     align-items: start;
     grid-template-areas:
       "header header"
-      "main   rail";
-  }
-
-  .overview-main,
-  .overview-rail {
-    display: grid;
-    gap: 14px;
-    align-content: start;
+      "hero   stats"
+      "form   surface"
+      "timeline surface";
   }
 
   .screen-overview > .app-header {
     grid-area: header;
   }
 
-  .screen-overview > .overview-main {
-    grid-area: main;
+  .overview-hero {
+    grid-area: hero;
   }
 
-  .screen-overview > .overview-rail {
-    grid-area: rail;
+  .overview-stats {
+    grid-area: stats;
+  }
+
+  .overview-form {
+    grid-area: form;
+  }
+
+  .panel-timeline {
+    grid-area: timeline;
+  }
+
+  .overview-surface {
+    grid-area: surface;
   }
 
   /* The MatchDetail / StatDetailSheet modals are later children of the grid but

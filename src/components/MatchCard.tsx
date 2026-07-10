@@ -29,7 +29,7 @@ export function MatchCard({ match, players, onOpen }: MatchCardProps) {
           {match.date ? (
             <time dateTime={match.date}>{formatDate(match.date)}</time>
           ) : (
-            <span className="match-seq">Match {match.seq}</span>
+            <span className="match-seq">Match {match.seq} · Date unknown</span>
           )}
           <SurfaceBadge surface={match.surface} />
         </div>
@@ -39,7 +39,7 @@ export function MatchCard({ match, players, onOpen }: MatchCardProps) {
         {scoreline.setScores ? (
           <p className="set-line">{scoreline.setScores.join("   ")}</p>
         ) : (
-          <p className="set-line set-line-missing">Set scores not recorded</p>
+          <p className="set-line set-line-missing">{scoreline.score} final · summary only</p>
         )}
         {match.location ? <p className="match-meta">{match.location}</p> : null}
         {match.notes ? <p className="match-notes">{match.notes}</p> : null}
@@ -70,7 +70,7 @@ function UnfinishedCard({ match, players, onOpen }: MatchCardProps) {
           {match.date ? (
             <time dateTime={match.date}>{formatDate(match.date)}</time>
           ) : (
-            <span className="match-seq">Match {match.seq}</span>
+            <span className="match-seq">Match {match.seq} · Date unknown</span>
           )}
           <span className="status-pill">In progress</span>
           <SurfaceBadge surface={match.surface} />
@@ -82,7 +82,7 @@ function UnfinishedCard({ match, players, onOpen }: MatchCardProps) {
         {neutral.setScores ? (
           <p className="set-line">{neutral.setScores.join("   ")}</p>
         ) : (
-          <p className="set-line set-line-missing">Set scores not recorded</p>
+          <p className="set-line set-line-missing">{neutral.alan}—{neutral.opponent} so far · summary only</p>
         )}
         {match.location ? <p className="match-meta">{match.location}</p> : null}
         {match.notes ? <p className="match-notes">{match.notes}</p> : null}

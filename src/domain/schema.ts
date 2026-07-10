@@ -135,6 +135,16 @@ export type Cadence = {
   longestGap: { fromDate: string; toDate: string } | null;
 };
 
+// How much of the finished rivalry history can support each analytical view.
+// These are deliberately counts rather than percentages so the UI can state
+// its evidence plainly (for example, "2 of 8 matches have dates").
+export type DataCoverage = {
+  finishedMatches: number;
+  datedMatches: number;
+  detailedScoreMatches: number;
+  weatherMatches: number;
+};
+
 export type OverviewStats = {
   totalMatches: number;
   detailedMatchCount: number;
@@ -167,5 +177,7 @@ export type OverviewStats = {
   surfaceStreak: Record<Surface, StreakState>;
   // The rivalry as it built up, oldest→newest: cumulative lead + rolling form.
   timeline: TimelinePoint[];
+  // Completeness of the raw input behind date-, score- and weather-led views.
+  coverage: DataCoverage;
   sortedMatches: Match[];
 };

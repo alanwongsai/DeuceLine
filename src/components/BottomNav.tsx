@@ -7,14 +7,24 @@ type BottomNavProps = {
 export function BottomNav({ activeView, onAdd, onChange }: BottomNavProps) {
   return (
     <nav className="bottom-nav" aria-label="Primary navigation">
-      <button className={`nav-item ${activeView === "overview" ? "active" : ""}`} type="button" onClick={() => onChange("overview")}>
+      <button
+        className={`nav-item ${activeView === "overview" ? "active" : ""}`}
+        type="button"
+        aria-pressed={activeView === "overview"}
+        onClick={() => onChange("overview")}
+      >
         <span aria-hidden="true">⌁</span>
         Overview
       </button>
       <button className="add-button" type="button" onClick={onAdd} aria-label="Add match">
         +
       </button>
-      <button className={`nav-item ${activeView === "matches" ? "active" : ""}`} type="button" onClick={() => onChange("matches")}>
+      <button
+        className={`nav-item ${activeView === "matches" ? "active" : ""}`}
+        type="button"
+        aria-pressed={activeView === "matches"}
+        onClick={() => onChange("matches")}
+      >
         <span aria-hidden="true">≡</span>
         Matches
       </button>
