@@ -16,12 +16,15 @@ type StatDetailSheetProps = {
   eyebrow?: string;
   title: ReactNode;
   rows: DetailRow[];
+  children?: ReactNode;
+  note?: string;
   onClose: () => void;
 };
 
-export function StatDetailSheet({ titleId, eyebrow, title, rows, onClose }: StatDetailSheetProps) {
+export function StatDetailSheet({ titleId, eyebrow, title, rows, children, note, onClose }: StatDetailSheetProps) {
   return (
     <Modal titleId={titleId} eyebrow={eyebrow} title={title} onClose={onClose}>
+      {children}
       <div className="surface-list detail-sheet-list">
         {rows.map((row) => (
           <div className={`surface-row ${row.bar ? "" : "surface-row-empty"}`} key={row.key}>
@@ -41,6 +44,7 @@ export function StatDetailSheet({ titleId, eyebrow, title, rows, onClose }: Stat
           </div>
         ))}
       </div>
+      {note ? <p className="evidence-note">{note}</p> : null}
     </Modal>
   );
 }

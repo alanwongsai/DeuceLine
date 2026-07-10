@@ -2,12 +2,15 @@ import {
   deriveMatchContext,
   deriveMatchResult,
   deriveSetWinner,
+  deriveTimeline,
   formatNeutralScoreline,
   formatWinnerScoreline,
   isUnfinished,
+  matchGamesTally,
 } from "../domain/deriveStats";
 import { Match, Player, PlayerKey } from "../domain/schema";
 import { Modal } from "./Modal";
+import { LeadSparkline } from "./LeadSparkline";
 import { SurfaceBadge } from "./SurfaceBadge";
 import { WeatherBadges } from "./weather";
 
@@ -19,11 +22,12 @@ type MatchDetailProps = {
   // Present when this match can be updated (i.e. it is unfinished) — opens the
   // edit form to record the final result.
   onUpdate?: () => void;
+  onSelectMatch?: (match: Match) => void;
 };
 
-export function MatchDetail({ match, players, matches, onClose, onUpdate }: MatchDetailProps) {
+export function MatchDetail({ match, players, matches, onClose, onUpdate, onSelectMatch }: MatchDetailProps) {
   if (isUnfinished(match)) {
-    return <UnfinishedDetail match={match} players={players} onClose={onClose} onUpdate={onUpdate} />;
+    return <UnfinishedDetail match={match} players={players} onClose={onClose} onUpdate={onUpdate} onSelectMatch={onSelectMatch} />;
   }
 
   const result = deriveMatchResult(match);
@@ -31,6 +35,11 @@ export function MatchDetail({ match, players, matches, onClose, onUpdate }: Matc
   const context = deriveMatchContext(matches, match.id);
   // Finished match: winner is always known.
   const winner = players[result.winner as PlayerKey];
+  const ordered = [...matches].sort((a, b) => a.seq - b.seq);
+  const position = ordered.findIndex((candidate) => candidate.id === match.id);
+  const previous = position > 0 ? ordered[position - 1] : null;
+  const next = position >= 0 && position < ordered.length - 1 ? ordered[position + 1] : null;
+  const games = match.fidelity === "sets" ? matchGamesTally(match) : null;
 
   const narrative: string[] = [];
   if (context.snappedStreak) {
@@ -93,7 +102,23 @@ export function MatchDetail({ match, players, matches, onClose, onUpdate }: Matc
             {line}
           </p>
         ))}
+        <LeadSparkline
+          timeline={deriveTimeline(matches)}
+          matches={matches}
+          players={players}
+          highlightMatchId={match.id}
+          interactive={false}
+          ariaLabel={`Rivalry lead after match ${match.seq}`}
+        />
+        {games ? <p className="detail-games">Known games · {players.alan.displayName} {games.alan}—{games.opponent} {players.opponent.displayName}</p> : null}
       </div>
+
+      {onSelectMatch && (previous || next) ? (
+        <div className="detail-pagination" aria-label="Browse matches">
+          <button type="button" disabled={!previous} onClick={() => previous && onSelectMatch(previous)}>← Previous</button>
+          <button type="button" disabled={!next} onClick={() => next && onSelectMatch(next)}>Next →</button>
+        </div>
+      ) : null}
     </Modal>
   );
 }

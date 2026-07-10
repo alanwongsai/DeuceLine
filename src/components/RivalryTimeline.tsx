@@ -51,7 +51,7 @@ export function RivalryTimeline({ timeline, cadence, coverage, players }: Rivalr
           {/* Zero line — the rivalry drawn level. Above = Alan, below = Andy. */}
           <line x1={PAD_X} y1={MID_Y} x2={W - PAD_X} y2={MID_Y} className="timeline-baseline" />
           {count > 1 ? (
-            <polyline points={leadPoints} className="timeline-line" fill="none" />
+            <polyline pathLength={1} points={leadPoints} className="timeline-line" fill="none" />
           ) : null}
           {timeline.map((p, i) => (
             <circle
@@ -60,6 +60,7 @@ export function RivalryTimeline({ timeline, cadence, coverage, players }: Rivalr
               cy={leadY(p.lead)}
               r={3.5}
               fill={players[p.winner].color}
+              className="timeline-point"
             />
           ))}
         </svg>

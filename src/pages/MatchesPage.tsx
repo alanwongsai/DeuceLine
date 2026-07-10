@@ -2,7 +2,7 @@ import { useState } from "react";
 import { MatchCard } from "../components/MatchCard";
 import { MatchDetail } from "../components/MatchDetail";
 import { sortMatchesNewestFirst } from "../domain/deriveStats";
-import { DeucelineDataset, Match } from "../domain/schema";
+import { DeucelineDataset, Match, Surface, SURFACES } from "../domain/schema";
 
 type MatchesPageProps = {
   dataset: DeucelineDataset;
@@ -13,18 +13,28 @@ export function MatchesPage({ dataset, onUpdateMatch }: MatchesPageProps) {
   const sortedMatches = sortMatchesNewestFirst(dataset.matches);
   const players = dataset.rivalry.players;
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
+  const [filter, setFilter] = useState<Surface | null>(null);
+  const surfaceCounts = Object.fromEntries(SURFACES.map((surface) => [surface, sortedMatches.filter((match) => match.surface === surface).length])) as Record<Surface, number>;
+  const visibleMatches = filter ? sortedMatches.filter((match) => match.surface === filter) : sortedMatches;
 
   return (
     <main className="screen screen-matches">
       <header className="page-header">
+        <img className="journal-archive-crest" src="./assets/journal-crest.png" alt="" />
         <div>
-          <p className="eyebrow">Match History</p>
-          <h1>Matches</h1>
+          <p className="eyebrow">Matchday Journal</p>
+          <h1>Chapters</h1>
         </div>
-        <span className="count-pill">{sortedMatches.length}</span>
+        <span className="count-pill">{visibleMatches.length}</span>
       </header>
+      <div className="match-filters" aria-label="Filter matches by surface">
+        <button type="button" className={`filter-chip ${filter === null ? "active" : ""}`} aria-pressed={filter === null} onClick={() => setFilter(null)}>All · {sortedMatches.length}</button>
+        {SURFACES.filter((surface) => surfaceCounts[surface] > 0).map((surface) => (
+          <button key={surface} type="button" className={`filter-chip ${filter === surface ? "active" : ""}`} aria-pressed={filter === surface} onClick={() => setFilter(surface)}>{surface.charAt(0).toUpperCase() + surface.slice(1)} · {surfaceCounts[surface]}</button>
+        ))}
+      </div>
       <section className="match-list" aria-label="Matches newest first">
-        {sortedMatches.map((match) => (
+        {visibleMatches.map((match) => (
           <MatchCard key={match.id} match={match} players={players} onOpen={() => setSelectedMatch(match)} />
         ))}
       </section>
@@ -34,6 +44,7 @@ export function MatchesPage({ dataset, onUpdateMatch }: MatchesPageProps) {
           players={players}
           matches={dataset.matches}
           onClose={() => setSelectedMatch(null)}
+          onSelectMatch={setSelectedMatch}
           onUpdate={
             onUpdateMatch
               ? () => {

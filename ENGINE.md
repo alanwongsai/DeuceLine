@@ -178,7 +178,12 @@ Validation is pragmatic. Historical tennis data may be imperfect, but obviously 
 - Mobile-first for iPhone-style 20:9 screens.
 - Overview is the default screen.
 - Bottom navigation uses Overview / center Add / Matches.
-- The large head-to-head score is the visual anchor.
+- The large head-to-head score is the visual anchor inside the **Matchday Journal**: a
+  continuous physical book rather than a dashboard-card stack. Overview reads in DOM order
+  as leather masthead → rivalry spread → handwritten note → expanded latest chapter →
+  exploration lenses → compact chapter index → evidence/version footer. Wider screens
+  enlarge that page rather than splitting it back into dashboard columns; source and
+  keyboard order remain identical at every width.
 - Surface badges use distinct colors.
 - Results are colored by **player identity**, not win/loss: recent form shows the winner's
   `abbr` in their color, and match cards take the winner's stripe color.
@@ -190,9 +195,9 @@ Validation is pragmatic. Historical tennis data may be imperfect, but obviously 
   (`--masthead-*` skin tokens), white type, gold eyebrow. The shell gutter it bleeds
   across is the structural token `--shell-pad` in `global.css`.
 - Overview stat cards: Match record, Set record, Win rate, Current streak.
-- Overview also carries a **Rivalry timeline** panel (`src/components/RivalryTimeline.tsx`):
-  a cumulative lead curve and a match-cadence strip. Recent form supplies the last-five
-  balance directly, rather than duplicating it as another small chart. The curve is indexed
+- Overview carries a **Rivalry timeline** lens and interactive sheet: a cumulative lead
+  curve plus date-backed cadence evidence. Recent form supplies the last-five balance
+  directly. The curve is indexed
   by match order (`seq`, always present) so it reads correctly even when early matches have
   no `date`; dates only feed the cadence strip. `DataCoverage` makes the supporting raw-data
   counts visible (dated, detailed-score and weather matches), so date-led claims never imply
@@ -200,25 +205,27 @@ Validation is pragmatic. Historical tennis data may be imperfect, but obviously 
   `deriveDataCoverage` (`src/domain/deriveStats.ts`) derive everything from the existing
   dataset. `deriveCadence` takes an injected `now` to stay pure/testable, and counts only
   dated finished matches (undated ones are tallied separately, never guessed).
-- Stat cards and By-surface rows are tappable: each opens a shared detail sheet
-  (`StatDetailSheet`) that slices the same derived stats a different way — a stat card
-  breaks its metric down by surface, a surface row breaks that surface down by metric,
-  and Current streak opens a streak-history list (`OverviewStats.streakHistory`, newest
-  run first). No new raw data is stored for this — only new derived views over the
-  existing dataset, consistent with the "derive, don't store" rule above.
+- Stat cells and journal lenses open shared evidence-aware sheets. New pure helpers
+  (`deriveGamesTally`, `deriveScorelineDistribution`, `longestRun`, `maxLead`,
+  `deriveSurfaceForm`, `matchGamesTally`) deepen those views without changing the dataset.
+  `LeadSparkline` uses match order, not guessed dates; its interactive form exposes one
+  native range control for touch and keyboard selection and a fixed-height live caption.
+  Game totals always travel with detailed/finished match counts so partial evidence cannot
+  appear complete.
 - `src/components/Modal.tsx` is the single shared overlay shell (backdrop, escape-to-close,
   focus-on-open, focus trap, return-focus, body-scroll lock). `MatchDetail`,
   `StatDetailSheet` and `AddMatchSheet` all build on it — new modal-style UI should reuse it
-  rather than re-implementing that chrome. `AddMatchSheet` can intercept a requested close
-  and show its own discard confirmation when a draft exists. The scroll lock pins the body
+  rather than re-implementing that chrome. It owns entry/exit motion and delays `onClose`
+  until `backdrop-out` completes, with a 300ms fallback and reduced-motion short circuit.
+  `dismissRef` lets form success/discard actions use the same exit path. Add form, review
+  and discard phases keep distinct React keys so `closing` state cannot leak across a reused
+  Modal instance. `AddMatchSheet` can intercept a requested close and show its own discard
+  confirmation when a draft exists. The scroll lock pins the body
   with `position: fixed` + a remembered scroll offset, because mobile WebKit (Safari *and*
   iPhone Chrome) ignores `overflow: hidden` on body for touch scrolling.
-- `.modal-panel` is a **bottom sheet**: flush to the screen's bottom edge, only the top
-  corners rounded, `env(safe-area-inset-bottom)` folded into its own bottom padding (so
-  there's no floating gap below it and no bottom corners to clip the device's rounded
-  screen corner), and `max-height` capped short of the top so tall forms never cram the
-  status bar. Do not restore a floating-card style with a bottom margin — that gap was
-  the thing Alan flagged as ugly.
+- `.modal-panel` is a detached journal sheet inside the existing blurred backdrop: fully
+  rounded on phones, centered on wider screens, bounded by safe-area-aware backdrop padding,
+  and internally scrollable. Exit animation finishes before body scroll/focus cleanup.
 - Fixed chrome must not be positioned with `transform` (mobile browsers repaint it late
   during scroll, so it visibly drifts) — `.bottom-nav` centers with auto margins instead.
 - Avoid making everything bright green.

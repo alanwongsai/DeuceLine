@@ -145,6 +145,36 @@ export type DataCoverage = {
   weatherMatches: number;
 };
 
+// Game-level evidence is available only for matches with full set scores. Keep
+// the numerator and denominator beside the result so every UI can disclose the
+// strength of the evidence instead of presenting a partial total as complete.
+export type GamesTally = {
+  games: Record<PlayerKey, number>;
+  detailedMatchCount: number;
+  finishedMatchCount: number;
+  biggestSetMargin: {
+    matchId: string;
+    score: string;
+    winner: PlayerKey;
+    margin: number;
+  } | null;
+};
+
+export type ScorelineDistribution = {
+  straightSets: Record<PlayerKey, number>;
+  deciders: Record<PlayerKey, number>;
+  averageSetsPerMatch: number | null;
+  finishedMatchCount: number;
+};
+
+// `lead` is a positive magnitude for the named player. A player who has never
+// led has no extreme rather than a misleading zero-valued "lead".
+export type LeadExtreme = {
+  lead: number;
+  matchId: string;
+  seq: number;
+} | null;
+
 export type OverviewStats = {
   totalMatches: number;
   detailedMatchCount: number;

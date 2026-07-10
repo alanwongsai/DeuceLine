@@ -3,14 +3,20 @@ import { DetailedMatch, Match, ScoreMatch } from "./schema";
 import {
   deriveCadence,
   deriveDataCoverage,
+  deriveGamesTally,
   deriveMatchContext,
   deriveMatchResult,
   deriveOverviewStats,
+  deriveScorelineDistribution,
+  deriveSurfaceForm,
   deriveTimeline,
   formatMatchScore,
   formatNeutralScoreline,
   formatWinnerScoreline,
   isUnfinished,
+  longestRun,
+  matchGamesTally,
+  maxLead,
   sortMatchesNewestFirst,
 } from "./deriveStats";
 
@@ -238,6 +244,102 @@ describe("deriveTimeline", () => {
   it("excludes unfinished matches", () => {
     const withPending = deriveTimeline([...bishop, unfinished(8, "hard")]);
     expect(withPending.map((p) => p.seq)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+  });
+});
+
+describe("deeper rivalry analytics", () => {
+  it("derives game totals only from finished detailed matches", () => {
+    expect(deriveGamesTally(bishop)).toEqual({
+      games: { alan: 16, opponent: 14 },
+      detailedMatchCount: 1,
+      finishedMatchCount: 7,
+      biggestSetMargin: { matchId: "d-7", score: "6-3", winner: "alan", margin: 3 },
+    });
+  });
+
+  it("returns honest zero evidence when no detailed match exists", () => {
+    expect(deriveGamesTally([score(1, "hard", 2, 0)])).toEqual({
+      games: { alan: 0, opponent: 0 },
+      detailedMatchCount: 0,
+      finishedMatchCount: 1,
+      biggestSetMargin: null,
+    });
+  });
+
+  it("excludes unfinished detailed matches from game evidence", () => {
+    expect(deriveGamesTally([unfinished(1, "astro")]).detailedMatchCount).toBe(0);
+  });
+
+  it("counts a tiebreak set as seven games to six", () => {
+    const match = detailed(1, "hard", [
+      { alan: 7, opponent: 6, tiebreak: { alan: 7, opponent: 4 } },
+      { alan: 6, opponent: 2 },
+    ]);
+    expect(matchGamesTally(match)).toEqual({ alan: 13, opponent: 8 });
+  });
+
+  it("formats the largest margin winner-first", () => {
+    const match = detailed(1, "hard", [
+      { alan: 1, opponent: 6 },
+      { alan: 7, opponent: 6, tiebreak: { alan: 8, opponent: 6 } },
+      { alan: 4, opponent: 6 },
+    ]);
+    expect(deriveGamesTally([match]).biggestSetMargin).toEqual({
+      matchId: "d-1",
+      score: "6-1",
+      winner: "opponent",
+      margin: 5,
+    });
+  });
+
+  it("derives straight-set, decider and average-set evidence", () => {
+    expect(deriveScorelineDistribution(bishop)).toEqual({
+      straightSets: { alan: 2, opponent: 1 },
+      deciders: { alan: 2, opponent: 2 },
+      averageSetsPerMatch: 18 / 7,
+      finishedMatchCount: 7,
+    });
+  });
+
+  it("returns null average sets for no finished matches", () => {
+    expect(deriveScorelineDistribution([])).toEqual({
+      straightSets: { alan: 0, opponent: 0 },
+      deciders: { alan: 0, opponent: 0 },
+      averageSetsPerMatch: null,
+      finishedMatchCount: 0,
+    });
+  });
+
+  it("excludes unfinished matches from scoreline distribution", () => {
+    expect(deriveScorelineDistribution([unfinished(1, "clay")]).finishedMatchCount).toBe(0);
+  });
+
+  it("finds each player's longest run and returns zero when absent", () => {
+    const history = deriveOverviewStats(bishop).streakHistory;
+    expect(longestRun(history, "alan")).toBe(3);
+    expect(longestRun([{ winner: "alan", count: 2 }], "opponent")).toBe(0);
+  });
+
+  it("finds each player's historical maximum lead", () => {
+    expect(maxLead(deriveTimeline(bishop))).toEqual({
+      alan: { lead: 1, matchId: "s-5", seq: 5 },
+      opponent: { lead: 2, matchId: "s-2", seq: 2 },
+    });
+  });
+
+  it("uses null when a player has never led", () => {
+    expect(maxLead(deriveTimeline([score(1, "hard", 2, 0), score(2, "hard", 2, 0)]))).toEqual({
+      alan: { lead: 2, matchId: "s-2", seq: 2 },
+      opponent: null,
+    });
+  });
+
+  it("derives newest-first surface form and honors the limit", () => {
+    expect(deriveSurfaceForm(bishop, "clay", 3).map((item) => item.winner)).toEqual(["alan", "opponent", "alan"]);
+  });
+
+  it("returns no surface form for an unused surface", () => {
+    expect(deriveSurfaceForm(bishop, "grass")).toEqual([]);
   });
 });
 

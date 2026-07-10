@@ -138,6 +138,8 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
   // "done" message doesn't promise an instant refresh that didn't happen.
   const [refreshed, setRefreshed] = useState(false);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
+  const modalDismissRef = useRef<(() => void) | null>(null);
+  const discardOnExit = useRef(false);
 
   const draftKey = JSON.stringify({ date, surface, location, conditions, tempC, fidelity, status, setRows, tally, notes });
   const initialDraftKey = useRef<string | null>(null);
@@ -278,7 +280,7 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
       setConfirmDiscard(true);
       return;
     }
-    onClose();
+    modalDismissRef.current?.() ?? onClose();
   };
 
   const recordAnother = () => {
@@ -304,13 +306,37 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
 
   if (confirmDiscard) {
     return (
-      <Modal titleId="discardMatchTitle" eyebrow="Add match" title="Discard this match?" onClose={onClose}>
+      <Modal
+        key="discard"
+        titleId="discardMatchTitle"
+        eyebrow="Add match"
+        title="Discard this match?"
+        onClose={() => {
+          if (discardOnExit.current) onClose();
+          else setConfirmDiscard(false);
+        }}
+        dismissRef={modalDismissRef}
+      >
         <p className="review-steps">Your unsaved score and details will be lost.</p>
         <div className="sheet-actions">
-          <button className="primary-button" type="button" onClick={() => setConfirmDiscard(false)}>
+          <button
+            className="primary-button"
+            type="button"
+            onClick={() => {
+              discardOnExit.current = false;
+              modalDismissRef.current?.() ?? setConfirmDiscard(false);
+            }}
+          >
             Keep editing
           </button>
-          <button className="secondary-button" type="button" onClick={onClose}>
+          <button
+            className="secondary-button"
+            type="button"
+            onClick={() => {
+              discardOnExit.current = true;
+              modalDismissRef.current?.() ?? onClose();
+            }}
+          >
             Discard match
           </button>
         </div>
@@ -330,11 +356,13 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
 
     return (
       <Modal
+        key="review"
         titleId="addMatchTitle"
         eyebrow={isEdit ? "Update match · Review" : "Add match · Review"}
         title="Looks right?"
         onClose={onClose}
         onRequestClose={requestClose}
+        dismissRef={modalDismissRef}
       >
         <div className="review-result">
           {unfinished && neutral ? (
@@ -371,7 +399,7 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
                 : `Match ${newMatch.seq} published — live on the site in about a minute. Reload to see it here.`}
             </p>
             <div className="sheet-actions">
-              <button className="primary-button" type="button" onClick={onClose}>
+              <button className="primary-button" type="button" onClick={() => modalDismissRef.current?.() ?? onClose()}>
                 Done
               </button>
               {!isEdit && refreshed ? (
@@ -448,11 +476,13 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
 
   return (
     <Modal
+      key="form"
       titleId="addMatchTitle"
       eyebrow={isEdit ? "Update match" : "Add match"}
       title={`Match ${editMatch?.seq ?? (lastMatch?.seq ?? 0) + 1}`}
       onClose={onClose}
       onRequestClose={requestClose}
+      dismissRef={modalDismissRef}
     >
       <div className="add-form">
         <label className="field">

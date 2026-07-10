@@ -44,7 +44,7 @@ export function MatchCard({ match, players, onOpen }: MatchCardProps) {
         {match.location ? <p className="match-meta">{match.location}</p> : null}
         {match.notes ? <p className="match-notes">{match.notes}</p> : null}
       </div>
-      <span className="match-card-chevron" aria-hidden="true">›</span>
+      <img className="match-card-chevron" src="./assets/icons/chevron-right.svg" alt="" aria-hidden="true" />
     </button>
   );
 }
@@ -87,7 +87,7 @@ function UnfinishedCard({ match, players, onOpen }: MatchCardProps) {
         {match.location ? <p className="match-meta">{match.location}</p> : null}
         {match.notes ? <p className="match-notes">{match.notes}</p> : null}
       </div>
-      <span className="match-card-chevron" aria-hidden="true">›</span>
+      <img className="match-card-chevron" src="./assets/icons/chevron-right.svg" alt="" aria-hidden="true" />
     </button>
   );
 }

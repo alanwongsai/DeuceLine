@@ -46,12 +46,20 @@
   --material-border: rgba(255, 255, 255, 0.55);
   --material-edge: rgba(12, 47, 34, 0.12);
 
+  /* Matchday Journal surfaces */
+  --journal-paper: #f8f5ec;
+  --journal-paper-deep: #efe9da;
+  --journal-rule: rgba(65, 58, 43, 0.24);
+  --journal-ink: #163327;
+  --shadow-card: 0 8px 24px rgba(12, 47, 34, 0.09);
+  --shadow-card-raised: 0 14px 32px rgba(12, 47, 34, 0.15);
+
   /* Surface badges — kept on the existing palette this skin. The grass/Andy and
      clay/Alan collisions are a known, deferred issue (see PROJECT_PLAN.md). */
   --hard: #446a87;
   --clay: #a96a50;
   --grass: #5a7f70;
-  --astro: #24867c;
+  --astro: #4b278e;
 
   /* Suggested player palette for this skin (reference only; dataset is source of truth) */
   --skin-player-a: #57298a;

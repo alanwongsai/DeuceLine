@@ -13,11 +13,11 @@ export function BottomNav({ activeView, onAdd, onChange }: BottomNavProps) {
         aria-pressed={activeView === "overview"}
         onClick={() => onChange("overview")}
       >
-        <span aria-hidden="true">⌁</span>
+        <img src="./assets/icons/book-open.svg" alt="" aria-hidden="true" />
         Overview
       </button>
       <button className="add-button" type="button" onClick={onAdd} aria-label="Add match">
-        +
+        <img src="./assets/icons/plus.svg" alt="" aria-hidden="true" />
       </button>
       <button
         className={`nav-item ${activeView === "matches" ? "active" : ""}`}
@@ -25,7 +25,7 @@ export function BottomNav({ activeView, onAdd, onChange }: BottomNavProps) {
         aria-pressed={activeView === "matches"}
         onClick={() => onChange("matches")}
       >
-        <span aria-hidden="true">≡</span>
+        <img src="./assets/icons/menu.svg" alt="" aria-hidden="true" />
         Matches
       </button>
     </nav>

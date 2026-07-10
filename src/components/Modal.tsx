@@ -1,4 +1,5 @@
-import { ReactNode, useEffect, useRef } from "react";
+import { MutableRefObject, ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import { usePrefersReducedMotion } from "./useMotion";
 
 type ModalProps = {
   titleId: string;
@@ -8,12 +9,48 @@ type ModalProps = {
   // Lets a caller protect an in-progress form from accidental dismissal while
   // keeping the shared sheet behavior identical for read-only detail views.
   onRequestClose?: () => void;
+  dismissRef?: MutableRefObject<(() => void) | null>;
   children: ReactNode;
 };
 
-export function Modal({ titleId, eyebrow, title, onClose, onRequestClose = onClose, children }: ModalProps) {
+export function Modal({ titleId, eyebrow, title, onClose, onRequestClose, dismissRef, children }: ModalProps) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLElement>(null);
+  const [closing, setClosing] = useState(false);
+  const reducedMotion = usePrefersReducedMotion();
+  const closingRef = useRef(false);
+
+  const dismiss = useCallback(() => {
+    if (closing) return;
+    if (reducedMotion) {
+      onClose();
+      return;
+    }
+    setClosing(true);
+  }, [closing, onClose, reducedMotion]);
+
+  const requestDismiss = useCallback(() => {
+    if (closing) return;
+    if (onRequestClose) onRequestClose();
+    else dismiss();
+  }, [closing, dismiss, onRequestClose]);
+  const requestDismissRef = useRef(requestDismiss);
+  requestDismissRef.current = requestDismiss;
+  closingRef.current = closing;
+
+  useEffect(() => {
+    if (!dismissRef) return;
+    dismissRef.current = dismiss;
+    return () => {
+      dismissRef.current = null;
+    };
+  }, [dismiss, dismissRef]);
+
+  useEffect(() => {
+    if (!closing) return;
+    const fallback = window.setTimeout(onClose, 300);
+    return () => window.clearTimeout(fallback);
+  }, [closing, onClose]);
 
   useEffect(() => {
     // Capture the trigger before moving focus into the sheet so close restores
@@ -23,7 +60,7 @@ export function Modal({ titleId, eyebrow, title, onClose, onRequestClose = onClo
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        onRequestClose();
+        if (!closingRef.current) requestDismissRef.current();
         return;
       }
 
@@ -82,10 +119,17 @@ export function Modal({ titleId, eyebrow, title, onClose, onRequestClose = onClo
       window.scrollTo(0, scrollY);
       returnFocus?.focus();
     };
-  }, [onRequestClose]);
+  }, []);
 
   return (
-    <div className="modal-backdrop" role="presentation" onMouseDown={onRequestClose}>
+    <div
+      className={`modal-backdrop ${closing ? "is-closing" : ""}`}
+      role="presentation"
+      onMouseDown={requestDismiss}
+      onAnimationEnd={(event) => {
+        if (closing && event.target === event.currentTarget && event.animationName === "backdrop-out") onClose();
+      }}
+    >
       <section
         ref={panelRef}
         className="modal-panel"
@@ -99,8 +143,8 @@ export function Modal({ titleId, eyebrow, title, onClose, onRequestClose = onClo
             {eyebrow ? <p className="eyebrow">{eyebrow}</p> : null}
             <h2 id={titleId}>{title}</h2>
           </div>
-          <button ref={closeButtonRef} className="icon-button" type="button" onClick={onRequestClose} aria-label="Close">
-            ×
+          <button ref={closeButtonRef} className="icon-button" type="button" onClick={requestDismiss} aria-label="Close">
+            <img src="./assets/icons/x-mark.svg" alt="" aria-hidden="true" />
           </button>
         </div>
         {children}

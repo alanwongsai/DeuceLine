@@ -38,6 +38,32 @@
 
 ## Log
 
+### v0.11.0 — 2026-07-10
+- **Matchday Journal redesign.** Overview is now the accepted physical journal composition,
+  not a reskinned dashboard: a real textured leather-and-paper book plate, stitched spine,
+  purple bookmark, engraved crest, large rivalry spread, handwritten note, expanded latest
+  chapter, three analysis lenses and a compact chapter index. Matches, detail and entry sheets
+  share the paper-and-rule language, while the visible package-injected version remains part
+  of the cover and semantic footer.
+- **Every overview metric now opens a deeper evidence-aware sheet.** New pure derivations
+  cover known game totals, scoreline distribution, longest runs, historical maximum leads
+  and surface form. Match record and form sheets include a keyboard/touch-explorable match-
+  order chart; set-level totals disclose that only 2 of 8 matches have full score evidence.
+  Match detail adds its timeline position, known-game tally and previous/next chapter
+  navigation. Weather analysis remains intentionally parked.
+- **A restrained motion system, including real sheet exits.** Sheets and backdrops animate
+  in and out, scores count to their new value, and timeline paths draw on entry; all motion
+  disappears under `prefers-reduced-motion`. Modal dismissal has a double-close guard,
+  animation-end completion and timeout fallback. Add-match form/review/discard phases are
+  keyed so exit state cannot leak between them, while dirty-draft protection, focus return
+  and iOS scroll restoration remain intact.
+- **History filtering and freshness cues.** Matches gains derived surface filter chips;
+  `package.json` now owns build version `0.11.0`, injected by Vite, and the Overview footer
+  reports the raw number of recorded chapters (including any unfinished match). PWA cache
+  moved to v7 and precaches the complete journal asset set. Typecheck (app + Functions),
+  85 tests, 320/390px browser checks and production build pass; the final source-to-render
+  comparison is recorded in `design-qa.md`.
+
 ### v0.10.0 — 2026-07-10
 - **Record-first overview and entry flow.** Mobile now reads score → core stats → recent
   form → insights → surface breakdown in one semantic DOM order; desktop uses grid areas to

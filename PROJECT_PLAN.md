@@ -161,6 +161,25 @@ Deferred / parked from this phase:
 - **Backfilling dates on the six undated early matches** stays optional; the timeline/cadence
   tolerate missing dates by design (undated finished matches are counted but off the time axis).
 
+## Phase 11: Matchday Journal + deeper evidence
+
+Turn the accepted Championships skin into a richer private rivalry archive while preserving
+the single-rivalry data and publishing architecture.
+
+- Matchday Journal Overview/Matches/detail/add visual system. — done
+- Evidence-aware stat sheets with interactive match-order charts. — done
+- Derived game totals, scoreline distribution, longest runs, maximum leads and surface form. — done
+- Reduced-motion-safe sheet exits, count-up and timeline motion. — done
+- Surface filtering and package-injected visible version. — done
+
+Status: complete in v0.11.0. No data-schema field, route, dependency or write-path change.
+
+Deferred / parked from this phase:
+- **Per-surface lead curves**: current per-surface samples top out at four matches, too sparse
+  for another line chart. Revisit only when a surface has enough match-order shape to read.
+- **Matches-page stat strip**: Overview remains the single summary surface; Matches stays a
+  filterable archive so the same metrics do not drift across two owners.
+
 ## Future Phases
 
 - General match editing / correction of finished matches (beyond completing an unfinished one).

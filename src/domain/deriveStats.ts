@@ -1,4 +1,20 @@
-import { Cadence, DataCoverage, Match, MatchContext, MatchResult, OverviewStats, PlayerKey, SetScore, SURFACES, TimelinePoint } from "./schema";
+import {
+  Cadence,
+  DataCoverage,
+  DetailedMatch,
+  GamesTally,
+  LeadExtreme,
+  Match,
+  MatchContext,
+  MatchResult,
+  OverviewStats,
+  PlayerKey,
+  ScorelineDistribution,
+  SetScore,
+  Surface,
+  SURFACES,
+  TimelinePoint,
+} from "./schema";
 
 const emptyRecord = (): Record<PlayerKey, number> => ({ alan: 0, opponent: 0 });
 
@@ -296,6 +312,119 @@ export function deriveTimeline(matches: Match[]): TimelinePoint[] {
       rollingWinRateAlan: alanWins / window.length,
     };
   });
+}
+
+export function matchGamesTally(match: DetailedMatch): Record<PlayerKey, number> {
+  return match.sets.reduce(
+    (games, set) => ({
+      alan: games.alan + set.alan,
+      opponent: games.opponent + set.opponent,
+    }),
+    emptyRecord(),
+  );
+}
+
+export function deriveGamesTally(matches: Match[]): GamesTally {
+  const finished = matches.filter((match) => !isUnfinished(match));
+  const detailed = finished
+    .filter((match): match is DetailedMatch => match.fidelity === "sets")
+    .sort((a, b) => a.seq - b.seq);
+  const games = emptyRecord();
+  let biggestSetMargin: GamesTally["biggestSetMargin"] = null;
+
+  detailed.forEach((match) => {
+    const matchGames = matchGamesTally(match);
+    games.alan += matchGames.alan;
+    games.opponent += matchGames.opponent;
+
+    match.sets.forEach((set) => {
+      const winner = deriveSetWinner(set);
+      const loser: PlayerKey = winner === "alan" ? "opponent" : "alan";
+      const margin = set[winner] - set[loser];
+      if (!biggestSetMargin || margin > biggestSetMargin.margin) {
+        const winnerFirst =
+          winner === "alan"
+            ? set
+            : {
+                alan: set.opponent,
+                opponent: set.alan,
+                tiebreak: set.tiebreak
+                  ? { alan: set.tiebreak.opponent, opponent: set.tiebreak.alan }
+                  : undefined,
+              };
+        biggestSetMargin = {
+          matchId: match.id,
+          score: formatSetScore(winnerFirst),
+          winner,
+          margin,
+        };
+      }
+    });
+  });
+
+  return {
+    games,
+    detailedMatchCount: detailed.length,
+    finishedMatchCount: finished.length,
+    biggestSetMargin,
+  };
+}
+
+export function deriveScorelineDistribution(matches: Match[]): ScorelineDistribution {
+  const finished = matches.filter((match) => !isUnfinished(match));
+  const straightSets = emptyRecord();
+  const deciders = emptyRecord();
+  let totalSets = 0;
+
+  finished.forEach((match) => {
+    const result = deriveMatchResult(match) as MatchResult & { winner: PlayerKey };
+    const loser: PlayerKey = result.winner === "alan" ? "opponent" : "alan";
+    totalSets += result.matchScore.alan + result.matchScore.opponent;
+    if (result.matchScore[loser] === 0) straightSets[result.winner] += 1;
+    if (result.isDecider) deciders[result.winner] += 1;
+  });
+
+  return {
+    straightSets,
+    deciders,
+    averageSetsPerMatch: finished.length ? totalSets / finished.length : null,
+    finishedMatchCount: finished.length,
+  };
+}
+
+export function longestRun(
+  streakHistory: ReadonlyArray<{ winner: PlayerKey; count: number }>,
+  player: PlayerKey,
+): number {
+  return streakHistory.reduce((longest, run) => (run.winner === player ? Math.max(longest, run.count) : longest), 0);
+}
+
+export function maxLead(timeline: TimelinePoint[]): Record<PlayerKey, LeadExtreme> {
+  const extremes: Record<PlayerKey, LeadExtreme> = { alan: null, opponent: null };
+  timeline.forEach((point) => {
+    if (point.lead > 0 && (!extremes.alan || point.lead > extremes.alan.lead)) {
+      extremes.alan = { lead: point.lead, matchId: point.matchId, seq: point.seq };
+    }
+    const opponentLead = -point.lead;
+    if (opponentLead > 0 && (!extremes.opponent || opponentLead > extremes.opponent.lead)) {
+      extremes.opponent = { lead: opponentLead, matchId: point.matchId, seq: point.seq };
+    }
+  });
+  return extremes;
+}
+
+export function deriveSurfaceForm(
+  matches: Match[],
+  surface: Surface,
+  limit = 5,
+): OverviewStats["recentForm"] {
+  return sortMatchesNewestFirst(matches)
+    .filter((match) => !isUnfinished(match) && match.surface === surface)
+    .slice(0, Math.max(0, limit))
+    .map((match) => ({
+      matchId: match.id,
+      winner: deriveMatchResult(match).winner as PlayerKey,
+    }));
 }
 
 const MS_PER_DAY = 86_400_000;
