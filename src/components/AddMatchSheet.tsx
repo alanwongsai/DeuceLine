@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { KeyboardEvent as ReactKeyboardEvent, useMemo, useRef, useState } from "react";
 import { DATASET_EDIT_URL } from "../data/datasetSource";
 import { appendMatch, NewMatchInput, replaceMatch, serializeDataset } from "../domain/addMatch";
 import {
@@ -139,6 +139,7 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
   const [refreshed, setRefreshed] = useState(false);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
   const modalDismissRef = useRef<(() => void) | null>(null);
+  const issueListRef = useRef<HTMLUListElement | null>(null);
   const discardOnExit = useRef(false);
 
   const draftKey = JSON.stringify({ date, surface, location, conditions, tempC, fidelity, status, setRows, tally, notes });
@@ -201,6 +202,7 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
       setNeedsPassword(!password.trim());
     } catch (reason: unknown) {
       setIssues(reason instanceof DatasetValidationError ? reason.issues : ["Could not build the match."]);
+      window.requestAnimationFrame(() => issueListRef.current?.focus());
     }
   };
 
@@ -275,12 +277,17 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
     }
   };
 
+  const dismissModal = (fallback: () => void) => {
+    if (modalDismissRef.current) modalDismissRef.current();
+    else fallback();
+  };
+
   const requestClose = () => {
     if ((hasDraft || candidate) && publishState !== "done") {
       setConfirmDiscard(true);
       return;
     }
-    modalDismissRef.current?.() ?? onClose();
+    dismissModal(onClose);
   };
 
   const recordAnother = () => {
@@ -324,7 +331,7 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
             type="button"
             onClick={() => {
               discardOnExit.current = false;
-              modalDismissRef.current?.() ?? setConfirmDiscard(false);
+              dismissModal(() => setConfirmDiscard(false));
             }}
           >
             Keep editing
@@ -334,7 +341,7 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
             type="button"
             onClick={() => {
               discardOnExit.current = true;
-              modalDismissRef.current?.() ?? onClose();
+              dismissModal(onClose);
             }}
           >
             Discard match
@@ -399,7 +406,7 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
                 : `Match ${newMatch.seq} published — live on the site in about a minute. Reload to see it here.`}
             </p>
             <div className="sheet-actions">
-              <button className="primary-button" type="button" onClick={() => modalDismissRef.current?.() ?? onClose()}>
+              <button className="primary-button" type="button" onClick={() => dismissModal(onClose)}>
                 Done
               </button>
               {!isEdit && refreshed ? (
@@ -493,14 +500,16 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
         <div className="field">
           <span className="field-label">Surface</span>
           <div className="segmented" role="radiogroup" aria-label="Surface">
-            {SURFACES.map((option) => (
+            {SURFACES.map((option, index) => (
               <button
                 key={option}
                 type="button"
                 role="radio"
                 aria-checked={surface === option}
+                tabIndex={surface === option ? 0 : -1}
                 className={`segment ${surface === option ? "segment-active" : ""}`}
                 onClick={() => setSurface(option)}
+                onKeyDown={(event) => moveRadioSelection(event, SURFACES, index, setSurface)}
               >
                 {surfaceLabels[option]}
               </button>
@@ -515,8 +524,10 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
               type="button"
               role="radio"
               aria-checked={status === "finished"}
+              tabIndex={status === "finished" ? 0 : -1}
               className={`segment ${status === "finished" ? "segment-active" : ""}`}
               onClick={() => setStatus("finished")}
+              onKeyDown={(event) => moveRadioSelection(event, ["finished", "unfinished"] as const, 0, setStatus)}
             >
               Finished
             </button>
@@ -524,8 +535,10 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
               type="button"
               role="radio"
               aria-checked={status === "unfinished"}
+              tabIndex={status === "unfinished" ? 0 : -1}
               className={`segment ${status === "unfinished" ? "segment-active" : ""}`}
               onClick={() => setStatus("unfinished")}
+              onKeyDown={(event) => moveRadioSelection(event, ["finished", "unfinished"] as const, 1, setStatus)}
             >
               Unfinished
             </button>
@@ -697,7 +710,7 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
         </details>
 
         {issues ? (
-          <ul className="issue-list" aria-label="Problems with this match">
+          <ul className="issue-list" ref={issueListRef} tabIndex={-1} role="alert" aria-label="Problems with this match">
             {issues.map((issue) => (
               <li key={issue}>{issue}</li>
             ))}
@@ -710,4 +723,23 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
       </div>
     </Modal>
   );
+}
+
+function moveRadioSelection<T extends string>(
+  event: ReactKeyboardEvent<HTMLButtonElement>,
+  options: readonly T[],
+  currentIndex: number,
+  onSelect: (value: T) => void,
+) {
+  let nextIndex: number | null = null;
+  if (event.key === "ArrowRight" || event.key === "ArrowDown") nextIndex = (currentIndex + 1) % options.length;
+  if (event.key === "ArrowLeft" || event.key === "ArrowUp") nextIndex = (currentIndex - 1 + options.length) % options.length;
+  if (event.key === "Home") nextIndex = 0;
+  if (event.key === "End") nextIndex = options.length - 1;
+  if (nextIndex === null) return;
+
+  event.preventDefault();
+  onSelect(options[nextIndex]);
+  const radios = event.currentTarget.parentElement?.querySelectorAll<HTMLElement>('[role="radio"]');
+  radios?.[nextIndex]?.focus();
 }

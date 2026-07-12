@@ -6,18 +6,20 @@ import {
   longestRun,
   maxLead,
 } from "../domain/deriveStats";
-import { DeucelineDataset, OverviewStats, PlayerKey, Surface, SURFACES } from "../domain/schema";
+import { DeucelineDataset, Match, OverviewStats, PlayerKey, Surface, SURFACES } from "../domain/schema";
 import { LeadSparkline } from "./LeadSparkline";
 import { DetailRow, StatDetailSheet } from "./StatDetailSheet";
 
 export type OverviewSheetState =
-  | { kind: "story" | "matchRecord" | "setRecord" | "winRate" | "streak" | "form" | "timeline" | "surfaces" }
+  | { kind: "story" | "matchRecord" | "setRecord" | "winRate" | "deciders" | "streak" | "form" | "timeline" | "surfaces" }
   | { kind: "surface"; surface: Surface };
 
 type OverviewSheetsProps = {
   sheet: OverviewSheetState;
   dataset: DeucelineDataset;
   stats: OverviewStats;
+  onChange: (sheet: OverviewSheetState) => void;
+  onSelectMatch: (match: Match) => void;
   onClose: () => void;
 };
 
@@ -28,9 +30,9 @@ const surfaceLabels: Record<Surface, string> = {
   astro: "Astro",
 };
 
-type Metric = "match" | "sets" | "rate";
+type Metric = "match" | "sets" | "rate" | "deciders";
 
-export function OverviewSheets({ sheet, dataset, stats, onClose }: OverviewSheetsProps) {
+export function OverviewSheets({ sheet, dataset, stats, onChange, onSelectMatch, onClose }: OverviewSheetsProps) {
   const players = dataset.rivalry.players;
   const names = { alan: players.alan.displayName, opponent: players.opponent.displayName };
   const surfaces = [...SURFACES].sort((a, b) => stats.surfaceSplit[b].played - stats.surfaceSplit[a].played);
@@ -38,11 +40,14 @@ export function OverviewSheets({ sheet, dataset, stats, onClose }: OverviewSheet
   const distribution = deriveScorelineDistribution(dataset.matches);
   const extremes = maxLead(stats.timeline);
   const cadence = deriveCadence(dataset.matches, new Date());
-  const winRate = (key: PlayerKey) => stats.totalMatches ? Math.round((stats.matchRecord[key] / stats.totalMatches) * 100) : 0;
+  const winRate = formatPercentagePair(stats.matchRecord.alan, stats.matchRecord.opponent);
   const recent = stats.recentForm.reduce(
     (record, item) => ({ ...record, [item.winner]: record[item.winner] + 1 }),
     { alan: 0, opponent: 0 },
   );
+  const recentMatches = stats.recentForm
+    .map((item) => ({ ...item, match: dataset.matches.find((match) => match.id === item.matchId) }))
+    .filter((item): item is typeof item & { match: Match } => item.match !== undefined);
   const recordBar = (alan: number, opponent: number) => {
     const total = alan + opponent;
     return total
@@ -57,12 +62,14 @@ export function OverviewSheets({ sheet, dataset, stats, onClose }: OverviewSheet
   const metricRows = (metric: Metric): DetailRow[] =>
     surfaces.map((surface) => {
       const row = stats.surfaceSplit[surface];
-      const alan = metric === "sets" ? row.setsAlan : row.alan;
-      const opponent = metric === "sets" ? row.setsOpponent : row.opponent;
+      const alan = metric === "sets" ? row.setsAlan : metric === "deciders" ? row.decidersAlan : row.alan;
+      const opponent = metric === "sets" ? row.setsOpponent : metric === "deciders" ? row.decidersOpponent : row.opponent;
+      const sample = metric === "deciders" ? alan + opponent : row.played;
+      const rowRates = formatPercentagePair(row.alan, row.opponent);
       const value = metric === "rate"
-        ? row.played ? `${Math.round((row.alan / row.played) * 100)}% · ${Math.round((row.opponent / row.played) * 100)}%` : "—"
-        : row.played ? `${alan}—${opponent}` : "—";
-      return { key: surface, label: surfaceLabels[surface], meta: row.played ? String(row.played) : undefined, value, bar: recordBar(alan, opponent) };
+        ? row.played ? `${rowRates.alan} · ${rowRates.opponent}` : "—"
+        : sample ? `${alan}—${opponent}` : "—";
+      return { key: surface, label: surfaceLabels[surface], meta: sample ? String(sample) : undefined, value, bar: recordBar(alan, opponent), isEmpty: sample === 0 };
     });
 
   if (sheet.kind === "setRecord") {
@@ -93,15 +100,50 @@ export function OverviewSheets({ sheet, dataset, stats, onClose }: OverviewSheet
   }
 
   if (sheet.kind === "winRate" || sheet.kind === "form") {
-    const latestRolling = stats.timeline.at(-1)?.rollingWinRateAlan ?? 0;
+    const latestRolling = stats.timeline.at(-1)?.rollingWinRateAlan;
     return (
       <StatDetailSheet titleId="statDetailTitle" eyebrow="Match-order form" title={sheet.kind === "form" ? "Recent form" : "Win rate"} rows={metricRows("rate")} onClose={onClose}>
+        <div className="sheet-form sheet-form-actions" aria-label="Last five matches, newest first">
+          <span>Last five</span>
+          {recentMatches.length ? recentMatches.map((item) => (
+            <button
+              type="button"
+              key={item.matchId}
+              style={{ background: players[item.winner].color }}
+              onClick={() => onSelectMatch(item.match)}
+              aria-label={`${players[item.winner].displayName} won match ${item.match.seq}. Open match detail`}
+            >
+              {players[item.winner].abbr}
+            </button>
+          )) : <em>No finished matches</em>}
+        </div>
         <LeadSparkline timeline={stats.timeline} matches={dataset.matches} players={players} mode="rolling" ariaLabel={`Rolling five-match win share for ${names.alan}`} />
         <SheetFacts facts={[
-          ["All matches", `${winRate("alan")}% · ${winRate("opponent")}%`],
+          ["All matches", `${winRate.alan} · ${winRate.opponent}`],
           ["Last five", `${recent.alan}—${recent.opponent}`],
-          ["Latest rolling", `${Math.round(latestRolling * 100)}% ${names.alan}`],
+          ["Latest rolling", latestRolling === undefined ? "—" : `${Math.round(latestRolling * 100)}% ${names.alan}`],
           ["Evidence", `${stats.totalMatches} matches`],
+        ]} />
+      </StatDetailSheet>
+    );
+  }
+
+  if (sheet.kind === "deciders") {
+    const total = stats.deciderRecord.alan + stats.deciderRecord.opponent;
+    return (
+      <StatDetailSheet
+        titleId="statDetailTitle"
+        eyebrow="Pressure points"
+        title="Deciding sets"
+        rows={metricRows("deciders")}
+        note={`Values run ${names.alan}—${names.opponent}. A decider is a finished match that reached its final available set; surface rows show deciders only.`}
+        onClose={onClose}
+      >
+        <SheetFacts facts={[
+          [`${names.alan}—${names.opponent}`, total ? `${stats.deciderRecord.alan}—${stats.deciderRecord.opponent}` : "—"],
+          ["Decider sample", `${total} of ${distribution.finishedMatchCount}`],
+          ["Straight-set wins", `${distribution.straightSets.alan}—${distribution.straightSets.opponent}`],
+          ["Avg match length", distribution.averageSetsPerMatch ? `${distribution.averageSetsPerMatch.toFixed(1)} sets` : "—"],
         ]} />
       </StatDetailSheet>
     );
@@ -144,6 +186,10 @@ export function OverviewSheets({ sheet, dataset, stats, onClose }: OverviewSheet
     const deciders = row.decidersAlan + row.decidersOpponent;
     const run = stats.surfaceStreak[sheet.surface];
     const form = deriveSurfaceForm(dataset.matches, sheet.surface);
+    const formMatches = form
+      .map((item) => ({ ...item, match: dataset.matches.find((match) => match.id === item.matchId) }))
+      .filter((item): item is typeof item & { match: Match } => item.match !== undefined);
+    const surfaceRates = formatPercentagePair(row.alan, row.opponent);
     return (
       <StatDetailSheet
         titleId="statDetailTitle"
@@ -152,22 +198,45 @@ export function OverviewSheets({ sheet, dataset, stats, onClose }: OverviewSheet
         rows={[
           { key: "matches", label: "Match record", value: row.played ? `${row.alan}—${row.opponent}` : "—", bar: recordBar(row.alan, row.opponent) },
           { key: "sets", label: "Set record", value: row.played ? `${row.setsAlan}—${row.setsOpponent}` : "—", bar: recordBar(row.setsAlan, row.setsOpponent) },
+          { key: "rate", label: "Win rate", value: row.played ? `${surfaceRates.alan} · ${surfaceRates.opponent}` : "—", bar: recordBar(row.alan, row.opponent) },
           { key: "deciders", label: "Deciders", value: deciders ? `${row.decidersAlan}—${row.decidersOpponent}` : "—", bar: recordBar(row.decidersAlan, row.decidersOpponent) },
           { key: "run", label: "Current run", value: run.winner ? `${run.count} · ${players[run.winner].displayName}` : "—" },
         ]}
-        note={`${row.played} finished match${row.played === 1 ? "" : "es"} recorded on ${surfaceLabels[sheet.surface].toLowerCase()}.`}
+        note={`Values run ${names.alan}—${names.opponent}. ${row.played} finished match${row.played === 1 ? "" : "es"} recorded on ${surfaceLabels[sheet.surface].toLowerCase()}.`}
         onClose={onClose}
       >
-        <div className="sheet-form" aria-label={`${surfaceLabels[sheet.surface]} recent form`}>
+        <button className="sheet-back" type="button" onClick={() => onChange({ kind: "surfaces" })}>
+          <img src="./assets/icons/chevron-right.svg" alt="" aria-hidden="true" />
+          All surfaces
+        </button>
+        <div className="sheet-form sheet-form-actions" aria-label={`${surfaceLabels[sheet.surface]} recent form`}>
           <span>Recent</span>
-          {form.length ? form.map((item) => <i key={item.matchId} style={{ background: players[item.winner].color }}>{players[item.winner].abbr}</i>) : <em>No matches</em>}
+          {formMatches.length ? formMatches.map((item) => (
+            <button
+              type="button"
+              key={item.matchId}
+              style={{ background: players[item.winner].color }}
+              onClick={() => onSelectMatch(item.match)}
+              aria-label={`${players[item.winner].displayName} won match ${item.match.seq}. Open match detail`}
+            >
+              {players[item.winner].abbr}
+            </button>
+          )) : <em>No matches</em>}
         </div>
       </StatDetailSheet>
     );
   }
 
   if (sheet.kind === "surfaces") {
-    return <StatDetailSheet titleId="statDetailTitle" eyebrow="All courts" title="Surface tally" rows={metricRows("match")} note="Surface records use finished matches only." onClose={onClose} />;
+    const rows = metricRows("match").map((row) => {
+      const surface = row.key as Surface;
+      return {
+        ...row,
+        onClick: () => onChange({ kind: "surface", surface }),
+        ariaLabel: `${surfaceLabels[surface]} match record: ${names.alan} ${stats.surfaceSplit[surface].alan}, ${names.opponent} ${stats.surfaceSplit[surface].opponent}; ${stats.surfaceSplit[surface].played} finished ${stats.surfaceSplit[surface].played === 1 ? "match" : "matches"}. Open breakdown`,
+      };
+    });
+    return <StatDetailSheet titleId="statDetailTitle" eyebrow="All courts" title="Surface tally" rows={rows} note="Surface records use finished matches only. Tap a court for set, rate, decider, run and recent-form detail." onClose={onClose} />;
   }
 
   const lead = stats.matchRecord.alan - stats.matchRecord.opponent;
@@ -187,6 +256,12 @@ export function OverviewSheets({ sheet, dataset, stats, onClose }: OverviewSheet
         [`${names.opponent} max lead`, extremes.opponent ? `+${extremes.opponent.lead} · M${extremes.opponent.seq}` : "Never led"],
         ["Since last", cadence.daysSinceLast === null ? "—" : `${cadence.daysSinceLast}d`],
       ]} />
+      <SheetFacts facts={[
+        ["Dated matches", `${cadence.datedCount}/${stats.coverage.finishedMatches}`],
+        ["Last 30 days", cadence.datedCount ? String(cadence.playedLast30) : "—"],
+        ["Last 90 days", cadence.datedCount ? String(cadence.playedLast90) : "—"],
+        ["Longest gap", cadence.longestGapDays === null ? "—" : `${cadence.longestGapDays}d`],
+      ]} />
     </StatDetailSheet>
   );
 }
@@ -197,4 +272,11 @@ function SheetFacts({ facts }: { facts: Array<[string, string]> }) {
       {facts.map(([label, value]) => <div className="sheet-fact" key={label}><span>{label}</span><strong>{value}</strong></div>)}
     </div>
   );
+}
+
+function formatPercentagePair(alan: number, opponent: number): Record<PlayerKey, string> {
+  const total = alan + opponent;
+  if (!total) return { alan: "0%", opponent: "0%" };
+  const alanPercentage = Math.round((alan / total) * 100);
+  return { alan: `${alanPercentage}%`, opponent: `${100 - alanPercentage}%` };
 }

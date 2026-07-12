@@ -141,7 +141,7 @@ export function Modal({ titleId, eyebrow, title, onClose, onRequestClose, dismis
         <div className="modal-header">
           <div>
             {eyebrow ? <p className="eyebrow">{eyebrow}</p> : null}
-            <h2 id={titleId}>{title}</h2>
+          <h2 id={titleId} aria-live="polite">{title}</h2>
           </div>
           <button ref={closeButtonRef} className="icon-button" type="button" onClick={requestDismiss} aria-label="Close">
             <img src="./assets/icons/x-mark.svg" alt="" aria-hidden="true" />

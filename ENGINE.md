@@ -178,10 +178,18 @@ Validation is pragmatic. Historical tennis data may be imperfect, but obviously 
 - Mobile-first for iPhone-style 20:9 screens.
 - Overview is the default screen.
 - Bottom navigation uses Overview / center Add / Matches.
+- The three entries have one job each: **Overview** answers “what is this rivalry's state
+  now?”, **Add** records or completes one raw match, and **Matches** answers “what happened?”
+  with the complete archive. Overview renders the newest raw match plus two compact recent
+  matches; Matches renders every raw match, including unfinished ones. Derived figures on both
+  routes still use finished matches only.
 - The large head-to-head score is the visual anchor inside the **Matchday Journal**: a
   continuous physical book rather than a dashboard-card stack. Overview reads in DOM order
-  as leather masthead → rivalry spread → handwritten note → expanded latest chapter →
-  exploration lenses → compact chapter index → evidence/version footer. Wider screens
+  as leather masthead → rivalry spread → handwritten note → compact Rivalry ledger → expanded
+  latest chapter → exploration lenses → two-row recent chapter index → evidence/version footer. The
+  ledger is the shallow comparison layer (Set record / Win rate / Deciders / Current run); each
+  value opens the existing evidence-aware sheet layer, so the physical-journal treatment does
+  not make core rivalry data undiscoverable. Wider screens
   enlarge that page rather than splitting it back into dashboard columns; source and
   keyboard order remain identical at every width.
 - Surface badges use distinct colors.
@@ -194,7 +202,9 @@ Validation is pragmatic. Historical tennis data may be imperfect, but obviously 
 - Both page headers are a **masthead**: a deep-green band that bleeds to the shell edges
   (`--masthead-*` skin tokens), white type, gold eyebrow. The shell gutter it bleeds
   across is the structural token `--shell-pad` in `global.css`.
-- Overview stat cards: Match record, Set record, Win rate, Current streak.
+- The Matches archive optimises for scanning and comparison rather than repeating Overview:
+  surface filters remain, date/surface/location/status are always explicit, and every row labels
+  whether it has full set scores or only a set-tally summary before opening shared match detail.
 - Overview carries a **Rivalry timeline** lens and interactive sheet: a cumulative lead
   curve plus date-backed cadence evidence. Recent form supplies the last-five balance
   directly. The curve is indexed
@@ -205,7 +215,7 @@ Validation is pragmatic. Historical tennis data may be imperfect, but obviously 
   `deriveDataCoverage` (`src/domain/deriveStats.ts`) derive everything from the existing
   dataset. `deriveCadence` takes an injected `now` to stay pure/testable, and counts only
   dated finished matches (undated ones are tallied separately, never guessed).
-- Stat cells and journal lenses open shared evidence-aware sheets. New pure helpers
+- Ledger cells and journal lenses open shared evidence-aware sheets. New pure helpers
   (`deriveGamesTally`, `deriveScorelineDistribution`, `longestRun`, `maxLead`,
   `deriveSurfaceForm`, `matchGamesTally`) deepen those views without changing the dataset.
   `LeadSparkline` uses match order, not guessed dates; its interactive form exposes one
@@ -262,14 +272,18 @@ look. Pills (`999px`) and circles (`50%`) are unaffected by the scale.
 Floating chrome uses a translucent blurred material, kept deliberately restrained per
 Apple's Liquid Glass guidance:
 
-- **Glass is only for the floating layer** — the bottom nav, the modal sheet, and the
-  FAB's specular highlight. Content (cards, panels, hero) stays opaque. Never glass on
-  glass.
+- **Glass is only for the floating system layer** — bottom navigation, centre Add, and the
+  shared modal shell used by match detail, analysis and add/update flows. Journal pages, archive
+  rows, charts, fact blocks and form fields remain opaque paper inside it. Never glass on glass.
 - Colour tokens (`--material-bg`, `--material-bg-strong`, `--material-border`,
-  `--material-edge`) live in `skins.css` (they are chrome colour); the blur radius
-  (`--material-blur`) is structural and lives in `global.css` `:root`.
-- Fallbacks: `@supports not (backdrop-filter…)` and `prefers-reduced-transparency`
-  both drop to the solid `--panel` background.
+  `--material-edge`, translucent/solid scrims and the accent material) live in `skins.css`;
+  the structural blur radius lives in `global.css` `:root`.
+- Fallbacks are final-cascade rules: both standard and prefixed no-`backdrop-filter` support
+  tests, plus `prefers-reduced-transparency`, remove blur and use solid panel/scrim/accent
+  colours. `prefers-reduced-motion` keeps the same state transitions but makes them effectively
+  instantaneous.
+- Visual semantics stay separate: journal materials describe content; glass describes system
+  controls; dataset player colours describe identity; surface tokens describe court category.
 - This is the seam for a future native app: swapping `.bottom-nav` / `.modal-panel`
   materials for platform-native ones touches no component code.
 

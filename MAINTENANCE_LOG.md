@@ -38,6 +38,33 @@
 
 ## Log
 
+### v0.11.1 — 2026-07-12
+- **Overview and Matches now have separate product jobs.** Overview answers the current-rivalry
+  question with the H2H, an actionable Rivalry ledger, the latest chapter, exactly two compact
+  recent chapters and one clear route to the full archive. Matches is the complete filterable
+  record: every match remains browsable, location/date/surface/status stay visible, and full
+  set evidence is explicitly distinguished from score-summary evidence. Unfinished matches are
+  display history only; the domain layer still excludes them from every derived statistic.
+- **The journal exposes its data depth instead of hiding it behind the visual.** Set record, Win
+  rate, Deciders and Current run are visible at a glance and each opens evidence. Deciders gains
+  its own pressure sheet; every played surface opens a single-surface breakdown; form markers
+  and surface form open match detail. Detail uses an explicit Alan—Andy set-score legend,
+  fidelity/location labels and earlier/later match navigation for finished and unfinished rows.
+- **Physical journal content and Liquid Glass controls are one system.** Paper, rules and
+  leather remain the content layer; translucent blurred material is restored only to the
+  floating bottom navigation, centre Add action, modal sheets and analysis/form overlays. The
+  original no-`backdrop-filter` and reduced-transparency solid fallbacks are final-cascade rules,
+  while reduced motion, scroll lock, sticky sheet headers and 44px controls preserve the mobile
+  interaction contract. Add's mutually exclusive segments now implement full radio-keyboard
+  behavior, and its shared modal dismissal no longer triggers the fallback close after starting
+  the animated exit.
+- **Coverage is legible before interpretation.** The footer discloses date, full-set-score and
+  weather evidence as numerator/denominator counts. Layouts were checked at the 320px CSS
+  boundary, 390px mobile and a centred 760px tablet/desktop journal; page changes move focus to
+  the new title, loading/error states are announced, and Add stays disabled before valid data
+  loads. No schema, raw data, derivation rule, repo JSON, Cloudflare write path or dependency
+  changed. Package version is 0.11.1 and the PWA cache is v8.
+
 ### v0.11.0 — 2026-07-10
 - **Matchday Journal redesign.** Overview is now the accepted physical journal composition,
   not a reskinned dashboard: a real textured leather-and-paper book plate, stitched spine,

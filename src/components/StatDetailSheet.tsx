@@ -6,9 +6,10 @@ export type DetailRow = {
   label: string;
   meta?: string;
   value: ReactNode;
-  // Omit when the row has no data to plot — it renders dimmed, same as an
-  // unplayed surface in the overview panel.
   bar?: { leftPct: number; rightPct: number; leftColor: string; rightColor: string };
+  isEmpty?: boolean;
+  onClick?: () => void;
+  ariaLabel?: string;
 };
 
 type StatDetailSheetProps = {
@@ -26,23 +27,31 @@ export function StatDetailSheet({ titleId, eyebrow, title, rows, children, note,
     <Modal titleId={titleId} eyebrow={eyebrow} title={title} onClose={onClose}>
       {children}
       <div className="surface-list detail-sheet-list">
-        {rows.map((row) => (
-          <div className={`surface-row ${row.bar ? "" : "surface-row-empty"}`} key={row.key}>
+        {rows.map((row) => {
+          const content = (
+            <>
             <span>
               {row.label}
               {row.meta ? <em className="surface-count"> · {row.meta}</em> : null}
             </span>
-            <div className="surface-track surface-h2h">
+            <span className="surface-track surface-h2h">
               {row.bar ? (
                 <>
                   <span className="h2h-fill" style={{ width: `${row.bar.leftPct}%`, background: row.bar.leftColor }} />
                   <span className="h2h-fill" style={{ width: `${row.bar.rightPct}%`, background: row.bar.rightColor }} />
                 </>
               ) : null}
-            </div>
+            </span>
             <strong>{row.value}</strong>
-          </div>
-        ))}
+            </>
+          );
+          const className = `surface-row ${row.isEmpty ? "surface-row-empty" : ""} ${row.onClick ? "surface-row-action" : ""}`;
+          return row.onClick ? (
+            <button type="button" className={className} key={row.key} onClick={row.onClick} aria-label={row.ariaLabel}>{content}</button>
+          ) : (
+            <div className={className} key={row.key}>{content}</div>
+          );
+        })}
       </div>
       {note ? <p className="evidence-note">{note}</p> : null}
     </Modal>

@@ -45,6 +45,10 @@
   --material-bg-strong: rgba(255, 255, 255, 0.86);
   --material-border: rgba(255, 255, 255, 0.55);
   --material-edge: rgba(12, 47, 34, 0.12);
+  --material-accent-bg: rgba(193, 154, 75, 0.78);
+  --material-accent-border: rgba(255, 248, 221, 0.82);
+  --material-scrim: rgba(10, 24, 18, 0.45);
+  --material-scrim-solid: #29342e;
 
   /* Matchday Journal surfaces */
   --journal-paper: #f8f5ec;

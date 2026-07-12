@@ -8,7 +8,8 @@
 ## What this is (one line)
 
 Deuceline is a mobile-first tennis rivalry tracker for one fixed rivalry — Alan vs
-his regular partner Andy — deployed static-first to GitHub Pages.
+his regular partner Andy — deployed as a static Cloudflare Pages app with a thin
+stateless commit proxy for match publishing.
 
 ## Navigation (to know X → read Y)
 
@@ -46,11 +47,25 @@ his regular partner Andy — deployed static-first to GitHub Pages.
   point-by-point, serve, or training data.
 
 - **Static-first; repo-hosted JSON is the v1 source of truth.** The app fetches
-  `public/data/deuceline-data.json`, validates, derives, renders. **Why:** GitHub
-  Pages has no backend; everyone opening the link must see the same record.
-  **Boundary:** `localStorage` is never canonical; no in-browser writes pretending to
-  be canonical; the center "+" stays a placeholder until a real shared-update workflow
-  exists.
+  `public/data/deuceline-data.json`, validates, derives and renders; the add/update form
+  publishes through the stateless Cloudflare commit proxy. **Why:** everyone opening the
+  link must see one shared record while the browser never holds the repo token.
+  **Boundary:** `localStorage` is never canonical; do not replace the repo JSON or the
+  documented commit-proxy/editor-fallback write path with client-only state.
+
+- **Overview is state; Matches is history; Add is the write action.** Overview keeps the H2H,
+  actionable evidence ledger, newest chapter and only two compact recent chapters. Matches
+  owns the complete archive, including unfinished matches and score-fidelity labels. **Why:**
+  duplicating the archive on Overview makes the third navigation entry meaningless.
+  **Boundary:** do not move full history or a second metrics dashboard back onto Overview;
+  unfinished rows may display in history but remain excluded from all derived statistics.
+
+- **Physical journal content and Liquid Glass controls are separate visual layers.** Leather,
+  paper and rules describe content; Liquid Glass is restricted to navigation, Add and shared
+  overlays; player colours describe identity; surface colours describe court category.
+  **Why:** the product should feel like one real notebook with modern controls, not all-paper
+  nostalgia or glass-on-glass decoration. **Boundary:** keep content opaque and reuse the
+  material tokens plus reduced-transparency fallbacks rather than inventing parallel effects.
 
 - **UI is colored by player identity, not win/loss.** Each player carries
   `displayName`, `color` (hex), `abbr` in the dataset; the dataset is the canonical

@@ -1,55 +1,112 @@
-# Deuceline v0.11.0 Design QA
+# Deuceline v0.11.1 Design QA
 
 ## Evidence
 
-- Source visual truth: `/var/folders/sg/0y0lnk6d1v76f7kxdlp2q7sh0000gn/T/codex-clipboard-deb35171-a28f-4def-b28f-f2d4c49a1701.png`
-- Implementation screenshot: `/private/tmp/deuceline-v011-faithful/overview-final-390.png`
-- Viewport: 390 × 844 CSS pixels
-- State: Overview, count-up settled, no sheet open
-- Full-view comparison pass 1: `/private/tmp/deuceline-v011-faithful/comparison-pass1.png`
-- Focused evidence: the source and implementation were also opened at original resolution;
-  no additional crop was needed because both full phone frames remain legible at 390 × 844.
+- Source visual truth: `/private/tmp/deuceline-system-audit/01-overview.png`
+- Primary implementation screenshot: `/private/tmp/deuceline-system-qa/png/overview-390-final.png`
+- Focused implementation screenshots:
+  - `/private/tmp/deuceline-system-qa/png/matches-390-final.png`
+  - `/private/tmp/deuceline-system-qa/png/detail-390-final.png`
+  - `/private/tmp/deuceline-system-qa/png/add-390-final.png`
+  - `/private/tmp/deuceline-system-qa/png/analysis-390-final.png`
+  - `/private/tmp/deuceline-system-qa/png/overview-desktop-final.png`
+  - `/private/tmp/deuceline-system-qa/png/matches-desktop-final.png`
+- Viewports: 390 × 844 CSS pixels; 1280 × 720 desktop canvas with one centred 760px
+  journal page. The in-app browser clamps its narrowest override to 390px, so the 320px
+  boundary was checked from the final CSS constraints and DOM sizing rather than claimed as
+  a second browser screenshot.
+- State: real repo dataset; Overview count-up settled; archive unfiltered; latest match detail;
+  blank Add form; Set record analysis; no publish side effect.
+
+## Comparison method
+
+- Full-view evidence: the source Overview and final 390px Overview were opened together in one
+  image-comparison input at original resolution. The comparison covered composition, hierarchy,
+  typography, palette, assets, copy and above-the-fold density.
+- Focused evidence: Matches, detail, Add and analysis captures were opened together in one
+  focused comparison input because their small labels, controls and data density were not
+  readable enough in the Overview frame alone.
+- Intentional differences from the source are product corrections, not fidelity drift: chapter
+  circles use real `seq` values (8/7/6), the latest chapter says `Full set scores` instead of the
+  unsupported `Best of 3 sets`, Overview stops after two compact recent chapters, and the glass
+  navigation is detached from the paper edge.
 
 ## Findings and comparison history
 
 ### Pass 1 — blocked
 
-- **[P1] Product still read as a reskinned dashboard.** The former implementation used
-  rounded dashboard cards, a generic green header and a long scrolling archive instead of
-  the selected physical journal composition.
-  - Fix: rebuilt Overview around a real blank book plate with leather cover, stitched spine,
-    purple ribbon, ivory ruled paper and gold page edge. Replaced the stat-card stack with
-    the source's score spread, handwritten rivalry note, expanded latest chapter, three
-    analysis lenses, compact chapter index and anchored journal navigation.
-- **[P1] Major regions did not share the source proportions.** The H2H, latest match and
-  archive occupied materially different vertical positions.
-  - Fix: aligned the 390px composition to the source: 67px cover, 187px rivalry spread,
-    76px note, 181px expanded chapter, 74px lenses, four 30px chapter rows and 49px nav.
-- **[P2] Source assets were approximated.** The book, crest, stamp and navigation marks were
-  absent or represented by generic CSS/text.
-  - Fix: added project-local raster book/crest/stamp assets and repo-local Heroicons SVGs
-    with the MIT license. Text glyph arrows, plus and close marks were replaced with assets.
+- **[P2] Analysis labels collided with their bars.** In the first 390px Set record capture,
+  `Known games` and `Biggest set margin` occupied a fixed label track and visibly ran into the
+  chart column.
+  - Fix: changed evidence rows to a two-line grid: label/value on the first row and the full-width
+    bar on the second. Absence of a bar no longer dims meaningful non-chart facts; only explicitly
+    empty rows are subdued.
+- **[P2] Desktop archive summary crossed the leather/paper seam.** The first desktop archive
+  placed `8 recorded / 8 finished` in the uncovered strip below the masthead because the book
+  plate scales taller than the mobile header.
+  - Fix: aligned the desktop archive masthead to the 130px leather region. The final desktop
+    capture places summary, filters and table-like archive rows entirely on paper.
+- **[P2] Programmatic page focus looked like a boxed title treatment.** Navigating to Matches
+  correctly focused its heading, but the generic outline resembled an unintended gold border.
+  - Fix: retained visible focus with an editorial accent underline, preserving keyboard/screen-
+    reader orientation without introducing a new title component.
+- **[P2] Add's disclosure and segmented selection needed stronger control semantics.** `Add
+  details` was visually compact but below the touch target contract, while pressed buttons did
+  not express the mutually exclusive Surface/Result model precisely.
+  - Fix: disclosure summaries now have 44px targets and focus rings; Surface/Result use complete
+    radiogroups with roving tab stops plus Arrow/Home/End keyboard selection. The H2H button also
+    gained a quiet visible `Open rivalry story` affordance to match its accessible action.
 
 ### Pass 2 — passed
 
-- The 390 × 844 implementation now has `scrollWidth = 390`, `scrollHeight = 844` and matches
-  the source's region order, book construction, palette, score hierarchy, chapter density,
-  surface badges and fixed navigation.
-- 320px verification found no horizontal overflow. Matches, rivalry story, latest chapter,
-  range-chart exploration and modal exit paths were exercised. Browser console errors and
-  warnings were empty.
-- The browser later rejected reopening the temporary local comparison URL. The already
-  captured browser-rendered implementation and source image were therefore opened together
-  in one local image-inspection input. That final comparison found no remaining actionable
-  P0/P1/P2 mismatch. The residual differences are P3: the repo-local analysis icons use the
-  closest Heroicons equivalents, and the available system script face is not the exact hand
-  drawn lettering used by the concept render.
+- Post-fix mobile analysis has no label/bar overlap or horizontal overflow; played surfaces and
+  evidence facts remain full contrast while the empty Grass row is visibly secondary.
+- Post-fix desktop Matches uses one scan-friendly three-column archive row for date/surface,
+  result/score and location/fidelity; its summary starts beyond the bookmark and below the
+  leather masthead. Overview remains one centred physical page rather than reverting to
+  dashboard columns.
+- The final 390px full-view comparison preserves the source book, crest, ribbon, ruled paper,
+  score hierarchy, handwriting, ledger, chapter density and player/surface palette while making
+  the requested information boundary explicit.
+- Post-fix Add exposes 44px inputs, segments and disclosure; Arrow Left/Right moved Surface focus
+  and selection together, then restored Astro without leaving a dirty draft.
 
-## Primary interactions and console
+## Required fidelity surfaces
 
-- Verified Overview/Matches navigation, surface filters, rivalry story, interactive chart,
-  expanded match detail, previous/next browsing and animated Modal dismissal. Add Match's
-  existing field/review/publish behavior remains covered by its domain tests and the earlier
-  browser pass. Browser console errors and warnings: none.
+- **Fonts and typography:** journal serif, system UI and handwritten fallbacks retain the source
+  hierarchy and weights. Long archive and analysis labels wrap or truncate deliberately; there
+  is no collision in the final captures. The system script font remains a P3 approximation of
+  the concept lettering.
+- **Spacing and layout rhythm:** 390px has `scrollWidth = 390`; modal panels are 366px wide with
+  safe-area clearance and no horizontal rubber-banding. Controls and fields measure 44px or
+  larger. Tablet/desktop keeps one 760px book page and a 520px glass navigation bar.
+- **Colors and visual tokens:** player colours continue to come from the dataset; surface colours
+  remain classification tokens; paper/leather stay opaque; Liquid Glass tokens are confined to
+  bottom navigation, Add and the shared overlay shell. Reduced-transparency and unsupported-
+  blur paths resolve to solid tokenized materials.
+- **Image quality and asset fidelity:** the repo's book plate, crest, ribbon/stamp art and local
+  icon assets are reused without CSS/emoji substitutes, stretching or new placeholder art.
+- **Copy and content:** Overview now answers current state; Matches is explicitly `Match archive`;
+  status, unknown dates/locations, score fidelity, evidence coverage and set-score orientation are
+  stated instead of inferred.
+
+## Primary interactions and accessibility
+
+- Exercised Overview → Matches, archive → match detail, detail close, Add open/close, ledger →
+  Set record, Surfaces → Astro breakdown, and surface recent-form semantics.
+- Confirmed the latest detail exposes the Alan—Andy set legend and previous/next controls; Add
+  exposes roving radio semantics, 44px fields and a 44px details disclosure; surface rows expose
+  match-detail drill-downs. Loading announces status and disables Add until the dataset validates.
+- Paging from match 7 to the last match makes Next disabled and deliberately moves focus to the
+  still-enabled Previous control; the updated dialog title is also a polite live region.
+- Modal focus trap/return, Escape/backdrop dismissal, body scroll lock, sticky sheet header,
+  reduced motion, reduced transparency and no-blur fallbacks reuse the shared system layer.
+- Browser console errors and warnings: none.
+
+## Residual P3 polish
+
+- The available system handwriting face is not the exact concept-render lettering.
+- A physical 320px browser capture remains useful on the next real-device pass even though the
+  final narrow CSS uses a two-by-two ledger, smaller cover grid and single-column sheet facts.
 
 final result: passed

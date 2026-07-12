@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import {
   deriveMatchContext,
   deriveMatchResult,
@@ -26,8 +27,13 @@ type MatchDetailProps = {
 };
 
 export function MatchDetail({ match, players, matches, onClose, onUpdate, onSelectMatch }: MatchDetailProps) {
+  const ordered = [...matches].sort((a, b) => a.seq - b.seq);
+  const position = ordered.findIndex((candidate) => candidate.id === match.id);
+  const previous = position > 0 ? ordered[position - 1] : null;
+  const next = position >= 0 && position < ordered.length - 1 ? ordered[position + 1] : null;
+
   if (isUnfinished(match)) {
-    return <UnfinishedDetail match={match} players={players} onClose={onClose} onUpdate={onUpdate} onSelectMatch={onSelectMatch} />;
+    return <UnfinishedDetail match={match} players={players} onClose={onClose} onUpdate={onUpdate} onSelectMatch={onSelectMatch} previous={previous} next={next} />;
   }
 
   const result = deriveMatchResult(match);
@@ -35,10 +41,6 @@ export function MatchDetail({ match, players, matches, onClose, onUpdate, onSele
   const context = deriveMatchContext(matches, match.id);
   // Finished match: winner is always known.
   const winner = players[result.winner as PlayerKey];
-  const ordered = [...matches].sort((a, b) => a.seq - b.seq);
-  const position = ordered.findIndex((candidate) => candidate.id === match.id);
-  const previous = position > 0 ? ordered[position - 1] : null;
-  const next = position >= 0 && position < ordered.length - 1 ? ordered[position + 1] : null;
   const games = match.fidelity === "sets" ? matchGamesTally(match) : null;
 
   const narrative: string[] = [];
@@ -59,7 +61,7 @@ export function MatchDetail({ match, players, matches, onClose, onUpdate, onSele
   return (
     <Modal
       titleId="matchDetailTitle"
-      eyebrow={match.date ? formatDate(match.date) : `Match ${match.seq}`}
+      eyebrow={match.date ? `${formatDate(match.date)} · Match ${match.seq}` : `Match ${match.seq} · Date unknown`}
       title={
         <>
           {winner.displayName} won {scoreline.score}
@@ -69,7 +71,10 @@ export function MatchDetail({ match, players, matches, onClose, onUpdate, onSele
     >
       <div className="detail-meta">
         <SurfaceBadge surface={match.surface} />
-        {match.location ? <span>{match.location}</span> : null}
+        <span>{match.location ?? "Location unknown"}</span>
+        <span className={`fidelity-label ${match.fidelity === "sets" ? "fidelity-detailed" : "fidelity-summary"}`}>
+          {match.fidelity === "sets" ? "Full set scores" : "Score summary"}
+        </span>
         <WeatherBadges conditions={match.conditions} tempC={match.tempC} />
       </div>
 
@@ -77,7 +82,7 @@ export function MatchDetail({ match, players, matches, onClose, onUpdate, onSele
         <SetList match={match} players={players} />
       ) : (
         <p className="set-line set-line-missing">
-          Set scores not recorded · final {scoreline.score}
+          Score summary only · final set tally {scoreline.score}
         </p>
       )}
 
@@ -95,7 +100,7 @@ export function MatchDetail({ match, players, matches, onClose, onUpdate, onSele
           </span>
         </p>
         <p className="detail-sub">
-          Match {context.matchNumber} of {context.totalMatches}
+          Decided match {context.matchNumber} of {context.totalMatches}
         </p>
         {narrative.map((line) => (
           <p className="detail-sub" key={line}>
@@ -113,12 +118,7 @@ export function MatchDetail({ match, players, matches, onClose, onUpdate, onSele
         {games ? <p className="detail-games">Known games · {players.alan.displayName} {games.alan}—{games.opponent} {players.opponent.displayName}</p> : null}
       </div>
 
-      {onSelectMatch && (previous || next) ? (
-        <div className="detail-pagination" aria-label="Browse matches">
-          <button type="button" disabled={!previous} onClick={() => previous && onSelectMatch(previous)}>← Previous</button>
-          <button type="button" disabled={!next} onClick={() => next && onSelectMatch(next)}>Next →</button>
-        </div>
-      ) : null}
+      <MatchPager previous={previous} next={next} onSelectMatch={onSelectMatch} />
     </Modal>
   );
 }
@@ -130,13 +130,16 @@ function UnfinishedDetail({
   players,
   onClose,
   onUpdate,
-}: Omit<MatchDetailProps, "matches">) {
+  onSelectMatch,
+  previous,
+  next,
+}: Omit<MatchDetailProps, "matches"> & { previous: Match | null; next: Match | null }) {
   const neutral = formatNeutralScoreline(match);
 
   return (
     <Modal
       titleId="matchDetailTitle"
-      eyebrow={match.date ? formatDate(match.date) : `Match ${match.seq}`}
+      eyebrow={match.date ? `${formatDate(match.date)} · Match ${match.seq}` : `Match ${match.seq} · Date unknown`}
       title={
         <>
           In progress · {neutral.alan}—{neutral.opponent}
@@ -147,7 +150,10 @@ function UnfinishedDetail({
       <div className="detail-meta">
         <span className="status-pill">In progress</span>
         <SurfaceBadge surface={match.surface} />
-        {match.location ? <span>{match.location}</span> : null}
+        <span>{match.location ?? "Location unknown"}</span>
+        <span className={`fidelity-label ${match.fidelity === "sets" ? "fidelity-detailed" : "fidelity-summary"}`}>
+          {match.fidelity === "sets" ? "Full set scores" : "Score summary"}
+        </span>
         <WeatherBadges conditions={match.conditions} tempC={match.tempC} />
       </div>
 
@@ -155,7 +161,7 @@ function UnfinishedDetail({
         <SetList match={match} players={players} />
       ) : (
         <p className="set-line set-line-missing">
-          Set scores not recorded · {neutral.alan}—{neutral.opponent} so far
+          Score summary only · set tally {neutral.alan}—{neutral.opponent} so far
         </p>
       )}
 
@@ -171,7 +177,46 @@ function UnfinishedDetail({
           Update result
         </button>
       ) : null}
+
+      <MatchPager previous={previous} next={next} onSelectMatch={onSelectMatch} />
     </Modal>
+  );
+}
+
+function MatchPager({
+  previous,
+  next,
+  onSelectMatch,
+}: {
+  previous: Match | null;
+  next: Match | null;
+  onSelectMatch?: (match: Match) => void;
+}) {
+  const previousButtonRef = useRef<HTMLButtonElement>(null);
+  const nextButtonRef = useRef<HTMLButtonElement>(null);
+  if (!onSelectMatch || (!previous && !next)) return null;
+
+  const selectMatch = (target: Match, direction: "previous" | "next") => {
+    onSelectMatch(target);
+    window.requestAnimationFrame(() => {
+      const sameDirection = direction === "previous" ? previousButtonRef.current : nextButtonRef.current;
+      const otherDirection = direction === "previous" ? nextButtonRef.current : previousButtonRef.current;
+      if (sameDirection && !sameDirection.disabled) sameDirection.focus();
+      else if (otherDirection && !otherDirection.disabled) otherDirection.focus();
+    });
+  };
+
+  return (
+    <div className="detail-pagination" aria-label="Browse matches">
+      <button ref={previousButtonRef} type="button" disabled={!previous} onClick={() => previous && selectMatch(previous, "previous")}>
+        <img className="pagination-chevron pagination-chevron-previous" src="./assets/icons/chevron-right.svg" alt="" aria-hidden="true" />
+        Previous
+      </button>
+      <button ref={nextButtonRef} type="button" disabled={!next} onClick={() => next && selectMatch(next, "next")}>
+        Next
+        <img className="pagination-chevron" src="./assets/icons/chevron-right.svg" alt="" aria-hidden="true" />
+      </button>
+    </div>
   );
 }
 
@@ -179,26 +224,32 @@ function UnfinishedDetail({
 // unfinished match this still reads correctly set by set.
 function SetList({ match, players }: { match: Extract<Match, { fidelity: "sets" }>; players: Record<PlayerKey, Player> }) {
   return (
-    <ol className="detail-sets">
-      {match.sets.map((set, index) => {
-        const setWinner = deriveSetWinner(set);
-        return (
-          <li key={index}>
-            <span className="detail-set-label">Set {index + 1}</span>
-            <span className="detail-set-score">
-              <b style={{ color: setWinner === "alan" ? players.alan.color : undefined }}>{set.alan}</b>
-              <i aria-hidden="true">–</i>
-              <b style={{ color: setWinner === "opponent" ? players.opponent.color : undefined }}>{set.opponent}</b>
-              {set.tiebreak ? (
-                <em>
-                  ({set.tiebreak.alan}-{set.tiebreak.opponent})
-                </em>
-              ) : null}
-            </span>
-          </li>
-        );
-      })}
-    </ol>
+    <div className="detail-set-table">
+      <div className="detail-set-legend" aria-label={`Set score order: ${players.alan.displayName}, then ${players.opponent.displayName}`}>
+        <span>Set</span>
+        <strong><b style={{ color: players.alan.color }}>{players.alan.displayName}</b><i>—</i><b style={{ color: players.opponent.color }}>{players.opponent.displayName}</b></strong>
+      </div>
+      <ol className="detail-sets">
+        {match.sets.map((set, index) => {
+          const setWinner = deriveSetWinner(set);
+          return (
+            <li key={index} aria-label={`Set ${index + 1}: ${players.alan.displayName} ${set.alan}, ${players.opponent.displayName} ${set.opponent}`}>
+              <span className="detail-set-label">Set {index + 1}</span>
+              <span className="detail-set-score">
+                <b style={{ color: setWinner === "alan" ? players.alan.color : undefined }}>{set.alan}</b>
+                <i aria-hidden="true">–</i>
+                <b style={{ color: setWinner === "opponent" ? players.opponent.color : undefined }}>{set.opponent}</b>
+                {set.tiebreak ? (
+                  <em>
+                    ({set.tiebreak.alan}-{set.tiebreak.opponent})
+                  </em>
+                ) : null}
+              </span>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
   );
 }
 

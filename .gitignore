@@ -3,6 +3,7 @@ dist/
 .DS_Store
 *.tsbuildinfo
 node_modules/.tmp/
+.playwright-cli/
 
 # Cloudflare Pages local dev — real secrets and wrangler state, never commit
 .dev.vars

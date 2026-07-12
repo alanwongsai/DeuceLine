@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { MatchCard } from "../components/MatchCard";
 import { MatchDetail } from "../components/MatchDetail";
-import { sortMatchesNewestFirst } from "../domain/deriveStats";
+import { isUnfinished, sortMatchesNewestFirst } from "../domain/deriveStats";
 import { DeucelineDataset, Match, Surface, SURFACES } from "../domain/schema";
 
 type MatchesPageProps = {
@@ -10,12 +10,21 @@ type MatchesPageProps = {
 };
 
 export function MatchesPage({ dataset, onUpdateMatch }: MatchesPageProps) {
-  const sortedMatches = sortMatchesNewestFirst(dataset.matches);
+  const sortedMatches = useMemo(() => sortMatchesNewestFirst(dataset.matches), [dataset.matches]);
   const players = dataset.rivalry.players;
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [filter, setFilter] = useState<Surface | null>(null);
-  const surfaceCounts = Object.fromEntries(SURFACES.map((surface) => [surface, sortedMatches.filter((match) => match.surface === surface).length])) as Record<Surface, number>;
+  const surfaceCounts = useMemo(
+    () => Object.fromEntries(SURFACES.map((surface) => [surface, sortedMatches.filter((match) => match.surface === surface).length])) as Record<Surface, number>,
+    [sortedMatches],
+  );
   const visibleMatches = filter ? sortedMatches.filter((match) => match.surface === filter) : sortedMatches;
+  const unfinishedCount = sortedMatches.filter(isUnfinished).length;
+  const finishedCount = sortedMatches.length - unfinishedCount;
+
+  useEffect(() => {
+    if (filter && surfaceCounts[filter] === 0) setFilter(null);
+  }, [filter, surfaceCounts]);
 
   return (
     <main className="screen screen-matches">
@@ -23,11 +32,15 @@ export function MatchesPage({ dataset, onUpdateMatch }: MatchesPageProps) {
         <img className="journal-archive-crest" src="./assets/journal-crest.png" alt="" />
         <div>
           <p className="eyebrow">Matchday Journal</p>
-          <h1>Chapters</h1>
+          <h1 data-page-title tabIndex={-1}>Match archive</h1>
         </div>
-        <span className="count-pill">{visibleMatches.length}</span>
+        <span className="count-pill" aria-live="polite" aria-label={`${visibleMatches.length} matches shown`}>{visibleMatches.length}</span>
       </header>
-      <div className="match-filters" aria-label="Filter matches by surface">
+      <p className="archive-summary">
+        <strong>{sortedMatches.length} recorded</strong>
+        <span>{finishedCount} finished{unfinishedCount ? ` · ${unfinishedCount} in progress` : ""}</span>
+      </p>
+      <div className="match-filters" role="group" aria-label="Filter matches by surface">
         <button type="button" className={`filter-chip ${filter === null ? "active" : ""}`} aria-pressed={filter === null} onClick={() => setFilter(null)}>All · {sortedMatches.length}</button>
         {SURFACES.filter((surface) => surfaceCounts[surface] > 0).map((surface) => (
           <button key={surface} type="button" className={`filter-chip ${filter === surface ? "active" : ""}`} aria-pressed={filter === surface} onClick={() => setFilter(surface)}>{surface.charAt(0).toUpperCase() + surface.slice(1)} · {surfaceCounts[surface]}</button>
@@ -37,6 +50,9 @@ export function MatchesPage({ dataset, onUpdateMatch }: MatchesPageProps) {
         {visibleMatches.map((match) => (
           <MatchCard key={match.id} match={match} players={players} onOpen={() => setSelectedMatch(match)} />
         ))}
+        {visibleMatches.length === 0 ? (
+          <p className="archive-empty">{filter ? "No matches recorded on this surface." : "No matches recorded yet. Use Add to start the archive."}</p>
+        ) : null}
       </section>
       {selectedMatch ? (
         <MatchDetail

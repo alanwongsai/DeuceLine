@@ -21,7 +21,7 @@ export function MatchCard({ match, players, onOpen }: MatchCardProps) {
       type="button"
       className="match-card"
       onClick={onOpen}
-      aria-label={`${winner.displayName} won ${scoreline.score} — open match detail`}
+      aria-label={`${match.date ? formatDate(match.date) : `Match ${match.seq}, date unknown`}. ${winner.displayName} won ${scoreline.score} on ${match.surface}, ${match.location ?? "location unknown"}. ${match.fidelity === "sets" ? "Full set scores" : "Score summary"}. Open match detail`}
     >
       <div className="match-card-stripe" aria-hidden="true" style={{ background: winner.color }} />
       <div className="match-card-body">
@@ -39,9 +39,14 @@ export function MatchCard({ match, players, onOpen }: MatchCardProps) {
         {scoreline.setScores ? (
           <p className="set-line">{scoreline.setScores.join("   ")}</p>
         ) : (
-          <p className="set-line set-line-missing">{scoreline.score} final · summary only</p>
+          <p className="set-line set-line-missing">{scoreline.score} final</p>
         )}
-        {match.location ? <p className="match-meta">{match.location}</p> : null}
+        <div className="match-card-footer">
+          <p className="match-meta">{match.location ?? "Location unknown"}</p>
+          <span className={`fidelity-label ${match.fidelity === "sets" ? "fidelity-detailed" : "fidelity-summary"}`}>
+            {match.fidelity === "sets" ? "Full set scores" : "Score summary"}
+          </span>
+        </div>
         {match.notes ? <p className="match-notes">{match.notes}</p> : null}
       </div>
       <img className="match-card-chevron" src="./assets/icons/chevron-right.svg" alt="" aria-hidden="true" />
@@ -62,7 +67,7 @@ function UnfinishedCard({ match, players, onOpen }: MatchCardProps) {
       type="button"
       className="match-card match-card-unfinished"
       onClick={onOpen}
-      aria-label={`In progress, ${neutral.alan}–${neutral.opponent} — open match detail`}
+      aria-label={`${match.date ? formatDate(match.date) : `Match ${match.seq}, date unknown`}. In progress, ${players.alan.displayName} ${neutral.alan}, ${players.opponent.displayName} ${neutral.opponent}, on ${match.surface}, ${match.location ?? "location unknown"}. ${match.fidelity === "sets" ? "Full set scores" : "Score summary"}. Open match detail`}
     >
       <div className="match-card-stripe" aria-hidden="true" style={{ background: splitStripe }} />
       <div className="match-card-body">
@@ -82,9 +87,14 @@ function UnfinishedCard({ match, players, onOpen }: MatchCardProps) {
         {neutral.setScores ? (
           <p className="set-line">{neutral.setScores.join("   ")}</p>
         ) : (
-          <p className="set-line set-line-missing">{neutral.alan}—{neutral.opponent} so far · summary only</p>
+          <p className="set-line set-line-missing">{neutral.alan}—{neutral.opponent} so far</p>
         )}
-        {match.location ? <p className="match-meta">{match.location}</p> : null}
+        <div className="match-card-footer">
+          <p className="match-meta">{match.location ?? "Location unknown"}</p>
+          <span className={`fidelity-label ${match.fidelity === "sets" ? "fidelity-detailed" : "fidelity-summary"}`}>
+            {match.fidelity === "sets" ? "Full set scores" : "Score summary"}
+          </span>
+        </div>
         {match.notes ? <p className="match-notes">{match.notes}</p> : null}
       </div>
       <img className="match-card-chevron" src="./assets/icons/chevron-right.svg" alt="" aria-hidden="true" />

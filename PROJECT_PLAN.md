@@ -167,12 +167,18 @@ Turn the accepted Championships skin into a richer private rivalry archive while
 the single-rivalry data and publishing architecture.
 
 - Matchday Journal Overview/Matches/detail/add visual system. — done
+- Overview is the current-state and insight surface (H2H, actionable ledger, latest + two recent
+  chapters, data coverage); Matches is the complete filterable archive, including unfinished
+  rows and explicit full-score vs summary fidelity. — done
+- Liquid Glass is limited to floating system chrome; paper remains the content material across
+  Overview, archive rows, detail, add/update and analysis. — done
 - Evidence-aware stat sheets with interactive match-order charts. — done
 - Derived game totals, scoreline distribution, longest runs, maximum leads and surface form. — done
 - Reduced-motion-safe sheet exits, count-up and timeline motion. — done
 - Surface filtering and package-injected visible version. — done
 
-Status: complete in v0.11.0. No data-schema field, route, dependency or write-path change.
+Status: complete; see MAINTENANCE_LOG.md for the shipped version. No data-schema field, route,
+dependency or write-path change.
 
 Deferred / parked from this phase:
 - **Per-surface lead curves**: current per-surface samples top out at four matches, too sparse
