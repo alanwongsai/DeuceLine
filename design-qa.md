@@ -1,4 +1,43 @@
-# Deuceline v0.11.1 Design QA
+# Deuceline v0.11.2 Design QA
+
+## v0.11.2 installed-iPhone correction pass
+
+### Evidence
+
+- Real installed Chrome Web App references supplied by Alan:
+  - `/var/folders/sg/0y0lnk6d1v76f7kxdlp2q7sh0000gn/T/TemporaryItems/NSIRD_screencaptureui_VdT5wT/截屏2026-07-12 23.45.06.png`
+  - `/var/folders/sg/0y0lnk6d1v76f7kxdlp2q7sh0000gn/T/TemporaryItems/NSIRD_screencaptureui_DDZDvE/截屏2026-07-12 23.45.27.png`
+  - `/var/folders/sg/0y0lnk6d1v76f7kxdlp2q7sh0000gn/T/TemporaryItems/NSIRD_screencaptureui_oPBPjz/截屏2026-07-12 23.45.40.png`
+- Local Matches evidence:
+  - `/private/tmp/deuceline-v0.11.2-matches-390-reference.png` (390 × 844 CSS pixels at 2×;
+    captured before the final 6px leather seam mask, whose active computed style was then checked)
+  - desktop DOM measurement at a 1280 × 720 canvas: centred journal width 760px; cover and opaque
+    archive paper meet at 130px, matching Overview's visible leather-to-paper seam
+
+### Diagnosis and corrections
+
+- The old Matches masthead sat in the unsafe top region and the page allowed Overview's full book
+  plate, including its baked bookmark, to remain visible behind archive content. Matches therefore
+  looked like archive controls pasted on top of the Overview art rather than another page in the
+  same product system.
+- Matches now composes its own semantic leather cover and an opaque paper archive. Only the leather
+  crop is reused; its ribbon is kept outside the clipped cover edge. The paper heading, surface
+  filters and ruled match rows are live components, not another baked screenshot.
+- `viewport-fit=cover` remains enabled, but cover height, content padding and the underlying book
+  position share `safe-area-inset-top`. Installed standalone navigation switches from a detached
+  bottom offset to edge-owned glass whose padding includes `safe-area-inset-bottom`.
+- Normal 390px layout has no horizontal overflow; all four filters remain horizontally scrollable,
+  archive fidelity/location/date/result information remains visible, and desktop keeps one centred
+  760px paper archive. Overview content was intentionally unchanged.
+
+### Verification boundary
+
+- The in-app browser verifies the 390px and desktop responsive layouts but cannot supply a positive
+  iPhone safe-area inset or emulate an installed Chrome Web App's `display-mode: standalone`.
+  Those platform branches were checked structurally against the captured failure states and need
+  one final installed-device refresh after the v9 service-worker cache takes control.
+
+final result: browser pass; installed-iPhone confirmation pending
 
 ## Evidence
 

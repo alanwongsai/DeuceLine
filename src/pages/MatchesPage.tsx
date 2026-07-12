@@ -27,32 +27,43 @@ export function MatchesPage({ dataset, onUpdateMatch }: MatchesPageProps) {
   }, [filter, surfaceCounts]);
 
   return (
-    <main className="screen screen-matches">
-      <header className="page-header">
-        <img className="journal-archive-crest" src="./assets/journal-crest.png" alt="" />
-        <div>
-          <p className="eyebrow">Matchday Journal</p>
+    <main className="screen screen-matches journal-book">
+      <header className="app-header journal-cover journal-archive-cover">
+        <img className="journal-cover-crest" src="./assets/journal-crest-transparent.png" alt="" />
+        <div className="journal-cover-title">
           <h1 data-page-title tabIndex={-1}>Match archive</h1>
+          <p>Matchday Journal</p>
         </div>
-        <span className="count-pill" aria-live="polite" aria-label={`${visibleMatches.length} matches shown`}>{visibleMatches.length}</span>
+        <span className="journal-version journal-archive-count" aria-live="polite" aria-label={`${visibleMatches.length} matches shown`}>
+          <strong>{visibleMatches.length}</strong>
+          <small>matches</small>
+        </span>
       </header>
-      <p className="archive-summary">
-        <strong>{sortedMatches.length} recorded</strong>
-        <span>{finishedCount} finished{unfinishedCount ? ` · ${unfinishedCount} in progress` : ""}</span>
-      </p>
-      <div className="match-filters" role="group" aria-label="Filter matches by surface">
-        <button type="button" className={`filter-chip ${filter === null ? "active" : ""}`} aria-pressed={filter === null} onClick={() => setFilter(null)}>All · {sortedMatches.length}</button>
-        {SURFACES.filter((surface) => surfaceCounts[surface] > 0).map((surface) => (
-          <button key={surface} type="button" className={`filter-chip ${filter === surface ? "active" : ""}`} aria-pressed={filter === surface} onClick={() => setFilter(surface)}>{surface.charAt(0).toUpperCase() + surface.slice(1)} · {surfaceCounts[surface]}</button>
-        ))}
-      </div>
-      <section className="match-list" aria-label="Matches newest first">
-        {visibleMatches.map((match) => (
-          <MatchCard key={match.id} match={match} players={players} onOpen={() => setSelectedMatch(match)} />
-        ))}
-        {visibleMatches.length === 0 ? (
-          <p className="archive-empty">{filter ? "No matches recorded on this surface." : "No matches recorded yet. Use Add to start the archive."}</p>
-        ) : null}
+      <section className="journal-archive-page" aria-label="Complete match archive">
+        <header className="archive-page-heading">
+          <div>
+            <p>Complete record</p>
+            <h2>Recorded chapters</h2>
+          </div>
+          <p className="archive-summary">
+            <strong>{sortedMatches.length} recorded</strong>
+            <span>{finishedCount} finished{unfinishedCount ? ` · ${unfinishedCount} in progress` : ""}</span>
+          </p>
+        </header>
+        <div className="match-filters" role="group" aria-label="Filter matches by surface">
+          <button type="button" className={`filter-chip ${filter === null ? "active" : ""}`} aria-pressed={filter === null} onClick={() => setFilter(null)}>All · {sortedMatches.length}</button>
+          {SURFACES.filter((surface) => surfaceCounts[surface] > 0).map((surface) => (
+            <button key={surface} type="button" className={`filter-chip ${filter === surface ? "active" : ""}`} aria-pressed={filter === surface} onClick={() => setFilter(surface)}>{surface.charAt(0).toUpperCase() + surface.slice(1)} · {surfaceCounts[surface]}</button>
+          ))}
+        </div>
+        <section className="match-list" aria-label="Matches newest first">
+          {visibleMatches.map((match) => (
+            <MatchCard key={match.id} match={match} players={players} onOpen={() => setSelectedMatch(match)} />
+          ))}
+          {visibleMatches.length === 0 ? (
+            <p className="archive-empty">{filter ? "No matches recorded on this surface." : "No matches recorded yet. Use Add to start the archive."}</p>
+          ) : null}
+        </section>
       </section>
       {selectedMatch ? (
         <MatchDetail

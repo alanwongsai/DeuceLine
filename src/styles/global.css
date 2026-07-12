@@ -1947,18 +1947,38 @@ body {
 }
 
 .app-shell {
+  position: relative;
   width: min(100%, 853px);
   min-height: 100svh;
   padding: 0;
   background-color: #f7f3e8;
   background-image: url("/assets/journal-book-bg.png");
   background-repeat: no-repeat;
-  background-position: top center;
+  background-position: center env(safe-area-inset-top);
   background-size: 100% auto;
   box-shadow: 0 0 40px rgba(1, 20, 13, 0.38);
 }
 
+.app-shell::before {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 0;
+  height: env(safe-area-inset-top);
+  background: #062d20;
+  content: "";
+  pointer-events: none;
+}
+
+.app-shell > .state-panel {
+  position: relative;
+  z-index: 1;
+  width: calc(100% - 36px);
+  margin: calc(18px + env(safe-area-inset-top)) auto 18px;
+}
+
 .screen-overview {
+  position: relative;
+  z-index: 1;
   display: block;
   width: 100%;
 }
@@ -2651,23 +2671,126 @@ body {
 }
 
 .screen-matches {
-  padding: 16px 16px calc(var(--bottom-chrome-clearance) + env(safe-area-inset-bottom));
+  position: relative;
+  z-index: 1;
+  display: block;
+  min-height: 100svh;
+  padding: 0;
+  color: var(--journal-ink);
+  background-color: var(--journal-paper);
+  background-image: var(--journal-texture);
+  background-repeat: repeat;
 }
 
-.screen-matches .page-header {
-  justify-content: flex-start;
+.journal-archive-cover {
+  position: relative;
+  overflow: hidden;
+  background-color: #062d20;
+  background-image: url("/assets/journal-book-bg.png");
+  background-repeat: no-repeat;
+  /* Keep this a leather crop, not a second copy of Overview's whole book.
+     Four pixels of downward offset keep the plate's baked ribbon below the
+     clipped cover edge; the archive page owns everything after the seam. */
+  background-position: center calc(env(safe-area-inset-top) + 4px);
+  background-size: 100% auto;
 }
 
-.journal-archive-crest {
-  width: 46px;
-  height: 46px;
-  object-fit: cover;
-  border-radius: 50%;
-  mix-blend-mode: screen;
+.journal-archive-cover::after {
+  position: absolute;
+  inset: auto 0 0;
+  height: 6px;
+  background: #062d20;
+  content: "";
+  pointer-events: none;
 }
 
-.screen-matches .count-pill {
-  margin-left: auto;
+.journal-archive-count {
+  grid-template-rows: auto auto;
+  align-content: center;
+  min-width: 58px;
+  height: 36px;
+  gap: 0;
+  line-height: 1;
+}
+
+.journal-archive-count strong {
+  font-size: 0.82rem;
+}
+
+.journal-archive-count small {
+  font-size: 0.4rem;
+  font-weight: 750;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.journal-archive-page {
+  min-height: calc(100vh - 67px - env(safe-area-inset-top));
+  padding: 22px 24px calc(var(--bottom-chrome-clearance) + env(safe-area-inset-bottom)) 30px;
+  background-color: var(--journal-paper);
+  background-image: var(--journal-texture);
+  box-shadow: inset 10px 0 18px -18px rgba(22, 51, 39, 0.62);
+}
+
+.archive-page-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+  min-height: 72px;
+  padding: 4px 6px 13px;
+  border-bottom: 1px solid rgba(33, 41, 36, 0.58);
+}
+
+.archive-page-heading > div > p {
+  margin: 0 0 3px;
+  color: #56554f;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.archive-page-heading h2 {
+  color: var(--journal-ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.35rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.archive-page-heading .archive-summary {
+  display: grid;
+  justify-items: end;
+  gap: 3px;
+  margin: 0;
+  padding: 0;
+  text-align: right;
+}
+
+.archive-page-heading .archive-summary strong {
+  font-size: 0.92rem;
+}
+
+.archive-page-heading .archive-summary span {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 750;
+}
+
+.journal-archive-page .match-filters {
+  margin: 14px 0 10px;
+}
+
+.journal-archive-page .match-list {
+  overflow: visible;
+  border: 0;
+  border-top: 1px solid var(--journal-rule);
+  border-bottom: 1px solid var(--journal-rule);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .nav-item {
@@ -3028,7 +3151,11 @@ body {
   .nav-item img { width: 22px; height: 22px; }
   .add-button { width: 54px; height: 54px; margin-top: -17px; }
   .add-button img { width: 27px; height: 27px; }
-  .screen-matches { padding: 22px 28px calc(var(--bottom-chrome-clearance) + env(safe-area-inset-bottom)); }
+  .screen-matches { padding: 0; }
+  .journal-archive-page {
+    min-height: calc(100vh - 86px - env(safe-area-inset-top));
+    padding: 28px 34px calc(var(--bottom-chrome-clearance) + env(safe-area-inset-bottom)) 40px;
+  }
 }
 
 @media (min-width: 768px) {
@@ -3072,6 +3199,18 @@ body {
   .journal-lens-strip { height: 102px; }
   .journal-chapter-row { min-height: 62px; }
   .journal-view-all { min-height: 60px; }
+  .journal-archive-page {
+    min-height: calc(100vh - 96px - env(safe-area-inset-top));
+    padding: 32px 44px calc(var(--bottom-chrome-clearance) + env(safe-area-inset-bottom)) 52px;
+  }
+
+  .archive-page-heading {
+    min-height: 88px;
+  }
+
+  .archive-page-heading h2 {
+    font-size: 1.65rem;
+  }
 
   .modal-backdrop { align-items: center; }
   .modal-panel { max-height: min(760px, calc(100svh - 40px)); }
@@ -3129,6 +3268,71 @@ body {
     grid-row: 2;
     align-self: start;
     margin: 0;
+  }
+}
+
+/* `viewport-fit=cover` lets the leather fill the display, while important
+   content begins below the Dynamic Island/status area. The book plate itself
+   is shifted by the same inset above, so its leather-to-paper seam still lines
+   up with the semantic cover instead of cutting through the title. */
+@media (max-width: 519px) {
+  .journal-cover {
+    height: calc(67px + env(safe-area-inset-top));
+    padding-top: calc(19px + env(safe-area-inset-top));
+  }
+}
+
+@media (min-width: 520px) and (max-width: 767px) {
+  .journal-cover {
+    height: calc(86px + env(safe-area-inset-top));
+    padding-top: calc(20px + env(safe-area-inset-top));
+  }
+
+  .journal-cover.journal-archive-cover {
+    height: calc(clamp(86px, 17vw, 126px) + env(safe-area-inset-top));
+  }
+
+  .journal-archive-page {
+    min-height: calc(100vh - clamp(86px, 17vw, 126px) - env(safe-area-inset-top));
+  }
+}
+
+@media (min-width: 768px) {
+  .journal-cover {
+    height: calc(96px + env(safe-area-inset-top));
+    padding-top: calc(22px + env(safe-area-inset-top));
+  }
+
+  .journal-cover.journal-archive-cover {
+    height: calc(130px + env(safe-area-inset-top));
+  }
+
+  .journal-archive-page {
+    min-height: calc(100vh - 130px - env(safe-area-inset-top));
+  }
+}
+
+/* Installed iPhone web apps report an unsafe bottom inset. The material owns
+   that area; controls stay above the home indicator, but the glass continues
+   to the physical edge instead of leaving a detached blank band. */
+@media (display-mode: standalone) and (max-width: 767px) {
+  html,
+  body,
+  #root,
+  .app-shell,
+  .screen-matches {
+    min-height: 100vh;
+  }
+
+  .bottom-nav {
+    bottom: 0;
+    width: min(100%, 520px);
+    min-height: calc(56px + env(safe-area-inset-bottom));
+    padding: 4px 24px calc(4px + env(safe-area-inset-bottom));
+    border-right: 0;
+    border-bottom: 0;
+    border-left: 0;
+    border-radius: 24px 24px 0 0;
   }
 }
 

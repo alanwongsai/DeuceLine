@@ -199,9 +199,11 @@ Validation is pragmatic. Historical tennis data may be imperfect, but obviously 
   `formatWinnerScoreline` in `src/domain/deriveStats.ts` produces "Andy won 2—1" with
   winner-first set lines. Views that lay out Alan-left / Andy-right (the detail set list,
   the H2H impact line) keep the fixed orientation — names and colours make those explicit.
-- Both page headers are a **masthead**: a deep-green band that bleeds to the shell edges
-  (`--masthead-*` skin tokens), white type, gold eyebrow. The shell gutter it bleeds
-  across is the structural token `--shell-pad` in `global.css`.
+- Overview and Matches share one **journal cover language** without sharing one page plate.
+  Overview keeps the full leather/book/paper composition. Matches clips only the leather
+  region into a semantic cover, then owns an opaque textured-paper archive beneath it; the
+  baked Overview bookmark never continues through archive rows. Both covers use the same crest,
+  gold type and physical seam, while the archive heading, filters and ruled rows remain live UI.
 - The Matches archive optimises for scanning and comparison rather than repeating Overview:
   surface filters remain, date/surface/location/status are always explicit, and every row labels
   whether it has full set scores or only a set-tally summary before opening shared match detail.
@@ -238,6 +240,11 @@ Validation is pragmatic. Historical tennis data may be imperfect, but obviously 
   and internally scrollable. Exit animation finishes before body scroll/focus cleanup.
 - Fixed chrome must not be positioned with `transform` (mobile browsers repaint it late
   during scroll, so it visibly drifts) — `.bottom-nav` centers with auto margins instead.
+- `viewport-fit=cover` is intentional. Journal covers extend behind iPhone status chrome, but
+  title content and the leather-to-paper seam are offset by `env(safe-area-inset-top)`. In
+  installed `display-mode: standalone`, the bottom navigation owns the whole bottom inset:
+  controls remain above the Home Indicator while its glass material continues to the physical
+  edge. Standalone height uses conservative `100vh` to avoid WebKit's dynamic-viewport gap.
 - Avoid making everything bright green.
 - Keep cards readable on a phone.
 

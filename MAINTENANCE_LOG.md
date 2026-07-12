@@ -38,6 +38,20 @@
 
 ## Log
 
+### v0.11.2 — 2026-07-12
+- **Matches is now a real archive page in the same journal, not Overview reused as a backdrop.**
+  It has its own live leather cover and opaque ruled-paper body; the baked purple Overview
+  bookmark no longer runs behind filters or rows. The old rounded archive container is replaced
+  by scan-friendly ruled chapters while dates, surface, location, status, score fidelity, filters
+  and match detail remain unchanged.
+- **Installed iPhone web-app safe areas are owned by the correct layer.** The book plate and both
+  semantic covers now begin important content below the top safe inset, preventing the Dynamic
+  Island/status area from covering the title. In standalone mode, Liquid Glass navigation reaches
+  the physical bottom edge and pads its controls above the Home Indicator, removing the empty band
+  below the floating bar. Browser layout remains floating; reduced-transparency and no-blur
+  fallbacks are unchanged. Loading and dataset-error panels also clear the top safe inset. Package
+  version is 0.11.2 and the PWA cache is v9.
+
 ### v0.11.1 — 2026-07-12
 - **Overview and Matches now have separate product jobs.** Overview answers the current-rivalry
   question with the H2H, an actionable Rivalry ledger, the latest chapter, exactly two compact
