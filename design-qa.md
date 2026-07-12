@@ -1,4 +1,47 @@
-# Deuceline v0.11.2 Design QA
+# Deuceline v0.11.3 Design QA
+
+## v0.11.3 Overview bottom-seam pass
+
+### Evidence
+
+- Source visual truth: `/var/folders/sg/0y0lnk6d1v76f7kxdlp2q7sh0000gn/T/TemporaryItems/NSIRD_screencaptureui_L0CnKo/截屏2026-07-13 00.20.51.png`
+- Pre-fix implementation: `/private/tmp/deuceline-v0.11.3-overview-bottom-before-full.png`
+- Post-fix implementation: `/private/tmp/deuceline-v0.11.3-overview-bottom-after.png`
+- Viewport/state: 390 × 844 CSS pixels, Overview scrolled fully to the end; real installed-iPhone
+  source is a focused crop of the same bottom state.
+- Full-view and focused comparison: the real-device crop and post-fix 390px implementation were
+  opened together. No separate focused implementation crop was needed because the footer copy,
+  paper seam, Add control and complete navigation remain readable in the full 390px capture.
+
+### Comparison history
+
+- **Pass 1 — [P2] redundant endpaper band.** The cover already displayed the package version, but
+  the footer repeated `Deuceline v0.11.2 · 8 matches recorded` and then left 22px of empty paper
+  before the navigation. On the installed phone this read as a separate blank strip between the
+  evidence footer and Liquid Glass.
+  - Fix: removed only the duplicate footer microcopy and changed Overview's final clearance from
+    84px to 64px plus the bottom safe inset. Data coverage and every interactive element remain.
+- **Pass 2 — passed.** At 390px the evidence copy ends at 761px, the raised Add control begins at
+  776px, and the navigation begins at 782px: a deliberate 15px content-to-control clearance with
+  no empty endpaper band. Document `scrollWidth` remains exactly 390px.
+
+### Required fidelity surfaces
+
+- **Typography/copy:** the handwritten evidence hierarchy is unchanged; only duplicate version
+  microcopy is removed. Version `0.11.3` remains visible on the leather cover.
+- **Spacing/layout:** the paper now meets the glass with an 8px structural seam in standalone mode;
+  the raised Add control still clears the evidence line, including the bottom safe inset.
+- **Colors/tokens:** paper and Liquid Glass materials are unchanged; no new colour or opacity token.
+- **Image quality/assets:** journal, book and navigation assets are unchanged and remain source
+  files rather than recreated graphics.
+- **Interaction/accessibility:** coverage remains semantic text, navigation targets stay 44px or
+  larger, and no focus, motion, scroll-lock or reduced-transparency behavior changed.
+
+### Residual test boundary
+
+- The 390px browser confirms geometry and overflow. Alan's installed-iPhone screenshot is the
+  platform evidence for the original issue; cache v10 still needs the normal real-device refresh
+  after deployment, but there is no remaining P0/P1/P2 implementation finding.
 
 ## v0.11.2 installed-iPhone correction pass
 
@@ -37,7 +80,7 @@
   Those platform branches were checked structurally against the captured failure states and need
   one final installed-device refresh after the v9 service-worker cache takes control.
 
-final result: browser pass; installed-iPhone confirmation pending
+Earlier v0.11.2 result: browser pass; installed-iPhone confirmation pending
 
 ## Evidence
 

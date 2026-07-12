@@ -186,7 +186,8 @@ Validation is pragmatic. Historical tennis data may be imperfect, but obviously 
 - The large head-to-head score is the visual anchor inside the **Matchday Journal**: a
   continuous physical book rather than a dashboard-card stack. Overview reads in DOM order
   as leather masthead → rivalry spread → handwritten note → compact Rivalry ledger → expanded
-  latest chapter → exploration lenses → two-row recent chapter index → evidence/version footer. The
+  latest chapter → exploration lenses → two-row recent chapter index → evidence footer. The package
+  version stays on the leather cover instead of repeating in the endpaper transition. The
   ledger is the shallow comparison layer (Set record / Win rate / Deciders / Current run); each
   value opens the existing evidence-aware sheet layer, so the physical-journal treatment does
   not make core rivalry data undiscoverable. Wider screens

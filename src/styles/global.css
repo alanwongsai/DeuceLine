@@ -2607,7 +2607,6 @@ body {
 }
 
 .journal-coverage {
-  position: relative;
   display: grid;
   grid-template-columns: 19px 1fr;
   gap: 3px;
@@ -2635,15 +2634,6 @@ body {
 .journal-coverage p span {
   display: block;
   font-weight: 400;
-}
-
-.journal-coverage > small {
-  position: absolute;
-  right: 8px;
-  bottom: 1px;
-  color: rgba(50, 54, 50, 0.58);
-  font-size: 0.36rem;
-  letter-spacing: 0.04em;
 }
 
 .journal-rivalry:focus-visible,
@@ -2927,7 +2917,6 @@ body {
   .journal-coverage { height: 71px; grid-template-columns: 29px 1fr; gap: 5px; padding: 8px 12px 0; }
   .journal-coverage > img { width: 27px; height: 27px; margin-top: 3px; }
   .journal-coverage p { font-size: 1.17rem; }
-  .journal-coverage > small { right: 12px; bottom: 2px; font-size: 0.54rem; }
   .bottom-nav { min-height: 74px; grid-template-columns: 1fr 108px 1fr; padding: 5px 36px calc(5px + env(safe-area-inset-bottom)); }
   .nav-item { min-height: 63px; font-size: 0.93rem; }
   .nav-item img { width: 32px; height: 32px; }
@@ -2999,7 +2988,6 @@ body {
   .journal-coverage { grid-template-columns: 38px 1fr; gap: 6px; padding: 10px 16px 0; }
   .journal-coverage > img { width: 36px; height: 36px; margin-top: 4px; }
   .journal-coverage p { font-size: 1.56rem; }
-  .journal-coverage > small { right: 16px; bottom: 2px; font-size: 0.72rem; }
   .bottom-nav { min-height: 98px; grid-template-columns: 1fr 144px 1fr; padding: 6px 48px calc(6px + env(safe-area-inset-bottom)); }
   .nav-item { min-height: 84px; font-size: 1.24rem; }
   .nav-item img { width: 42px; height: 42px; }
@@ -3138,8 +3126,6 @@ body {
   .journal-coverage { min-height: 66px; grid-template-columns: 26px 1fr; gap: 5px; padding: 8px 11px 10px; }
   .journal-coverage > img { width: 24px; height: 24px; }
   .journal-coverage p { font-size: 1rem; }
-  .journal-coverage > small { right: 11px; bottom: 2px; font-size: 0.47rem; }
-
   .bottom-nav {
     width: min(calc(100% - 24px), 520px);
     min-height: 56px;
@@ -3310,6 +3296,14 @@ body {
   .journal-archive-page {
     min-height: calc(100vh - 130px - env(safe-area-inset-top));
   }
+}
+
+/* The cover already owns the version label. Keep the evidence footer close to
+   the floating system layer: 56px of navigation plus an 8px paper-to-glass
+   seam. This removes the empty endpaper band without letting the raised Add
+   control cover the final evidence line. */
+.screen-overview .journal-page {
+  padding-bottom: calc(64px + env(safe-area-inset-bottom));
 }
 
 /* Installed iPhone web apps report an unsafe bottom inset. The material owns

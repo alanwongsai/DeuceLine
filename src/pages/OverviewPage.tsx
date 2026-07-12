@@ -163,7 +163,6 @@ export function OverviewPage({ dataset, onUpdateMatch, onShowMatches }: Overview
             <strong>Evidence behind the story</strong>
             <span>Dates {stats.coverage.datedMatches}/{stats.coverage.finishedMatches} · Set scores {stats.coverage.detailedScoreMatches}/{stats.coverage.finishedMatches} · Weather {stats.coverage.weatherMatches}/{stats.coverage.finishedMatches}</span>
           </p>
-          <small>Deuceline v{__APP_VERSION__} · {dataset.matches.length} matches recorded</small>
         </footer>
       </section>
 

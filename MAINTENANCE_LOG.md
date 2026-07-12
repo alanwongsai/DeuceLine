@@ -38,6 +38,14 @@
 
 ## Log
 
+### v0.11.3 — 2026-07-13
+- **Overview now finishes as one continuous paper-to-glass transition.** The redundant tiny
+  footer version/count is removed because the leather cover already owns version identity, while
+  the evidence-coverage line remains intact. Overview's final paper clearance now matches the
+  height of the navigation plus a restrained 8px seam, bringing the evidence footer close to the
+  Liquid Glass layer without letting the raised Add control cover it. Matches is unchanged.
+  Package version is 0.11.3 and the PWA cache is v10.
+
 ### v0.11.2 — 2026-07-12
 - **Matches is now a real archive page in the same journal, not Overview reused as a backdrop.**
   It has its own live leather cover and opaque ruled-paper body; the baked purple Overview

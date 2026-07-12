@@ -1,4 +1,4 @@
-const CACHE_NAME = "deuceline-cache-v9";
+const CACHE_NAME = "deuceline-cache-v10";
 const PRECACHE_ASSETS = [
   "./manifest.webmanifest",
   "./assets/icon.svg",
