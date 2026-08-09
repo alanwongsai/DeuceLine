@@ -36,6 +36,29 @@
   per-set scoring becomes a primary entry workflow (it isn't in v1 — most matches are
   finished-match summaries).
 
+- **`/api/update-match` has no rate limit — only `/api/add-match` does.** Found
+  2026-08-09 while auditing the Cloudflare account. Both endpoints gate on the *same*
+  `ADD_MATCH_PASSWORD` and drive the *same* `GITHUB_TOKEN` (`functions/api/_github.ts`),
+  but the zone's one rate limiting rule matches
+  `(http.request.uri.path wildcard r"/api/add-match")` only. So the brute-force
+  protection on the front door is bypassed by knocking on the side door instead.
+
+  **The fix is a Cloudflare dashboard change, not a code change** — nothing in this repo
+  is wrong. `meltcado.com` → Security → Security rules → edit the existing `Protect`
+  rule (the Free plan allows exactly **one** rate limiting rule per zone, so this must
+  be a widening of that rule, not a second one):
+  - expression → `(http.host eq "deuceline.meltcado.com" and starts_with(http.request.uri.path, "/api/"))`
+  - period `10 seconds` → `1 minute`, mitigation timeout `10 seconds` → `1 hour`
+    (both are the strictest values the Free plan offers; 5 requests/period stays)
+
+  That takes a single IP from ~43k guesses/day down to ~120, and cannot affect normal
+  use — publishing a match is one request. **Caveat worth stating plainly:** rate
+  limiting only buys time. The actual backbone is `ADD_MATCH_PASSWORD` being long and
+  random rather than memorable; if it is a guessable word, this rule delays an attacker
+  rather than stopping one. Blast radius if guessed stays bounded by design (the
+  endpoints are append/update-only and every write is a revertible commit) — the token
+  itself is a fine-grained PAT scoped to this repo's Contents only.
+
 ## Log
 
 ### v0.11.3 — 2026-07-13
