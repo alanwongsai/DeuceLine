@@ -126,6 +126,28 @@
           "opponent": 4
         }
       ]
+    },
+    {
+      "id": "match-9",
+      "seq": 9,
+      "date": "2026-08-16",
+      "surface": "astro",
+      "location": "Bishop",
+      "conditions": [
+        "cloudy"
+      ],
+      "tempC": 25,
+      "fidelity": "sets",
+      "sets": [
+        {
+          "alan": 3,
+          "opponent": 6
+        },
+        {
+          "alan": 1,
+          "opponent": 6
+        }
+      ]
     }
   ]
 }
