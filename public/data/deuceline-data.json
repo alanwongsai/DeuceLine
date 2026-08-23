@@ -148,6 +148,28 @@
           "opponent": 6
         }
       ]
+    },
+    {
+      "id": "match-10",
+      "seq": 10,
+      "date": "2026-08-23",
+      "surface": "hard",
+      "location": "Bishop",
+      "conditions": [
+        "cloudy"
+      ],
+      "tempC": 23,
+      "fidelity": "sets",
+      "sets": [
+        {
+          "alan": 6,
+          "opponent": 2
+        },
+        {
+          "alan": 6,
+          "opponent": 4
+        }
+      ]
     }
   ]
 }
