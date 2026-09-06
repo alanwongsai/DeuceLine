@@ -196,6 +196,25 @@
           "opponent": 4
         }
       ]
+    },
+    {
+      "id": "match-12",
+      "seq": 12,
+      "date": "2026-09-06",
+      "surface": "hard",
+      "location": "Bishop",
+      "fidelity": "sets",
+      "sets": [
+        {
+          "alan": 2,
+          "opponent": 6
+        },
+        {
+          "alan": 6,
+          "opponent": 3
+        }
+      ],
+      "status": "unfinished"
     }
   ]
 }
