@@ -203,6 +203,10 @@
       "date": "2026-09-06",
       "surface": "hard",
       "location": "Bishop",
+      "conditions": [
+        "cloudy"
+      ],
+      "tempC": 20,
       "fidelity": "sets",
       "sets": [
         {
@@ -212,9 +216,12 @@
         {
           "alan": 6,
           "opponent": 3
+        },
+        {
+          "alan": 7,
+          "opponent": 6
         }
-      ],
-      "status": "unfinished"
+      ]
     }
   ]
 }
