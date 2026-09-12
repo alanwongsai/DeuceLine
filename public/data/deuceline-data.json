@@ -222,6 +222,21 @@
           "opponent": 6
         }
       ]
+    },
+    {
+      "id": "match-13",
+      "seq": 13,
+      "date": "2026-09-12",
+      "surface": "hard",
+      "location": "Bishop",
+      "fidelity": "sets",
+      "sets": [
+        {
+          "alan": 6,
+          "opponent": 7
+        }
+      ],
+      "status": "unfinished"
     }
   ]
 }
