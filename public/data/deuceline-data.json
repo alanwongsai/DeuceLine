@@ -233,10 +233,17 @@
       "sets": [
         {
           "alan": 6,
-          "opponent": 7
+          "opponent": 7,
+          "tiebreak": {
+            "alan": 7,
+            "opponent": 6
+          }
+        },
+        {
+          "alan": 1,
+          "opponent": 6
         }
-      ],
-      "status": "unfinished"
+      ]
     }
   ]
 }
