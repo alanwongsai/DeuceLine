@@ -189,6 +189,12 @@ Deferred / parked from this phase:
 ## Future Phases
 
 - General match editing / correction of finished matches (beyond completing an unfinished one).
+  Revisit after the match-13 entry error: a 7:6 second set was stored as the first
+  set's optional tiebreak points, then the finished match could not be corrected in
+  the app. Candidate scope: edit an existing finished match while preserving its
+  id/seq, show a clearly labeled per-set before/after review, reject tiebreak
+  details that contradict the set winner, and keep corrections traceable through
+  Git commits. This is a parked idea, not an implementation decision.
 - Future Grand Slam skins (Roland-Garros / US Open / Australian Open) + skin-switcher UI.
 - Multi-rivalry support.
 - Import/export as a non-canonical helper.

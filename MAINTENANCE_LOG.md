@@ -61,6 +61,12 @@
 
 ## Log
 
+### v0.11.4 — 2026-09-23
+- Correct match 13 from the mistaken two-set entry to the owner's confirmed
+  Alan—Andy set scores: 6:7, 7:6, 1:6. Remove the mistakenly entered first-set
+  tiebreak points; the actual tiebreak point scores are unknown. Match identity,
+  date, surface, location, and winner remain unchanged. Package version is 0.11.4.
+
 ### v0.11.3 — 2026-07-13
 - **Overview now finishes as one continuous paper-to-glass transition.** The redundant tiny
   footer version/count is removed because the leather cover already owns version identity, while
