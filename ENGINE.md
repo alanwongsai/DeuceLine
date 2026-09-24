@@ -86,7 +86,7 @@ only the public link can't write or delete:
 
 A second Function, `functions/api/update-match.ts` (`POST /api/update-match`), completes or
 edits an **unfinished** match. It shares the password gate, least-privilege token, and GitHub
-plumbing (`functions/api/_github.ts`). Its append-only equivalent is a strict precondition:
+plumbing (the shared core — see Shared publish core below). Its append-only equivalent is a strict precondition:
 
 - The **sole** precondition is that the *currently stored* match at `id` has
   `status: "unfinished"`. The submitted match may stay unfinished or become finished (drops
@@ -104,6 +104,27 @@ dashboard, or `.dev.vars` for `wrangler pages dev`). If a local/dev host does no
 Function, the app falls back to the original hand-off: `serializeDataset` to the clipboard +
 open `DATASET_EDIT_URL` (`src/data/datasetSource.ts`) — paste over the file, commit, and let
 Cloudflare Pages redeploy from `main`.
+
+### Shared publish core (web + mini program)
+
+The write gate and rules are host-agnostic so a second client can use them without copying:
+
+- `functions/api/_publish.ts` — `checkPublishKey` (configured? right password? constant-time),
+  `handleAddMatch`, `handleUpdateMatch`, `handleGetDataset`. Each takes a `DatasetStore` and the
+  parsed body and returns `{ status, body }`; statuses and messages are the contract both
+  clients rely on. Covered by `functions/api/_publish.test.ts` with an in-memory store.
+- `functions/api/_github.ts` — `createGitHubStore(token)`, the canonical `DatasetStore` (GitHub
+  Contents API read + commit; the blob sha is the optimistic-concurrency `version`, stale → 409).
+  Web-standard globals only, so it runs on Cloudflare and on Node 18+.
+- `functions/api/_cloudflare.ts` — Cloudflare-only glue (`Env`, `respond`). `add-match.ts` and
+  `update-match.ts` are thin adapters: gate on the `x-deuceline-key` header, parse JSON, call
+  the core, map the result to a `Response`.
+
+`npm run build:core` (`scripts/build-core.mjs`) bundles `src/domain/index.ts` and
+`functions/api/_mp-publisher.ts` into CommonJS for the WeChat mini program and its CloudBase
+cloud functions, plus the default skin tokens as WXSS. The mini program's own read path is a
+`getDataset` cloud function over the same store, so it never fetches a web domain. Layout,
+cloud-function adapters and the sync rule are owned by [MINIPROGRAM.md](MINIPROGRAM.md).
 
 The previous GitHub Pages deployment workflow is intentionally retired: the historical YAML is
 kept at `.github/retired-workflows/deploy-pages.yml`, outside `.github/workflows/`, so GitHub
@@ -319,5 +340,7 @@ Possible future phases:
 - GitHub API commit flow with a protected token strategy.
 - Firebase or Supabase backend.
 - iOS wrapper or native app.
+- WeChat mini program client — in progress as a parallel client over the same repo JSON; see
+  [MINIPROGRAM.md](MINIPROGRAM.md) and [PROJECT_PLAN.md](PROJECT_PLAN.md) Phase 12.
 
 Do not implement these in v1 unless Alan explicitly changes scope.

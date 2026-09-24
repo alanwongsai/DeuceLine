@@ -23,6 +23,10 @@ The app should feel like a polished mobile sports notebook, not a generic dashbo
   (add / update) that commits on the app's behalf. If that Function is unavailable it
   falls back to copying the JSON and handing off to the GitHub web editor (see
   ENGINE.md, Data Update Flow).
+- A **WeChat mini program** client (体验版) is being added alongside, in the same repo
+  (`miniprogram/` + `cloudfunctions/`). It reuses the domain layer and the publish core and
+  writes to the same repo JSON; the web/PWA path must keep working unchanged. See
+  [MINIPROGRAM.md](MINIPROGRAM.md).
 
 Do not overbuild this into a tournament, coaching analytics, social, or live scoring platform.
 
@@ -51,6 +55,10 @@ Do not overbuild this into a tournament, coaching analytics, social, or live sco
 - React pages live in `src/pages/`.
 - Reusable UI components live in `src/components/`.
 - Shared dataset lives in `public/data/deuceline-data.json`.
+- The write gate + rules live once in `functions/api/_publish.ts`; host adapters (the
+  Cloudflare Functions, the mini program's cloud functions) only authenticate and translate.
+- The mini program consumes `src/domain` and the publish core **only** through the
+  `npm run build:core` bundles; it must never re-implement validation, derivation or write rules.
 
 ## Validation
 
@@ -68,6 +76,10 @@ npm test
 npm run build
 ```
 
+When `src/domain/`, `functions/api/_publish.ts`, `functions/api/_github.ts` or
+`src/styles/skins.css` changed, also run `npm run build:core` (and commit the refreshed
+`miniprogram/lib/` + `cloudfunctions/*/lib/` copies once those folders exist).
+
 Don't report success you haven't verified. If something fails, say so plainly and show
 the output — a faithfully reported failure is more useful than a confident "done".
 
@@ -83,6 +95,8 @@ Read the rest **only when the task touches that area** — do not pre-read it:
 - [ENGINE.md](ENGINE.md) — when touching architecture, data flow, or validation.
 - [PROJECT_PLAN.md](PROJECT_PLAN.md) — when touching scope or deciding what's next.
 - [MEMORY.md](MEMORY.md) — to recover durable decisions and their boundaries.
+- [MINIPROGRAM.md](MINIPROGRAM.md) — when touching `miniprogram/`, `cloudfunctions/`, the
+  shared core or its build.
 
 ## Working Agreement (how to work here)
 
@@ -121,6 +135,7 @@ dates and version numbers:
 - **Scope / parked decisions / future phases** → [PROJECT_PLAN.md](PROJECT_PLAN.md).
 - **Architecture / data flow / validation strategy** → [ENGINE.md](ENGINE.md).
 - **Durable decisions & boundaries** → [MEMORY.md](MEMORY.md).
+- **Mini program port (layout, shared-core contract, design essence)** → [MINIPROGRAM.md](MINIPROGRAM.md).
 - **Commands** → the Verification section above.
 
 ## Documentation Sync Rules (one owner per fact)
@@ -133,6 +148,7 @@ Point, don't copy. Each kind of change updates exactly one doc:
 | architecture / module boundaries / data flow / validation | [ENGINE.md](ENGINE.md) |
 | scope / a parked decision / what's next | [PROJECT_PLAN.md](PROJECT_PLAN.md) |
 | a settled decision + its boundary | [MEMORY.md](MEMORY.md) |
+| how the mini program is built / its shared-core contract / design essence | [MINIPROGRAM.md](MINIPROGRAM.md) |
 | agent behavior / these rules / hard rules | `AGENTS.md` |
 
 There is no CI drift-linter yet (deferred — see the keel close-out). Until there is,

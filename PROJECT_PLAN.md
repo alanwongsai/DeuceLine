@@ -186,6 +186,34 @@ Deferred / parked from this phase:
 - **Matches-page stat strip**: Overview remains the single summary surface; Matches stays a
   filterable archive so the same metrics do not drift across two owners.
 
+## Phase 12: WeChat mini program client (dual track)
+
+Add a WeChat mini program as a second client next to the web PWA, in this repo, without
+changing the web path. The port itself is done by Tencent WorkBuddy on CloudBase, following
+[MINIPROGRAM.md](MINIPROGRAM.md).
+
+Settled with Alan (2026-09-24):
+- The GitHub repo JSON stays the single source of truth; no CloudBase database.
+- Mini program writes use the same shared password as the web.
+- Distribution is 体验版 (trial version) only for now.
+- Visual fidelity: keep the design essence, not a 1:1 copy.
+- Same repo, maintained in parallel (`miniprogram/`, `cloudfunctions/`, `project.config.json`).
+
+- Shared publish core extracted from the Cloudflare Functions; `npm run build:core` bundles
+  the domain + publish core + skin tokens for the mini program; port brief written. — done
+- WorkBuddy port: project layout + `getDataset` (verify CloudBase → `api.github.com`
+  reachability first), Overview/Matches, detail + evidence sheets, add/update, 体验版 upload.
+  — next (owner-driven)
+
+Deferred / parked from this phase:
+- **Public release** (小程序备案, service category, review) — only once the 体验版 pipeline has
+  proven itself.
+- **CloudBase database as the source of truth** — only if CloudBase cannot reach GitHub
+  reliably; it would reverse the repo-JSON decision and needs Alan's call.
+- **WeChat OPENID allowlist** instead of the shared password for the mini program.
+- **Lifting the journal cover/paper colours into skin tokens** (they are hard-coded in
+  `global.css`), so `build:core` can export them too.
+
 ## Future Phases
 
 - General match editing / correction of finished matches (beyond completing an unfinished one).

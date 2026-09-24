@@ -91,6 +91,12 @@ history only. It is outside `.github/workflows/`, so GitHub Actions will not run
 Only Cloudflare Pages deploys the site and runs the one-tap publish/update Functions. Do not
 commit `dist/`.
 
+## WeChat Mini Program (in progress)
+
+A mini program client is being added next to the web app, in this repo, sharing the same
+dataset and rules. `npm run build:core` packages the shared domain + publish core for it.
+See [MINIPROGRAM.md](MINIPROGRAM.md).
+
 ## Current Limitations
 
 - Single fixed rivalry; no multi-rivalry support yet.

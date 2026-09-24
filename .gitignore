@@ -11,3 +11,9 @@ node_modules/.tmp/
 
 # Local Claude Code config (machine-specific settings, preview launch config)
 .claude/
+
+# Shared-core bundles for the mini program (npm run build:core)
+dist-core/
+
+# WeChat DevTools per-developer settings
+project.private.config.json

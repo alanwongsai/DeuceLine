@@ -33,6 +33,9 @@ stateless commit proxy for match publishing.
 | pages | Overview + Matches screens | `src/pages/` |
 | components | Reusable UI (CourtBackdrop, MatchCard, MatchDetail, …) | `src/components/` |
 | dataset | Canonical match data (schema v2) | `public/data/deuceline-data.json` |
+| publish core | Write gate + add/update rules, host-agnostic | `functions/api/_publish.ts` (+ `_github.ts` store) |
+| build:core | CommonJS bundles + WXSS tokens for the mini program | `scripts/build-core.mjs` |
+| mini program brief | Port layout, shared-core contract, design essence | [MINIPROGRAM.md](MINIPROGRAM.md) |
 
 ## Durable decisions & boundaries
 
@@ -83,6 +86,15 @@ stateless commit proxy for match publishing.
   `<html>`; player identity colours stay in the dataset (a skin may only *suggest* a
   palette via `--skin-player-*`). No skin-switcher UI yet; surface `--grass`/`--clay`
   vs identity-colour clash is deferred — see [PROJECT_PLAN.md](PROJECT_PLAN.md).
+
+- **Two clients, one truth, one rulebook.** The web PWA (Cloudflare) and the WeChat mini
+  program (CloudBase, 体验版) run in parallel from this repo; both read and commit the same repo
+  JSON, and both run the same domain layer and publish core (the mini program via
+  `npm run build:core`). **Why:** Alan wants to keep maintaining one repo while trying the
+  WorkBuddy → mini program pipeline, and two copies of the rules would drift. **Boundary:** the
+  mini program never re-implements validation/derivation/write rules and never gets its own
+  canonical store; the web path is not degraded for the mini program's sake. See
+  [MINIPROGRAM.md](MINIPROGRAM.md).
 
 - **Single fixed rivalry in v1.** Alan vs Andy only. **Why:** keeps the model and UI
   honest to the one real use case. **Boundary:** multi-rivalry / multi-player is a

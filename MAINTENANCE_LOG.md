@@ -61,6 +61,23 @@
 
 ## Log
 
+### v0.11.5 — 2026-09-24
+- **Mini-program-ready core; the web app behaves exactly as before.** The publish gate and
+  write rules move out of the two Cloudflare handlers into a host-agnostic core
+  (`functions/api/_publish.ts`) with the GitHub store in `_github.ts` and Cloudflare glue in
+  `_cloudflare.ts`; `add-match.ts` / `update-match.ts` are now thin adapters with identical
+  statuses and messages. New `functions/api/_publish.test.ts` (12 tests) covers the gate,
+  append-only add, the unfinished-only update precondition, 409 and failure mapping.
+- New `npm run build:core` (`scripts/build-core.mjs`, no new dependencies) bundles
+  `src/domain` and the publish core as CommonJS for a WeChat mini program and its CloudBase
+  cloud functions, exports the default skin tokens as WXSS, self-checks against the real
+  dataset, and syncs into `miniprogram/` / `cloudfunctions/` once they exist. `dist-core/` and
+  `project.private.config.json` are git-ignored.
+- New [MINIPROGRAM.md](MINIPROGRAM.md): the port brief for WorkBuddy (settled decisions,
+  dual-track architecture, repo layout, cloud-function reference code, design essence,
+  acceptance checklist). AGENTS / ENGINE / PROJECT_PLAN (Phase 12) / MEMORY / README point to
+  it. Package version is 0.11.5; no dataset, UI or service-worker change.
+
 ### v0.11.4 — 2026-09-23
 - Correct match 13 from the mistaken two-set entry to the owner's confirmed
   Alan—Andy set scores: 6:7, 7:6, 1:6. Remove the mistakenly entered first-set
