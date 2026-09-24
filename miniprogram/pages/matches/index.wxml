@@ -1,0 +1,9 @@
+<view class="screen">
+  <journal-cover title="Match archive" version="{{version}}" />
+  <view class="paper">
+    <view class="state">
+      <view class="state-title">Matches</view>
+      <view class="state-detail">The archive arrives in the next step.</view>
+    </view>
+  </view>
+</view>

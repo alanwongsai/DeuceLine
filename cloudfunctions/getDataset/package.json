@@ -1,0 +1,8 @@
+{
+  "name": "getDataset",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Deuceline: read the canonical dataset from the GitHub repo.",
+  "main": "index.js",
+  "dependencies": {}
+}

@@ -1,0 +1,83 @@
+/* The cover band. Web reference: `.journal-cover` / `.journal-version` in
+   src/styles/global.css — the same three-column strip and badge geometry, converted
+   from px to rpx (1px = 2rpx) and simplified where WXSS differs. */
+
+.cover-wrap {
+  flex: none;
+  background: linear-gradient(165deg, var(--leather-top) 0%, var(--leather-bottom) 100%);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+.cover {
+  display: flex;
+  align-items: flex-start;
+  gap: 12rpx;
+  padding: 38rpx 60rpx 0 46rpx;
+  color: #d8b65c;
+}
+
+.cover-crest {
+  flex: none;
+  width: 86rpx;
+  height: 86rpx;
+  margin-top: 2rpx;
+}
+
+.cover-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.cover-title-main {
+  color: #e3be62;
+  font-size: 44rpx;
+  font-weight: 500;
+  line-height: 0.95;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 0 #281b02;
+}
+
+.cover-title-sub {
+  margin-top: 8rpx;
+  color: #e3be62;
+  font-size: 19rpx;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.badge {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  min-width: 110rpx;
+  height: 56rpx;
+  margin-top: 14rpx;
+  border: 2rpx dashed #d8b65c;
+  border-radius: 8rpx;
+  color: #e3be62;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 22rpx;
+}
+
+/* Matches' badge carries the chapter count instead of the version. */
+.badge-count {
+  min-width: 116rpx;
+  height: 72rpx;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.badge-strong {
+  font-size: 26rpx;
+}
+
+.badge-small {
+  font-size: 14rpx;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}

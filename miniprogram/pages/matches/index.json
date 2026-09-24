@@ -1,0 +1,5 @@
+{
+  "usingComponents": {
+    "journal-cover": "/components/journal-cover/index"
+  }
+}

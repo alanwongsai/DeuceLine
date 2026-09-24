@@ -1,0 +1,9 @@
+{
+  "desc": "Deuceline is a private single-rivalry journal; it is not meant to be indexed.",
+  "rules": [
+    {
+      "action": "disallow",
+      "page": "*"
+    }
+  ]
+}

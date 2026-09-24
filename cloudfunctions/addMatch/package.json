@@ -1,0 +1,8 @@
+{
+  "name": "addMatch",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Deuceline: append one match to the canonical dataset (append-only).",
+  "main": "index.js",
+  "dependencies": {}
+}

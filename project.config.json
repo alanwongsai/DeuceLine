@@ -1,0 +1,19 @@
+{
+  "miniprogramRoot": "miniprogram/",
+  "cloudfunctionRoot": "cloudfunctions/",
+  "projectname": "deuceline",
+  "description": "Deuceline — WeChat mini program client (trial version). The web PWA in src/ is unchanged; see MINIPROGRAM.md.",
+  "appid": "touristappid",
+  "compileType": "miniprogram",
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": true,
+    "ignoreUploadUnusedFiles": true,
+    "packNpmManually": false,
+    "nodeModules": false
+  },
+  "condition": {}
+}

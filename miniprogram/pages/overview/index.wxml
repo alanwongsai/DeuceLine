@@ -1,0 +1,9 @@
+<view class="screen">
+  <journal-cover title="Deuceline" version="{{version}}" />
+  <view class="paper">
+    <view class="state">
+      <view class="state-title">Overview</view>
+      <view class="state-detail">The rivalry loads through the cloud function in the next step.</view>
+    </view>
+  </view>
+</view>

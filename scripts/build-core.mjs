@@ -8,9 +8,11 @@
 //                           functions (Node 18+).
 //   deuceline-tokens.wxss   The default skin's design tokens (src/styles/skins.css
 //                           `:root` block) re-scoped to `page` for WXSS.
+//   deuceline-version.js    The app version, so the mini program's cover badge reads
+//                           package.json instead of keeping its own copy.
 // Then it self-checks the domain bundle against the real dataset, and — only if
 // the mini program folders exist — copies the files into them:
-//   miniprogram/lib/        ← deuceline-domain.js, deuceline-tokens.wxss
+//   miniprogram/lib/        ← deuceline-domain.js, deuceline-tokens.wxss, deuceline-version.js
 //   cloudfunctions/<fn>/lib/ ← deuceline-publisher.js
 // Those copies are generated: rebuild, never hand-edit. See MINIPROGRAM.md.
 
@@ -66,6 +68,13 @@ writeFileSync(
   `${banner}\n/* Chrome tokens from src/styles/skins.css. Player identity colours are NOT here — read them from the dataset. */\npage {${tokens}\n}\n`,
 );
 
+// The app version. package.json stays the single owner, so the mini program reads it
+// here rather than hard-coding a copy that would drift on the next release.
+writeFileSync(
+  join(outDir, "deuceline-version.js"),
+  `${banner}\nmodule.exports = { version: ${JSON.stringify(version)} };\n`,
+);
+
 // Self-check: the bundle must validate and derive from the real dataset.
 const require = createRequire(import.meta.url);
 const domain = require(join(outDir, "deuceline-domain.js"));
@@ -85,7 +94,7 @@ function copyInto(dir, files) {
 }
 
 if (existsSync(join(root, "miniprogram"))) {
-  copyInto(join(root, "miniprogram/lib"), ["deuceline-domain.js", "deuceline-tokens.wxss"]);
+  copyInto(join(root, "miniprogram/lib"), ["deuceline-domain.js", "deuceline-tokens.wxss", "deuceline-version.js"]);
 }
 const functionsRoot = join(root, "cloudfunctions");
 if (existsSync(functionsRoot)) {

@@ -1,0 +1,8 @@
+{
+  "name": "updateMatch",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Deuceline: replace an unfinished match in the canonical dataset.",
+  "main": "index.js",
+  "dependencies": {}
+}

@@ -201,9 +201,17 @@ Settled with Alan (2026-09-24):
 
 - Shared publish core extracted from the Cloudflare Functions; `npm run build:core` bundles
   the domain + publish core + skin tokens for the mini program; port brief written. — done
-- WorkBuddy port: project layout + `getDataset` (verify CloudBase → `api.github.com`
-  reachability first), Overview/Matches, detail + evidence sheets, add/update, 体验版 upload.
-  — next (owner-driven)
+- Port phase 0 — repo layout (`project.config.json`, `miniprogram/`, `cloudfunctions/`), the
+  shared leather-cover component, the Overview/Matches shells, the three cloud-function
+  adapters, and `build:core` emitting the version bundle. — done (v0.11.6; see
+  MAINTENANCE_LOG.md). Still owner-only: the mini program AppID, the CloudBase environment, the
+  two cloud-function environment variables (`GITHUB_TOKEN`, `ADD_MATCH_PASSWORD`), and Andy
+  added as an experience member.
+- Port phase 1 — deploy `getDataset` (this also tests CloudBase → `api.github.com`
+  reachability, the one real risk; if it is slow or blocked, stop and bring it back to Alan
+  rather than switching the source of truth) and check the H2H against the web. — next
+- Port phases 2–5 — Overview/Matches with the journal design, detail + evidence sheets,
+  add/update through `addMatch`/`updateMatch`, then 体验版 upload. — pending
 
 Deferred / parked from this phase:
 - **Public release** (小程序备案, service category, review) — only once the 体验版 pipeline has

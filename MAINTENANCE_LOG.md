@@ -61,6 +61,26 @@
 
 ## Log
 
+### v0.11.6 — 2026-09-24
+- **Mini program client skeleton — the web path is untouched.** The port of the WeChat client
+  (MINIPROGRAM.md, PROJECT_PLAN.md phase 12) now has its bones: a root `project.config.json`
+  (`miniprogramRoot: "miniprogram/"`, `cloudfunctionRoot: "cloudfunctions/"`), a native
+  WXML/WXSS shell in `miniprogram/` (app config, the shared leather-cover component, Overview
+  and Matches page shells, 108 KB of assets), and the three CloudBase cloud-function adapters
+  (`getDataset`, `addMatch`, `updateMatch`) which only authenticate and translate into the
+  shared publish core — they re-implement no rule. Nothing in `src/`, `functions/` or
+  `public/` changed.
+- **`npm run build:core` now also emits `deuceline-version.js`**, so the mini program's cover
+  badge reads the version from `package.json` instead of keeping a second copy that would drift
+  on every release. The domain, publisher and token outputs are unchanged in content.
+- **Cover and assets settled for the small screen.** The leather band is a CSS gradient rather
+  than the web's 1.7 MB book plate, and the brand stamp (a genuine brand element, kept beside
+  Overview's handwritten note) is re-encoded to a 12 KB `journal-stamp.jpg`. The cover keeps
+  the web's three-column strip with the dashed gold version/count badge top-right. Main package
+  is 208 KB against the 2 MB limit.
+- Package version is 0.11.6 and the PWA cache is unchanged. No dataset, UI, service-worker or
+  write-path change: the live site behaves exactly as before.
+
 ### v0.11.5 — 2026-09-24
 - **Mini-program-ready core; the web app behaves exactly as before.** The publish gate and
   write rules move out of the two Cloudflare handlers into a host-agnostic core

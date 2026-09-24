@@ -1,0 +1,17 @@
+{
+  "pages": [
+    "pages/overview/index",
+    "pages/matches/index"
+  ],
+  "window": {
+    "navigationStyle": "custom",
+    "navigationBarTitleText": "Deuceline",
+    "navigationBarBackgroundColor": "#062d20",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f8f5ec",
+    "backgroundTextStyle": "dark"
+  },
+  "style": "v2",
+  "lazyCodeLoading": "requiredComponents",
+  "sitemapLocation": "sitemap.json"
+}
