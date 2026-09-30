@@ -55,6 +55,11 @@ type MatchBase = {
 export type DetailedMatch = MatchBase & {
   fidelity: "sets";
   sets: SetScore[];
+  // Laver Cup format (adopted 2026-09): at one set all, the decider is a
+  // first-to-10, win-by-2 match tiebreak instead of a third set. Stored as
+  // points beside `sets` (never inside it) so game-level stats stay games-only;
+  // it counts as one set toward the tally. Absent on matches without one.
+  matchTiebreak?: PointScore;
 };
 
 // Lower fidelity: we only know how many sets each player won, not the
@@ -67,13 +72,16 @@ export type ScoreMatch = MatchBase & {
 
 export type Match = DetailedMatch | ScoreMatch;
 
+// Points won in a tiebreak (a set's 7-point one or the 10-point match tiebreak).
+export type PointScore = {
+  alan: number;
+  opponent: number;
+};
+
 export type SetScore = {
   alan: number;
   opponent: number;
-  tiebreak?: {
-    alan: number;
-    opponent: number;
-  };
+  tiebreak?: PointScore;
 };
 
 export type MatchResult = {

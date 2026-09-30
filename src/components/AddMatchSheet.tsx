@@ -59,16 +59,33 @@ type SetRowState = { alan: string; opponent: string; tbAlan: string; tbOpponent:
 
 const emptySetRow = (): SetRowState => ({ alan: "", opponent: "", tbAlan: "", tbOpponent: "" });
 
-// Seed the set-row fields from an existing match being edited (finished or not).
+// Best of three: always three rows of state. Rows 1–2 are always shown; row 3 is
+// only used when the match reaches one set all and the decider is a full set.
 const setRowsFromMatch = (match?: Match): SetRowState[] => {
-  if (!match || match.fidelity !== "sets") return [emptySetRow(), emptySetRow()];
-  return match.sets.map((set) => ({
-    alan: String(set.alan),
-    opponent: String(set.opponent),
-    tbAlan: set.tiebreak ? String(set.tiebreak.alan) : "",
-    tbOpponent: set.tiebreak ? String(set.tiebreak.opponent) : "",
-  }));
+  const rows =
+    match && match.fidelity === "sets"
+      ? match.sets.map((set) => ({
+          alan: String(set.alan),
+          opponent: String(set.opponent),
+          tbAlan: set.tiebreak ? String(set.tiebreak.alan) : "",
+          tbOpponent: set.tiebreak ? String(set.tiebreak.opponent) : "",
+        }))
+      : [];
+  while (rows.length < 3) rows.push(emptySetRow());
+  return rows.slice(0, 3);
 };
+
+// At one set all the decider is, by default, the Laver Cup match tiebreak (first
+// to 10, win by 2); "set" keeps the older full-third-set format available.
+type Decider = "matchTiebreak" | "set";
+
+const deciderFromMatch = (match?: Match): Decider =>
+  match && match.fidelity === "sets" && match.sets.length >= 3 ? "set" : "matchTiebreak";
+
+const matchTiebreakFromMatch = (match?: Match): Record<PlayerKey, string> =>
+  match && match.fidelity === "sets" && match.matchTiebreak
+    ? { alan: String(match.matchTiebreak.alan), opponent: String(match.matchTiebreak.opponent) }
+    : { alan: "", opponent: "" };
 
 const tallyFromMatch = (match?: Match): Record<PlayerKey, string> =>
   match && match.fidelity === "matchScore"
@@ -81,6 +98,20 @@ const parseScore = (value: string): number => (value.trim() === "" ? Number.NaN 
 
 const isTiebreakScore = (a: string, b: string) =>
   (parseScore(a) === 7 && parseScore(b) === 6) || (parseScore(a) === 6 && parseScore(b) === 7);
+
+// Whether the first two set rows are filled in and won by different players —
+// the only moment a decider exists.
+const isOneSetAll = (rows: SetRowState[]) => {
+  const winners = rows.slice(0, 2).map((row) => {
+    const alan = parseScore(row.alan);
+    const opponent = parseScore(row.opponent);
+    if (!Number.isFinite(alan) || !Number.isFinite(opponent) || alan === opponent) return null;
+    return alan > opponent ? "alan" : "opponent";
+  });
+  return winners[0] !== null && winners[1] !== null && winners[0] !== winners[1];
+};
+
+const deciderOptions = ["matchTiebreak", "set"] as const;
 
 function todayIso(): string {
   const now = new Date();
@@ -122,6 +153,8 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
   // still suspended.
   const [status, setStatus] = useState<"finished" | "unfinished">("finished");
   const [setRows, setSetRows] = useState<SetRowState[]>(() => setRowsFromMatch(editMatch));
+  const [decider, setDecider] = useState<Decider>(() => deciderFromMatch(editMatch));
+  const [matchTiebreak, setMatchTiebreak] = useState<Record<PlayerKey, string>>(() => matchTiebreakFromMatch(editMatch));
   const [tally, setTally] = useState<Record<PlayerKey, string>>(() => tallyFromMatch(editMatch));
   const [notes, setNotes] = useState(editMatch?.notes ?? "");
   const [detailsOpen, setDetailsOpen] = useState(Boolean(editMatch && (editMatch.location || editMatch.conditions?.length || editMatch.tempC !== undefined || editMatch.notes)));
@@ -142,10 +175,12 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
   const issueListRef = useRef<HTMLUListElement | null>(null);
   const discardOnExit = useRef(false);
 
-  const draftKey = JSON.stringify({ date, surface, location, conditions, tempC, fidelity, status, setRows, tally, notes });
+  const draftKey = JSON.stringify({ date, surface, location, conditions, tempC, fidelity, status, setRows, decider, matchTiebreak, tally, notes });
   const initialDraftKey = useRef<string | null>(null);
   if (initialDraftKey.current === null) initialDraftKey.current = draftKey;
   const hasDraft = draftKey !== initialDraftKey.current;
+
+  const showDecider = isOneSetAll(setRows);
 
   const updateSetRow = (index: number, patch: Partial<SetRowState>) => {
     setSetRows((rows) => rows.map((row, i) => (i === index ? { ...row, ...patch } : row)));
@@ -174,7 +209,11 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
         matchScore: { alan: parseScore(tally.alan), opponent: parseScore(tally.opponent) },
       };
     }
+    // Row 3 only counts when the decider is a full set; a hidden row's stale
+    // values never leak into the saved match.
+    const playsThirdSet = showDecider && decider === "set";
     const sets: SetScore[] = setRows
+      .slice(0, playsThirdSet ? 3 : 2)
       .filter((row) => row.alan.trim() !== "" || row.opponent.trim() !== "")
       .map((row) => ({
         alan: parseScore(row.alan),
@@ -183,8 +222,68 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
           ? { tiebreak: { alan: parseScore(row.tbAlan), opponent: parseScore(row.tbOpponent) } }
           : {}),
       }));
-    return { ...shared, fidelity, sets };
+    // An empty match tiebreak is simply "not played yet" (e.g. suspended at one
+    // set all); a half-entered one becomes NaN for the validator to reject.
+    const tiebreakEntered = matchTiebreak.alan.trim() !== "" || matchTiebreak.opponent.trim() !== "";
+    const playsMatchTiebreak = showDecider && decider === "matchTiebreak" && tiebreakEntered;
+    return {
+      ...shared,
+      fidelity,
+      sets,
+      ...(playsMatchTiebreak
+        ? { matchTiebreak: { alan: parseScore(matchTiebreak.alan), opponent: parseScore(matchTiebreak.opponent) } }
+        : {}),
+    };
   };
+
+  const renderSetRow = (row: SetRowState, index: number) => (
+    <div key={index}>
+      <div className="set-input-row">
+        <span className="field-label">Set {index + 1}</span>
+        <input
+          className="num-input"
+          type="number"
+          inputMode="numeric"
+          min="0"
+          value={row.alan}
+          onChange={(event) => updateSetRow(index, { alan: event.target.value })}
+          aria-label={`Set ${index + 1} games — ${players.alan.displayName}`}
+        />
+        <input
+          className="num-input"
+          type="number"
+          inputMode="numeric"
+          min="0"
+          value={row.opponent}
+          onChange={(event) => updateSetRow(index, { opponent: event.target.value })}
+          aria-label={`Set ${index + 1} games — ${players.opponent.displayName}`}
+        />
+      </div>
+      {isTiebreakScore(row.alan, row.opponent) ? (
+        <div className="set-input-row set-input-tiebreak">
+          <span className="field-label">Tiebreak</span>
+          <input
+            className="num-input"
+            type="number"
+            inputMode="numeric"
+            min="0"
+            value={row.tbAlan}
+            onChange={(event) => updateSetRow(index, { tbAlan: event.target.value })}
+            aria-label={`Set ${index + 1} tiebreak points — ${players.alan.displayName}`}
+          />
+          <input
+            className="num-input"
+            type="number"
+            inputMode="numeric"
+            min="0"
+            value={row.tbOpponent}
+            onChange={(event) => updateSetRow(index, { tbOpponent: event.target.value })}
+            aria-label={`Set ${index + 1} tiebreak points — ${players.opponent.displayName}`}
+          />
+        </div>
+      ) : null}
+    </div>
+  );
 
   const onReview = () => {
     try {
@@ -299,7 +398,9 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
     setTempC("");
     setFidelity("matchScore");
     setStatus("finished");
-    setSetRows([emptySetRow(), emptySetRow()]);
+    setSetRows(setRowsFromMatch());
+    setDecider("matchTiebreak");
+    setMatchTiebreak({ alan: "", opponent: "" });
     setTally({ alan: "", opponent: "" });
     setNotes("");
     setDetailsOpen(false);
@@ -568,58 +669,54 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
 
           {fidelity === "sets" ? (
             <>
-              {setRows.map((row, index) => (
-                <div key={index}>
-                  <div className="set-input-row">
-                    <span className="field-label">Set {index + 1}</span>
-                    <input
-                      className="num-input"
-                      type="number"
-                      inputMode="numeric"
-                      min="0"
-                      value={row.alan}
-                      onChange={(event) => updateSetRow(index, { alan: event.target.value })}
-                      aria-label={`Set ${index + 1} games — ${players.alan.displayName}`}
-                    />
-                    <input
-                      className="num-input"
-                      type="number"
-                      inputMode="numeric"
-                      min="0"
-                      value={row.opponent}
-                      onChange={(event) => updateSetRow(index, { opponent: event.target.value })}
-                      aria-label={`Set ${index + 1} games — ${players.opponent.displayName}`}
-                    />
+              {setRows.slice(0, 2).map((row, index) => renderSetRow(row, index))}
+              {showDecider ? (
+                <div className="decider-block">
+                  <div className="segmented" role="radiogroup" aria-label="Deciding set format">
+                    {deciderOptions.map((option, index) => (
+                      <button
+                        key={option}
+                        type="button"
+                        role="radio"
+                        aria-checked={decider === option}
+                        tabIndex={decider === option ? 0 : -1}
+                        className={`segment ${decider === option ? "segment-active" : ""}`}
+                        onClick={() => setDecider(option)}
+                        onKeyDown={(event) => moveRadioSelection(event, deciderOptions, index, setDecider)}
+                      >
+                        {option === "matchTiebreak" ? "Match tiebreak" : "Third set"}
+                      </button>
+                    ))}
                   </div>
-                  {isTiebreakScore(row.alan, row.opponent) ? (
-                    <div className="set-input-row set-input-tiebreak">
-                      <span className="field-label">Tiebreak</span>
-                      <input
-                        className="num-input"
-                        type="number"
-                        inputMode="numeric"
-                        min="0"
-                        value={row.tbAlan}
-                        onChange={(event) => updateSetRow(index, { tbAlan: event.target.value })}
-                        aria-label={`Set ${index + 1} tiebreak points — ${players.alan.displayName}`}
-                      />
-                      <input
-                        className="num-input"
-                        type="number"
-                        inputMode="numeric"
-                        min="0"
-                        value={row.tbOpponent}
-                        onChange={(event) => updateSetRow(index, { tbOpponent: event.target.value })}
-                        aria-label={`Set ${index + 1} tiebreak points — ${players.opponent.displayName}`}
-                      />
-                    </div>
-                  ) : null}
+                  {decider === "matchTiebreak" ? (
+                    <>
+                      <div className="set-input-row">
+                        <span className="field-label">To 10</span>
+                        <input
+                          className="num-input"
+                          type="number"
+                          inputMode="numeric"
+                          min="0"
+                          value={matchTiebreak.alan}
+                          onChange={(event) => setMatchTiebreak((prev) => ({ ...prev, alan: event.target.value }))}
+                          aria-label={`Match tiebreak points — ${players.alan.displayName}`}
+                        />
+                        <input
+                          className="num-input"
+                          type="number"
+                          inputMode="numeric"
+                          min="0"
+                          value={matchTiebreak.opponent}
+                          onChange={(event) => setMatchTiebreak((prev) => ({ ...prev, opponent: event.target.value }))}
+                          aria-label={`Match tiebreak points — ${players.opponent.displayName}`}
+                        />
+                      </div>
+                      <p className="field-hint">First to 10 points, win by 2 — it counts as the deciding set.</p>
+                    </>
+                  ) : (
+                    renderSetRow(setRows[2], 2)
+                  )}
                 </div>
-              ))}
-              {setRows.length < 5 ? (
-                <button className="add-set-button" type="button" onClick={() => setSetRows((rows) => [...rows, emptySetRow()])}>
-                  + Add set
-                </button>
               ) : null}
             </>
           ) : (

@@ -97,8 +97,23 @@
         "location": {
           "type": "string"
         },
+        "conditions": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": ["sunny", "cloudy", "windy", "hot"]
+          }
+        },
+        "tempC": {
+          "type": "number",
+          "minimum": -30,
+          "maximum": 55
+        },
         "notes": {
           "type": "string"
+        },
+        "status": {
+          "const": "unfinished"
         },
         "fidelity": {
           "enum": ["sets", "matchScore"]
@@ -124,6 +139,9 @@
               "items": {
                 "$ref": "#/$defs/setScore"
               }
+            },
+            "matchTiebreak": {
+              "$ref": "#/$defs/matchScore"
             }
           },
           "not": {

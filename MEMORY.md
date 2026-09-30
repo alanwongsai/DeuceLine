@@ -104,5 +104,14 @@ stateless commit proxy for match publishing.
 - **Validation fails loudly, pragmatically.** `validateDataset.ts` is the runtime gate;
   `public/data/deuceline.schema.json` is a shape-only JSON Schema. **Why:** historical
   tennis data is imperfect, but obviously broken data must not render silently.
-  **Boundary:** full tennis-scoring-rule enforcement is deferred — see
-  [MAINTENANCE_LOG.md](MAINTENANCE_LOG.md) → Backlog.
+  **Boundary:** per-set tennis scoring is enforced for `fidelity: "sets"` (see
+  [ENGINE.md](ENGINE.md) → Dataset Validation Strategy); tally-only matches stay loosely
+  checked because they are, by definition, partially remembered.
+
+- **Laver Cup match format: one set all → match tiebreak to 10.** Agreed by Alan and Andy
+  (2026-09). Stored as raw `matchTiebreak` points beside `sets`, not as a third "set".
+  **Why:** points in `sets` would pollute every game-level stat and per-set rule; a separate
+  optional field also leaves every earlier match valid without a migration or a
+  `schemaVersion` bump. **Boundary:** old full-third-set matches are never rewritten; a
+  full third set stays enterable; no date-based "format era" switch — see
+  [ENGINE.md](ENGINE.md) → Domain Model Rules.

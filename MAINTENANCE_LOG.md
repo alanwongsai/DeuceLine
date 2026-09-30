@@ -29,13 +29,6 @@
 
 ## Backlog (deferred maintenance)
 
-- **Tighten detailed set-score validation before expanding score tracking.** Runtime
-  validation rejects tied sets and tied match outcomes, but does not enforce full
-  tennis scoring rules. Still worth catching later: impossible set scores, inconsistent
-  tiebreak winners, and tiebreak details on non-`7-6` sets. **Trigger:** when detailed
-  per-set scoring becomes a primary entry workflow (it isn't in v1 — most matches are
-  finished-match summaries).
-
 - **`/api/update-match` has no rate limit — only `/api/add-match` does.** Found
   2026-08-09 while auditing the Cloudflare account. Both endpoints gate on the *same*
   `ADD_MATCH_PASSWORD` and drive the *same* `GITHUB_TOKEN` (`functions/api/_github.ts`),
@@ -60,6 +53,25 @@
   itself is a fine-grained PAT scoped to this repo's Contents only.
 
 ## Log
+
+### v0.12.0 — 2026-09-30
+- **Laver Cup match format.** From now on a match at one set all is decided by a match
+  tiebreak — first to 10 points, win by 2 — instead of a third set. It is stored as a new
+  optional raw field, `matchTiebreak: { alan, opponent }`, beside `sets` on a detailed match.
+  It counts as the deciding set (2—1: set record, deciders, surface splits), never as games,
+  and reads `6-4 3-6 [10-8]` on cards, review, Overview and match detail. No existing match
+  changed and `schemaVersion` stays 2.
+- **Add/update form.** Set scores now take best of three: two set rows always, and once they
+  are split 1–1 a decider block appears with **Match tiebreak** (default, "To 10" points) or
+  **Third set**. The open-ended "+ Add set" button is gone. Suspended at one set all = leave
+  the tiebreak empty and mark Unfinished; "Update result" adds it later.
+- **Tennis scoring is now enforced for per-set scores** (closes the Backlog item): sets must
+  be 6-0…6-4, 7-5 or 7-6 (the last set of an unfinished match may be in progress), no set
+  after the match is won, set tiebreak points only on 7-6 and consistent with the set winner,
+  and match-tiebreak points must be a legal first-to-10 result. All 13 recorded matches pass.
+- JSON Schema gains `matchTiebreak` plus the previously missing `conditions`, `tempC` and
+  `status`. 12 new tests (109 total). PWA cache v11 and the mini program core libs refreshed
+  through `build:core`. Package version is 0.12.0.
 
 ### v0.11.6 — 2026-09-24
 - **Mini program client skeleton — the web path is untouched.** The port of the WeChat client

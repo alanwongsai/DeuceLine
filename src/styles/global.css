@@ -995,7 +995,6 @@ input[type="date"].text-input::-webkit-date-and-time-value {
 .text-input:focus-visible,
 .num-input:focus-visible,
 .segment:focus-visible,
-.add-set-button:focus-visible,
 .secondary-button:focus-visible {
   outline: 2px solid var(--ink);
   outline-offset: 2px;
@@ -1125,17 +1124,15 @@ input[type="date"].text-input::-webkit-date-and-time-value {
   opacity: 0.85;
 }
 
-.add-set-button {
-  min-height: 44px;
-  justify-self: start;
-  margin-top: 8px;
-  padding: 6px 0;
-  border: 0;
-  color: var(--muted);
-  background: transparent;
-  font-size: 0.85rem;
-  font-weight: 900;
-  cursor: pointer;
+/* At one set all: choose match tiebreak vs third set, then enter it. */
+.decider-block {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.decider-block .field-hint {
+  margin-top: 2px;
 }
 
 .issue-list {

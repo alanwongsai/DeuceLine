@@ -1,4 +1,4 @@
-import { DeucelineDataset, Match, PlayerKey, SetScore, Surface, WeatherTag } from "./schema";
+import { DeucelineDataset, Match, PlayerKey, PointScore, SetScore, Surface, WeatherTag } from "./schema";
 
 // Raw form input for one new match. Empty optional fields are omitted from the
 // stored match, matching the hand-written style of the dataset file.
@@ -16,7 +16,7 @@ export type NewMatchInput = {
   // a normal finished match.
   status?: "unfinished";
 } & (
-  | { fidelity: "sets"; sets: SetScore[] }
+  | { fidelity: "sets"; sets: SetScore[]; matchTiebreak?: PointScore }
   | { fidelity: "matchScore"; matchScore: Record<PlayerKey, number> }
 );
 
@@ -34,7 +34,9 @@ function buildMatchBody(input: NewMatchInput, identity: { id: string; seq: numbe
     ...(input.conditions && input.conditions.length > 0 ? { conditions: input.conditions } : {}),
     ...(input.tempC !== undefined ? { tempC: input.tempC } : {}),
     fidelity: input.fidelity,
-    ...(input.fidelity === "sets" ? { sets: input.sets } : { matchScore: input.matchScore }),
+    ...(input.fidelity === "sets"
+      ? { sets: input.sets, ...(input.matchTiebreak ? { matchTiebreak: input.matchTiebreak } : {}) }
+      : { matchScore: input.matchScore }),
     ...(input.status ? { status: input.status } : {}),
     ...(input.notes?.trim() ? { notes: input.notes.trim() } : {}),
   } as Match;

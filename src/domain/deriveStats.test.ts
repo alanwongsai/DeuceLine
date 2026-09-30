@@ -486,3 +486,38 @@ describe("unfinished matches", () => {
     expect(stats.surfaceSplit.clay.played).toBe(1);
   });
 });
+
+describe("match tiebreak (Laver Cup format)", () => {
+  const laver = (seq: number, matchTiebreak: { alan: number; opponent: number }): DetailedMatch => ({
+    ...detailed(seq, "hard", [
+      { alan: 6, opponent: 4 },
+      { alan: 3, opponent: 6 },
+    ]),
+    matchTiebreak,
+  });
+
+  it("counts the match tiebreak as the deciding set and shows it in brackets", () => {
+    const result = deriveMatchResult(laver(1, { alan: 8, opponent: 10 }));
+    expect(result.winner).toBe("opponent");
+    expect(result.matchScore).toEqual({ alan: 1, opponent: 2 });
+    expect(result.isDecider).toBe(true);
+    expect(result.setScores).toEqual(["6-4", "3-6", "[8-10]"]);
+  });
+
+  it("reads winner-first, including the bracketed points", () => {
+    const scoreline = formatWinnerScoreline(laver(1, { alan: 9, opponent: 11 }));
+    expect(scoreline.score).toBe("2—1");
+    expect(scoreline.setScores).toEqual(["4-6", "6-3", "[11-9]"]);
+    expect(formatNeutralScoreline(laver(1, { alan: 9, opponent: 11 })).setScores).toEqual(["6-4", "3-6", "[9-11]"]);
+  });
+
+  it("feeds set and decider records but never the games tally", () => {
+    const matches = [laver(1, { alan: 10, opponent: 7 })];
+    const stats = deriveOverviewStats(matches);
+    expect(stats.setRecord).toEqual({ alan: 2, opponent: 1 });
+    expect(stats.deciderRecord).toEqual({ alan: 1, opponent: 0 });
+    expect(matchGamesTally(laver(1, { alan: 10, opponent: 7 }))).toEqual({ alan: 9, opponent: 10 });
+    expect(deriveGamesTally(matches).games).toEqual({ alan: 9, opponent: 10 });
+    expect(deriveGamesTally(matches).biggestSetMargin?.score).toBe("6-3");
+  });
+});

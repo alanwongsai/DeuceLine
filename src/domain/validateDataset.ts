@@ -1,4 +1,4 @@
-import { DeucelineDataset, PlayerKey, SetScore, SURFACES, WEATHER_TAGS } from "./schema";
+import { DeucelineDataset, PlayerKey, PointScore, SetScore, SURFACES, WEATHER_TAGS } from "./schema";
 import { deriveSetWinner } from "./deriveStats";
 
 export class DatasetValidationError extends Error {
@@ -157,7 +157,7 @@ function validateFidelity(match: Record<string, unknown>, label: string, issues:
   // relaxed for it (a tied match score is allowed). Bad-data checks still apply.
   const isUnfinished = match.status === "unfinished";
   if (match.fidelity === "sets") {
-    validateSets(match.sets, label, issues, isUnfinished);
+    validateSets(match.sets, match.matchTiebreak, label, issues, isUnfinished);
   } else if (match.fidelity === "matchScore") {
     validateMatchScore(match.matchScore, label, issues, isUnfinished);
   } else {
@@ -165,7 +165,17 @@ function validateFidelity(match: Record<string, unknown>, label: string, issues:
   }
 }
 
-function validateSets(value: unknown, label: string, issues: string[], isUnfinished: boolean) {
+// Tennis scoring for detailed matches: best of three sets, where a set is won
+// 6-0…6-4, 7-5 or 7-6 (a 7-point tiebreak at 6-6), and — in the Laver Cup format
+// adopted 2026-09 — one set all may be decided by a first-to-10 match tiebreak
+// instead of a third set. Older matches with a full third set remain valid.
+function validateSets(
+  value: unknown,
+  matchTiebreak: unknown,
+  label: string,
+  issues: string[],
+  isUnfinished: boolean,
+) {
   if (!Array.isArray(value) || value.length === 0) {
     issues.push(`${label} sets must be a non-empty array.`);
     return;
@@ -174,6 +184,9 @@ function validateSets(value: unknown, label: string, issues: string[], isUnfinis
   value.forEach((set, index) => {
     validateSetScore(set, `${label} sets[${index}]`, issues);
   });
+
+  const hasMatchTiebreak = matchTiebreak !== undefined;
+  if (hasMatchTiebreak) validatePoints(matchTiebreak, `${label} matchTiebreak`, issues);
 
   const typedSets = value.filter(isValidSetShape) as SetScore[];
   if (typedSets.length !== value.length) return;
@@ -184,15 +197,80 @@ function validateSets(value: unknown, label: string, issues: string[], isUnfinis
     return;
   }
 
-  if (isUnfinished) return;
+  // Every set must be a completed score, except the last set of an unfinished
+  // match, which may have been suspended mid-set.
+  typedSets.forEach((set, index) => {
+    const mayBeInProgress = isUnfinished && !hasMatchTiebreak && index === typedSets.length - 1;
+    validateSetRules(set, `${label} sets[${index}]`, issues, mayBeInProgress);
+  });
 
   const tally = { alan: 0, opponent: 0 };
-  typedSets.forEach((set) => {
+  for (const set of typedSets) {
+    if (tally.alan === 2 || tally.opponent === 2) {
+      issues.push(`${label} has a set after the match was already won (best of three).`);
+      break;
+    }
     tally[deriveSetWinner(set)] += 1;
-  });
+  }
+
+  if (hasMatchTiebreak) {
+    if (isUnfinished) {
+      issues.push(`${label} matchTiebreak decides the match, so the match cannot be unfinished.`);
+    }
+    if (typedSets.length !== 2 || tally.alan !== 1 || tally.opponent !== 1) {
+      issues.push(`${label} matchTiebreak is only played at one set all, after exactly two sets.`);
+    }
+    if (isValidPointShape(matchTiebreak)) {
+      const problem = tiebreakPointsProblem(matchTiebreak, 10);
+      if (problem) issues.push(`${label} matchTiebreak ${problem}.`);
+      else tally[deriveSetWinner(matchTiebreak)] += 1;
+    }
+  }
+
+  // A present match tiebreak has already reported its own problem above; only
+  // a match with no decider at all is flagged as ending level.
+  if (isUnfinished || hasMatchTiebreak) return;
+
   if (tally.alan === tally.opponent) {
     issues.push(`${label} cannot end with a tied match score.`);
   }
+}
+
+function validateSetRules(set: SetScore, label: string, issues: string[], mayBeInProgress: boolean) {
+  const winner = deriveSetWinner(set);
+  const won = set[winner];
+  const lost = set[winner === "alan" ? "opponent" : "alan"];
+  const isComplete = (won === 6 && lost <= 4) || (won === 7 && (lost === 5 || lost === 6));
+  const isInProgress = won <= 5 || (won === 6 && lost === 5);
+
+  if (!isComplete && !(mayBeInProgress && isInProgress)) {
+    issues.push(`${label} ${set.alan}-${set.opponent} is not a valid set score (6-0 to 6-4, 7-5 or 7-6).`);
+  }
+
+  if (set.tiebreak !== undefined && isValidPointShape(set.tiebreak)) {
+    if (!(won === 7 && lost === 6)) {
+      issues.push(`${label}.tiebreak is only allowed on a 7-6 set.`);
+      return;
+    }
+    const problem = tiebreakPointsProblem(set.tiebreak, 7);
+    if (problem) {
+      issues.push(`${label}.tiebreak ${problem}.`);
+    } else if (deriveSetWinner(set.tiebreak) !== winner) {
+      issues.push(`${label}.tiebreak must be won by the player who won the set.`);
+    }
+  }
+}
+
+// A tiebreak is first to `target` points, won by two; past the target it ends
+// exactly two points apart (12-10, never 13-10).
+function tiebreakPointsProblem(points: PointScore, target: number): string | null {
+  const high = Math.max(points.alan, points.opponent);
+  const low = Math.min(points.alan, points.opponent);
+  if (high === low) return "cannot be tied";
+  if (high < target) return `must be won by reaching ${target} points`;
+  if (high - low < 2) return "must be won by two clear points";
+  if (high > target && high - low !== 2) return `past ${target} points must end exactly two points apart`;
+  return null;
 }
 
 function validateMatchScore(value: unknown, label: string, issues: string[], isUnfinished: boolean) {
@@ -230,15 +308,17 @@ function validateSetScore(value: unknown, label: string, issues: string[]) {
   if (!isNonNegativeInteger(value.alan)) issues.push(`${label}.alan must be a non-negative integer.`);
   if (!isNonNegativeInteger(value.opponent)) issues.push(`${label}.opponent must be a non-negative integer.`);
 
-  if (value.tiebreak !== undefined) {
-    if (!isRecord(value.tiebreak)) {
-      issues.push(`${label}.tiebreak must be an object.`);
-    } else {
-      validateKnownKeys(value.tiebreak, `${label}.tiebreak`, ["alan", "opponent"], issues);
-      if (!isNonNegativeInteger(value.tiebreak.alan)) issues.push(`${label}.tiebreak.alan must be a non-negative integer.`);
-      if (!isNonNegativeInteger(value.tiebreak.opponent)) issues.push(`${label}.tiebreak.opponent must be a non-negative integer.`);
-    }
+  if (value.tiebreak !== undefined) validatePoints(value.tiebreak, `${label}.tiebreak`, issues);
+}
+
+function validatePoints(value: unknown, label: string, issues: string[]) {
+  if (!isRecord(value)) {
+    issues.push(`${label} must be an object.`);
+    return;
   }
+  validateKnownKeys(value, label, ["alan", "opponent"], issues);
+  if (!isNonNegativeInteger(value.alan)) issues.push(`${label}.alan must be a non-negative integer.`);
+  if (!isNonNegativeInteger(value.opponent)) issues.push(`${label}.opponent must be a non-negative integer.`);
 }
 
 function validateKnownKeys(value: Record<string, unknown>, label: string, allowedKeys: string[], issues: string[]) {
@@ -252,13 +332,17 @@ function validateKnownKeys(value: Record<string, unknown>, label: string, allowe
 
 function matchKeys(match: Record<string, unknown>): string[] {
   const baseKeys = ["id", "seq", "date", "surface", "location", "conditions", "tempC", "notes", "status", "fidelity"];
-  if (match.fidelity === "sets") return [...baseKeys, "sets"];
+  if (match.fidelity === "sets") return [...baseKeys, "sets", "matchTiebreak"];
   if (match.fidelity === "matchScore") return [...baseKeys, "matchScore"];
-  return [...baseKeys, "sets", "matchScore"];
+  return [...baseKeys, "sets", "matchTiebreak", "matchScore"];
 }
 
 function isValidSetShape(value: unknown): value is SetScore {
   return isRecord(value) && isNonNegativeInteger(value.alan) && isNonNegativeInteger(value.opponent);
+}
+
+function isValidPointShape(value: unknown): value is PointScore {
+  return isValidSetShape(value);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

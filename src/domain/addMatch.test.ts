@@ -95,6 +95,23 @@ describe("appendMatch", () => {
   });
 });
 
+describe("appendMatch — match tiebreak", () => {
+  it("stores the match tiebreak beside the sets and validates", () => {
+    const next = appendMatch(baseDataset(), {
+      surface: "hard",
+      fidelity: "sets",
+      sets: [
+        { alan: 6, opponent: 4 },
+        { alan: 3, opponent: 6 },
+      ],
+      matchTiebreak: { alan: 10, opponent: 8 },
+    });
+    expect(next.matches[1]).toMatchObject({ matchTiebreak: { alan: 10, opponent: 8 } });
+    expect(Object.keys(next.matches[1])).toEqual(["id", "seq", "surface", "fidelity", "sets", "matchTiebreak"]);
+    expect(() => validateDataset(next)).not.toThrow();
+  });
+});
+
 describe("appendMatch — status", () => {
   it("emits status when unfinished and omits it otherwise", () => {
     const unfinished = appendMatch(baseDataset(), {

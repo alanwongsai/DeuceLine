@@ -220,3 +220,97 @@ describe("validateDataset — unfinished matches", () => {
     expect(expectIssues(data).some((i) => i.includes('status must be "unfinished"'))).toBe(true);
   });
 });
+
+describe("validateDataset — tennis scoring rules", () => {
+  const withSets = (sets: unknown[], extra: Record<string, unknown> = {}) => {
+    const data = validDataset();
+    Object.assign(data.matches[1], { sets, ...extra });
+    return data;
+  };
+  const split = [
+    { alan: 6, opponent: 4 },
+    { alan: 3, opponent: 6 },
+  ];
+
+  it("accepts every legal set score, with or without tiebreak points", () => {
+    expect(() =>
+      validateDataset(
+        withSets([
+          { alan: 7, opponent: 6, tiebreak: { alan: 9, opponent: 7 } },
+          { alan: 5, opponent: 7 },
+          { alan: 6, opponent: 0 },
+        ]),
+      ),
+    ).not.toThrow();
+    expect(() => validateDataset(withSets([{ alan: 7, opponent: 6 }, { alan: 6, opponent: 4 }]))).not.toThrow();
+  });
+
+  it("rejects impossible set scores", () => {
+    ["6-5", "8-6", "7-3", "5-3"].forEach((text) => {
+      const [alan, opponent] = text.split("-").map(Number);
+      const issues = expectIssues(withSets([{ alan, opponent }, { alan: 6, opponent: 0 }]));
+      expect(issues.some((i) => i.includes(`${text} is not a valid set score`))).toBe(true);
+    });
+  });
+
+  it("allows an in-progress last set only while the match is unfinished", () => {
+    expect(() => validateDataset(withSets([{ alan: 6, opponent: 4 }, { alan: 6, opponent: 5 }], { status: "unfinished" }))).not.toThrow();
+    expect(expectIssues(withSets([{ alan: 4, opponent: 3 }, { alan: 6, opponent: 1 }], { status: "unfinished" })).some((i) =>
+      i.includes("4-3 is not a valid set score"),
+    )).toBe(true);
+  });
+
+  it("rejects a set played after the match was already won", () => {
+    const issues = expectIssues(withSets([{ alan: 6, opponent: 4 }, { alan: 6, opponent: 3 }, { alan: 2, opponent: 6 }]));
+    expect(issues.some((i) => i.includes("after the match was already won"))).toBe(true);
+  });
+
+  it("checks set tiebreak points", () => {
+    const cases: Array<[unknown, string]> = [
+      [{ alan: 6, opponent: 4, tiebreak: { alan: 7, opponent: 5 } }, "only allowed on a 7-6 set"],
+      [{ alan: 7, opponent: 6, tiebreak: { alan: 6, opponent: 4 } }, "reaching 7 points"],
+      [{ alan: 7, opponent: 6, tiebreak: { alan: 7, opponent: 6 } }, "two clear points"],
+      [{ alan: 7, opponent: 6, tiebreak: { alan: 11, opponent: 7 } }, "exactly two points apart"],
+      [{ alan: 7, opponent: 6, tiebreak: { alan: 4, opponent: 7 } }, "won by the player who won the set"],
+    ];
+    cases.forEach(([set, message]) => {
+      expect(expectIssues(withSets([set, { alan: 6, opponent: 0 }])).some((i) => i.includes(message))).toBe(true);
+    });
+  });
+
+  it("accepts a match tiebreak at one set all, including extended ones", () => {
+    expect(() => validateDataset(withSets(split, { matchTiebreak: { alan: 10, opponent: 8 } }))).not.toThrow();
+    expect(() => validateDataset(withSets(split, { matchTiebreak: { alan: 9, opponent: 11 } }))).not.toThrow();
+    expect(() => validateDataset(withSets(split, { matchTiebreak: { alan: 15, opponent: 13 } }))).not.toThrow();
+  });
+
+  it("rejects an invalid match tiebreak score", () => {
+    const cases: Array<[unknown, string]> = [
+      [{ alan: 9, opponent: 7 }, "reaching 10 points"],
+      [{ alan: 10, opponent: 9 }, "two clear points"],
+      [{ alan: 12, opponent: 8 }, "exactly two points apart"],
+      [{ alan: 10, opponent: 10 }, "cannot be tied"],
+      [{ alan: 10, opponent: -1 }, "matchTiebreak.opponent must be a non-negative integer"],
+    ];
+    cases.forEach(([matchTiebreak, message]) => {
+      expect(expectIssues(withSets(split, { matchTiebreak })).some((i) => i.includes(message))).toBe(true);
+    });
+  });
+
+  it("only allows a match tiebreak after two split sets, on a finished detailed match", () => {
+    const afterStraightSets = expectIssues(
+      withSets([{ alan: 6, opponent: 4 }, { alan: 6, opponent: 3 }], { matchTiebreak: { alan: 10, opponent: 8 } }),
+    );
+    expect(afterStraightSets.some((i) => i.includes("only played at one set all"))).toBe(true);
+
+    const afterThirdSet = expectIssues(withSets([...split, { alan: 6, opponent: 2 }], { matchTiebreak: { alan: 10, opponent: 8 } }));
+    expect(afterThirdSet.some((i) => i.includes("only played at one set all"))).toBe(true);
+
+    const unfinished = expectIssues(withSets(split, { status: "unfinished", matchTiebreak: { alan: 10, opponent: 8 } }));
+    expect(unfinished.some((i) => i.includes("cannot be unfinished"))).toBe(true);
+
+    const onTally = validDataset();
+    (onTally.matches[0] as Record<string, unknown>).matchTiebreak = { alan: 10, opponent: 8 };
+    expect(expectIssues(onTally)).toContain("match match-1 has unknown field: matchTiebreak.");
+  });
+});

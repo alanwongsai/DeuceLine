@@ -9,7 +9,7 @@ import {
   isUnfinished,
   matchGamesTally,
 } from "../domain/deriveStats";
-import { Match, Player, PlayerKey } from "../domain/schema";
+import { Match, Player, PlayerKey, PointScore } from "../domain/schema";
 import { Modal } from "./Modal";
 import { LeadSparkline } from "./LeadSparkline";
 import { SurfaceBadge } from "./SurfaceBadge";
@@ -248,8 +248,26 @@ function SetList({ match, players }: { match: Extract<Match, { fidelity: "sets" 
             </li>
           );
         })}
+        {match.matchTiebreak ? <MatchTiebreakRow points={match.matchTiebreak} players={players} /> : null}
       </ol>
     </div>
+  );
+}
+
+// The Laver Cup decider: points, not games, so the score reads in brackets.
+function MatchTiebreakRow({ points, players }: { points: PointScore; players: Record<PlayerKey, Player> }) {
+  const winner = deriveSetWinner(points);
+  return (
+    <li aria-label={`Match tiebreak: ${players.alan.displayName} ${points.alan}, ${players.opponent.displayName} ${points.opponent}`}>
+      <span className="detail-set-label">Match TB</span>
+      <span className="detail-set-score">
+        <i aria-hidden="true">[</i>
+        <b style={{ color: winner === "alan" ? players.alan.color : undefined }}>{points.alan}</b>
+        <i aria-hidden="true">–</i>
+        <b style={{ color: winner === "opponent" ? players.opponent.color : undefined }}>{points.opponent}</b>
+        <i aria-hidden="true">]</i>
+      </span>
+    </li>
   );
 }
 

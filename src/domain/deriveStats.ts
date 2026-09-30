@@ -9,6 +9,7 @@ import {
   MatchResult,
   OverviewStats,
   PlayerKey,
+  PointScore,
   ScorelineDistribution,
   SetScore,
   Surface,
@@ -34,8 +35,9 @@ export function sortMatchesNewestFirst(matches: Match[]): Match[] {
 // stat (record, sets, streaks, deciders, H2H, surface split) until completed.
 export const isUnfinished = (match: Match): boolean => match.status === "unfinished";
 
-export function deriveSetWinner(set: SetScore): PlayerKey {
-  // Tied sets are rejected by validateDataset, so a strict comparison is safe.
+// Works for a set's games or a tiebreak's points alike.
+export function deriveSetWinner(set: PointScore): PlayerKey {
+  // Tied sets/tiebreaks are rejected by validateDataset, so a strict comparison is safe.
   return set.alan > set.opponent ? "alan" : "opponent";
 }
 
@@ -45,18 +47,45 @@ export function formatSetScore(set: SetScore): string {
   return `${base} (${set.tiebreak.alan}-${set.tiebreak.opponent})`;
 }
 
-function matchScoreFromSets(sets: SetScore[]): Record<PlayerKey, number> {
+// A match tiebreak is written in square brackets, the tennis convention that
+// tells points apart from games: "6-4 3-6 [10-8]".
+export function formatMatchTiebreak(points: PointScore): string {
+  return `[${points.alan}-${points.opponent}]`;
+}
+
+const flipPoints = (points: PointScore): PointScore => ({ alan: points.opponent, opponent: points.alan });
+
+// The same set seen from the opponent's side, for winner-first scorelines.
+const flipSet = (set: SetScore): SetScore => ({
+  alan: set.opponent,
+  opponent: set.alan,
+  tiebreak: set.tiebreak ? flipPoints(set.tiebreak) : undefined,
+});
+
+// Per-set display strings, with a match tiebreak appended as the final entry.
+// `flip` swaps every score to opponent-first (used for winner-first lines).
+function detailedSetScores(match: DetailedMatch, flip = false): string[] {
+  const scores = match.sets.map((set) => formatSetScore(flip ? flipSet(set) : set));
+  if (match.matchTiebreak) {
+    scores.push(formatMatchTiebreak(flip ? flipPoints(match.matchTiebreak) : match.matchTiebreak));
+  }
+  return scores;
+}
+
+// Sets won, counting a match tiebreak as one set (2—1), as tennis does.
+function matchScoreFromSets(match: DetailedMatch): Record<PlayerKey, number> {
   const score = emptyRecord();
-  sets.forEach((set) => {
+  match.sets.forEach((set) => {
     score[deriveSetWinner(set)] += 1;
   });
+  if (match.matchTiebreak) score[deriveSetWinner(match.matchTiebreak)] += 1;
   return score;
 }
 
 export function deriveMatchResult(match: Match): MatchResult {
-  const matchScore = match.fidelity === "sets" ? matchScoreFromSets(match.sets) : { ...match.matchScore };
+  const matchScore = match.fidelity === "sets" ? matchScoreFromSets(match) : { ...match.matchScore };
   const totalSets = matchScore.alan + matchScore.opponent;
-  const setScores = match.fidelity === "sets" ? match.sets.map(formatSetScore) : null;
+  const setScores = match.fidelity === "sets" ? detailedSetScores(match) : null;
   const hasSetDetail = match.fidelity === "sets";
 
   // An unfinished match has no winner yet — the running set tally is still
@@ -96,20 +125,7 @@ export function formatWinnerScoreline(match: Match): {
     throw new Error(`formatWinnerScoreline called on an unfinished match: ${match.id}`);
   }
   const loser: PlayerKey = result.winner === "alan" ? "opponent" : "alan";
-  const setScores =
-    match.fidelity !== "sets"
-      ? null
-      : match.sets.map((set) =>
-          result.winner === "alan"
-            ? formatSetScore(set)
-            : formatSetScore({
-                alan: set.opponent,
-                opponent: set.alan,
-                tiebreak: set.tiebreak
-                  ? { alan: set.tiebreak.opponent, opponent: set.tiebreak.alan }
-                  : undefined,
-              }),
-        );
+  const setScores = match.fidelity !== "sets" ? null : detailedSetScores(match, result.winner !== "alan");
 
   return {
     winner: result.winner,
@@ -130,7 +146,7 @@ export function formatNeutralScoreline(match: Match): {
   return {
     alan: result.matchScore.alan,
     opponent: result.matchScore.opponent,
-    setScores: match.fidelity === "sets" ? match.sets.map(formatSetScore) : null,
+    setScores: match.fidelity === "sets" ? detailedSetScores(match) : null,
   };
 }
 
@@ -314,6 +330,8 @@ export function deriveTimeline(matches: Match[]): TimelinePoint[] {
   });
 }
 
+// Games only: a match tiebreak is points, not games, so it never enters here
+// (nor the biggest-set-margin scan below, which walks `sets` alone).
 export function matchGamesTally(match: DetailedMatch): Record<PlayerKey, number> {
   return match.sets.reduce(
     (games, set) => ({
@@ -342,19 +360,9 @@ export function deriveGamesTally(matches: Match[]): GamesTally {
       const loser: PlayerKey = winner === "alan" ? "opponent" : "alan";
       const margin = set[winner] - set[loser];
       if (!biggestSetMargin || margin > biggestSetMargin.margin) {
-        const winnerFirst =
-          winner === "alan"
-            ? set
-            : {
-                alan: set.opponent,
-                opponent: set.alan,
-                tiebreak: set.tiebreak
-                  ? { alan: set.tiebreak.opponent, opponent: set.tiebreak.alan }
-                  : undefined,
-              };
         biggestSetMargin = {
           matchId: match.id,
-          score: formatSetScore(winnerFirst),
+          score: formatSetScore(winner === "alan" ? set : flipSet(set)),
           winner,
           margin,
         };

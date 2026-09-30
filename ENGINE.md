@@ -154,7 +154,19 @@ both names start with "A" (Al / An). Identity colours live in the dataset, **not
 (see Skin / Theme Layer below) — they belong to this rivalry, not to a Grand Slam look.
 
 Per-set scores are the deepest score level in v1. Matches that predate detailed records may
-store only a set tally via `fidelity: "matchScore"`. Do not track point-by-point data, winners,
+store only a set tally via `fidelity: "matchScore"`.
+
+**Match format (Laver Cup rules, adopted 2026-09).** Best of three. Sets 1 and 2 are normal
+sets (first to 6; 5-5 goes to 7-5; 6-6 goes to a 7-point tiebreak). At one set all the decider
+is a **match tiebreak** — first to 10 points, win by 2 (11-9, 12-10, …) — stored as raw
+`matchTiebreak: { alan, opponent }` points on a `fidelity: "sets"` match, **beside** `sets`,
+never inside it. It counts as one set in the tally (2—1), so it feeds set record, deciders and
+surface splits; it never enters game-level stats (`matchGamesTally`, biggest set margin),
+because points are not games. It displays as `[10-8]` after the sets. Earlier matches with a
+full third set stay valid unchanged, and the add form keeps a "Third set" option at one set
+all. A match suspended at one set all stores two sets + `status: "unfinished"`; "Update
+result" then adds the match tiebreak. A tally-only (`matchScore`) match cannot say how its
+decider was played. Do not track point-by-point data, winners,
 unforced errors, serve stats, or training data.
 
 A match may also carry optional **weather** as raw input: `conditions` (a set of felt-condition
@@ -189,6 +201,12 @@ still appears in the Matches list. Completing it = editing the same match to dro
 - an optional `status`, which must be exactly `"unfinished"` when present
 - for "sets": non-empty, non-negative set scores, no tied set; no tied match score **unless
   the match is unfinished** (a suspended match may be level, e.g. 1–1)
+- for "sets", tennis scoring (since v0.12.0): every set is 6-0…6-4, 7-5 or 7-6, except the
+  last set of an unfinished match, which may be in progress (e.g. 5-3, 6-5); no set after a
+  player has won two; set `tiebreak` points only on a 7-6 set, first to 7 and won by 2
+  (exactly 2 apart past 7), won by the set's winner
+- optional `matchTiebreak` (sets fidelity only): only after exactly two split sets, never on
+  an unfinished match, first to 10 and won by 2 (exactly 2 apart past 10)
 - for "matchScore": non-negative integers, at least one set recorded; not tied **unless the
   match is unfinished**
 
