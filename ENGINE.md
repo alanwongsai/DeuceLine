@@ -160,9 +160,13 @@ store only a set tally via `fidelity: "matchScore"`.
 sets (first to 6; 5-5 goes to 7-5; 6-6 goes to a 7-point tiebreak). At one set all the decider
 is a **match tiebreak** — first to 10 points, win by 2 (11-9, 12-10, …) — stored as raw
 `matchTiebreak: { alan, opponent }` points on a `fidelity: "sets"` match, **beside** `sets`,
-never inside it. It counts as one set in the tally (2—1), so it feeds set record, deciders and
-surface splits; it never enters game-level stats (`matchGamesTally`, biggest set margin),
-because points are not games. It displays as `[10-8]` after the sets. Earlier matches with a
+never inside it. It counts as the deciding set in the match score (2—1) and in deciders, but
+the **set record counts full sets only** (overall and per surface): a super tiebreak is ten
+points, not a set's worth of games, so it is tallied separately in
+`deriveScorelineDistribution` (record, points, closest). It never enters game-level stats
+(`matchGamesTally`, biggest set margin), because points are not games. Every finished match
+has a derived **shape** (`deriveMatchShape`): straight sets, super tiebreak, full third set
+(older format), or an unrecorded decider (a 2—1 tally-only match — never guessed). It displays as `[10-8]` after the sets. Earlier matches with a
 full third set stay valid unchanged, and the add form keeps a "Third set" option at one set
 all. A match suspended at one set all stores two sets + `status: "unfinished"`; "Update
 result" then adds the match tiebreak. A tally-only (`matchScore`) match cannot say how its
@@ -227,7 +231,7 @@ Validation is pragmatic. Historical tennis data may be imperfect, but obviously 
   as leather masthead → rivalry spread → handwritten note → compact Rivalry ledger → expanded
   latest chapter → exploration lenses → two-row recent chapter index → evidence footer. The package
   version stays on the leather cover instead of repeating in the endpaper transition. The
-  ledger is the shallow comparison layer (Set record / Win rate / Deciders / Current run); each
+  ledger is the shallow comparison layer (Set record / Deciders / Set 1 → win / Current run); each
   value opens the existing evidence-aware sheet layer, so the physical-journal treatment does
   not make core rivalry data undiscoverable. Wider screens
   enlarge that page rather than splitting it back into dashboard columns; source and
@@ -258,8 +262,24 @@ Validation is pragmatic. Historical tennis data may be imperfect, but obviously 
   dataset. `deriveCadence` takes an injected `now` to stay pure/testable, and counts only
   dated finished matches (undated ones are tallied separately, never guessed).
 - Ledger cells and journal lenses open shared evidence-aware sheets. New pure helpers
-  (`deriveGamesTally`, `deriveScorelineDistribution`, `longestRun`, `maxLead`,
-  `deriveSurfaceForm`, `matchGamesTally`) deepen those views without changing the dataset.
+  (`deriveGamesTally`, `deriveScorelineDistribution`, `deriveFirstSetConversion`, `longestRun`,
+  `maxLead`, `deriveSurfaceForm`, `matchGamesTally`) deepen those views without changing the
+  dataset. The Deciders sheet splits super tiebreak / third set / unrecorded decider and shows
+  the decider rate; the Set 1 → win sheet uses only finished matches with set scores (sample
+  stated) and lists comebacks. Win rate sits under the head-to-head instead of in the ledger.
+- The **handwritten note** is derived, never stored: `deriveRivalryNote`
+  (`src/domain/narrative.ts`) picks what the latest finished match did (super tiebreak,
+  comeback, third set, straight sets), where the head-to-head stands from its winner's view
+  (moves ahead / extends / still trails / level, naming whose run it is), and the next-match
+  lean. `deriveNextMatchLean` is a fixed, transparent weighting — head-to-head 30%, last five
+  35%, the latest court 25%, super tiebreaks 10% — where a factor below its minimum sample
+  (2 on a court, 2 super tiebreaks) is shown but not weighed. It reads as words (toss-up /
+  slightly favoured / favoured), never a percentage, and the rivalry-story sheet lists every
+  factor. Display names are passed in so the mini program can reuse the same wording.
+- The add/update form shows validation issues through `describeFormIssue`
+  (`src/domain/formIssues.ts`), which rewords dataset-path messages ("match match-15 sets[0] …")
+  into form language ("Set 1: …"). It only rewords; `validateDataset` still owns every rule.
+  Per-set entry is the form's default; "Use match score only" is the fallback.
   `LeadSparkline` uses match order, not guessed dates; its interactive form exposes one
   native range control for touch and keyboard selection and a fixed-height live caption.
   Game totals always travel with detailed/finished match counts so partial evidence cannot

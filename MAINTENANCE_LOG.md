@@ -54,6 +54,28 @@
 
 ## Log
 
+### v0.13.0 — 2026-10-04
+- **The Overview note is now a derived story, not a fixed template.** It said "Alan edges ahead
+  again on Hard. Two wins in a row and three of the last five." even while Andy held the run:
+  the leader, streak owner and last-five leader were three different facts given one subject.
+  `deriveRivalryNote` now writes what the latest match did (super tiebreak, comeback, third
+  set, straight sets), where the head-to-head stands naming whose run it is, and a
+  next-match lean (`deriveNextMatchLean`: head-to-head, last five, latest court, super
+  tiebreaks; words not percentages; factors listed in the rivalry-story sheet).
+- **Laver Cup-aware stats.** Set record counts full sets only (20–17 → 20–16; super tiebreaks
+  are tallied on their own). Deciders keep their combined record but the sheet splits super
+  tiebreak / third set (older format) / unrecorded decider, with decider rate, straight-set
+  wins, super-tiebreak points and the closest one. "Avg sets" is gone. New **Set 1 → win**
+  ledger cell and sheet: first-set conversion per player plus comebacks (tap to open).
+- **Interaction fixes.** Chapter cards use a › "open" chevron instead of ^/⌄ (they never
+  expanded); the ›s between Form / Surfaces / Timeline are gone; validation issues in the
+  form read as plain language ("It's one set all — enter the match tiebreak…"); the streak
+  shows once (ledger) and win rate moved under the head-to-head; the latest-chapter card drops
+  its repeated date/location/surface block; ledger cells drop "AL · AN"; the form opens on
+  per-set entry.
+- 15 new tests (124 total). PWA cache v12 and the mini program core libs refreshed through
+  `build:core`. Package version is 0.13.0.
+
 ### v0.12.0 — 2026-09-30
 - **Laver Cup match format.** From now on a match at one set all is decided by a match
   tiebreak — first to 10 points, win by 2 — instead of a third set. It is stored as a new

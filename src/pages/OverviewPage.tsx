@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import { MatchDetail } from "../components/MatchDetail";
 import { OverviewSheets, OverviewSheetState } from "../components/OverviewSheets";
 import { SurfaceBadge } from "../components/SurfaceBadge";
 import { useCountUp } from "../components/useMotion";
-import { deriveCadence, deriveOverviewStats, formatNeutralScoreline, formatWinnerScoreline, isUnfinished, sortMatchesNewestFirst } from "../domain/deriveStats";
+import { deriveCadence, deriveFirstSetConversion, deriveOverviewStats, formatNeutralScoreline, formatWinnerScoreline, isUnfinished, sortMatchesNewestFirst } from "../domain/deriveStats";
+import { deriveRivalryNote } from "../domain/narrative";
 import { DeucelineDataset, Match, PlayerKey } from "../domain/schema";
 
 type OverviewPageProps = {
@@ -25,7 +26,6 @@ export function OverviewPage({ dataset, onUpdateMatch, onShowMatches }: Overview
   // excludes them from every record, streak, split, timeline and cadence view.
   const displayMatches = sortMatchesNewestFirst(dataset.matches);
   const latest = displayMatches[0];
-  const latestFinished = stats.sortedMatches[0];
   const earlier = displayMatches.slice(1, 3);
   // The timeline teaser follows the same finished-match boundary as every
   // derived rivalry stat. A dated suspended match must not extend the span.
@@ -39,9 +39,9 @@ export function OverviewPage({ dataset, onUpdateMatch, onShowMatches }: Overview
   );
   const streakWinner = stats.currentStreak.winner;
   const winRates = formatPercentagePair(stats.matchRecord.alan, stats.matchRecord.opponent);
-  const leader = lead === 0 ? "The rivalry is level." : `${lead > 0 ? names.alan : names.opponent} edges ahead again on ${latestFinished ? titleCase(latestFinished.surface) : "court"}.`;
-  const streakLine = stats.currentStreak.count > 1 ? `${numberWord(stats.currentStreak.count)} wins in a row` : "A new chapter begins";
-  const formWord = numberWord(Math.max(recent.alan, recent.opponent)).toLowerCase();
+  const leader: PlayerKey | null = lead === 0 ? null : lead > 0 ? "alan" : "opponent";
+  const note = deriveRivalryNote(dataset.matches, names);
+  const conversion = deriveFirstSetConversion(dataset.matches);
 
   return (
     <main className="screen screen-overview journal-book">
@@ -59,7 +59,7 @@ export function OverviewPage({ dataset, onUpdateMatch, onShowMatches }: Overview
           className="journal-rivalry"
           type="button"
           onClick={() => setSheet({ kind: "story" })}
-          aria-label={`Rivalry record: ${names.alan} ${stats.matchRecord.alan}, ${names.opponent} ${stats.matchRecord.opponent}; ${stats.totalMatches} finished matches; current streak ${streakWinner ? `${players[streakWinner].displayName} ${stats.currentStreak.count}` : "none"}. Open the full rivalry story`}
+          aria-label={`Rivalry record: ${names.alan} ${stats.matchRecord.alan}, ${names.opponent} ${stats.matchRecord.opponent}; ${stats.totalMatches} finished matches; win rate ${names.alan} ${winRates.alan}, ${names.opponent} ${winRates.opponent}. Open the full rivalry story`}
         >
           <span className="journal-rivalry-kicker">The rivalry</span>
           <span className="journal-rivalry-names">
@@ -72,13 +72,13 @@ export function OverviewPage({ dataset, onUpdateMatch, onShowMatches }: Overview
             <strong style={{ color: players.alan.color }}>{alanScore}</strong><i>—</i><strong style={{ color: players.opponent.color }}>{opponentScore}</strong>
           </span>
           <span className="journal-rivalry-label">Head-to-head</span>
-          <span className="journal-rivalry-meta">{stats.totalMatches} finished matches · current streak: <b>{streakWinner ? `${players[streakWinner].displayName} ${stats.currentStreak.count}` : "none"}</b></span>
+          <span className="journal-rivalry-meta">{stats.totalMatches} finished matches{stats.totalMatches ? <> · {leader ? <b style={{ color: players[leader].color }}>{players[leader].displayName} {winRates[leader]}</b> : <b>50% each</b>}</> : null}</span>
           <span className="journal-rivalry-action">Open rivalry story <img src="./assets/icons/chevron-right.svg" alt="" aria-hidden="true" /></span>
         </button>
 
         <div className="journal-handnote">
           <p>
-            {stats.totalMatches ? <>{leader}<br />{streakLine} and {formWord} of<br />the last five.</> : <>No finished chapters yet.<br />The next result starts<br />the rivalry story.</>}
+            {note.length ? note.map((line, index) => <span key={index} className={index === 2 ? "journal-handnote-lean" : undefined}>{keepScoresTogether(line)}</span>) : <span>No finished chapters yet. The next result starts the rivalry story.</span>}
           </p>
           <img src="./assets/journal-stamp.png" alt="" />
         </div>
@@ -97,18 +97,19 @@ export function OverviewPage({ dataset, onUpdateMatch, onShowMatches }: Overview
               onOpen={() => setSheet({ kind: "setRecord" })}
             />
             <LedgerButton
-              label="Win rate"
-              alanValue={winRates.alan}
-              opponentValue={winRates.opponent}
-              players={players}
-              onOpen={() => setSheet({ kind: "winRate" })}
-            />
-            <LedgerButton
               label="Deciders"
               alanValue={stats.deciderRecord.alan}
               opponentValue={stats.deciderRecord.opponent}
               players={players}
               onOpen={() => setSheet({ kind: "deciders" })}
+            />
+            <LedgerButton
+              label="Set 1 → win"
+              alanValue={conversionRate(conversion.converted.alan, conversion.firstSetWins.alan)}
+              opponentValue={conversionRate(conversion.converted.opponent, conversion.firstSetWins.opponent)}
+              note={conversion.sample ? `${conversion.converted.alan}/${conversion.firstSetWins.alan} · ${conversion.converted.opponent}/${conversion.firstSetWins.opponent}` : undefined}
+              players={players}
+              onOpen={() => setSheet({ kind: "conversion" })}
             />
             <button
               type="button"
@@ -199,11 +200,13 @@ type LedgerButtonProps = {
   label: string;
   alanValue: number | string;
   opponentValue: number | string;
+  // Optional evidence line under the values (e.g. the conversion sample).
+  note?: string;
   players: DeucelineDataset["rivalry"]["players"];
   onOpen: () => void;
 };
 
-function LedgerButton({ label, alanValue, opponentValue, players, onOpen }: LedgerButtonProps) {
+function LedgerButton({ label, alanValue, opponentValue, note, players, onOpen }: LedgerButtonProps) {
   return (
     <button
       type="button"
@@ -217,7 +220,7 @@ function LedgerButton({ label, alanValue, opponentValue, players, onOpen }: Ledg
         <i>—</i>
         <b style={{ color: players.opponent.color }}>{opponentValue}</b>
       </strong>
-      <small>{players.alan.abbr} · {players.opponent.abbr}</small>
+      {note ? <small>{note}</small> : null}
     </button>
   );
 }
@@ -235,16 +238,10 @@ function ExpandedChapter({ match, number, players, onOpen }: ChapterProps) {
           <span className="journal-chapter-date">{match.date ? shortDate(match.date) : `Match ${match.seq}`} · {match.location ?? "Location unknown"}</span>
           <strong><span style={{ color: players.alan.color }}>{players.alan.displayName} {score.alan}</span>—<span style={{ color: players.opponent.color }}>{score.opponent} {players.opponent.displayName}</span></strong>
           <span className="journal-set-scores">{score.setScores?.join(", ") ?? `${score.alan}—${score.opponent} so far`}</span>
-          <span className="journal-chapter-facts">
-            <span className="journal-date-fact"><small>Date</small>{match.date ? shortDate(match.date) : "Unknown"}<img src="./assets/icons/calendar.svg" alt="" aria-hidden="true" /></span>
-            <span><small>Location</small>{match.location ?? "Unknown"}</span>
-            <span><small>Surface</small><SurfaceBadge surface={match.surface} /></span>
-            <span><small>Status</small>In progress</span>
-          </span>
           <em>Awaiting the final result.</em>
         </span>
         <SurfaceBadge surface={match.surface} />
-        <img className="journal-collapse" src="./assets/icons/chevron-up.svg" alt="" aria-hidden="true" />
+        <img className="journal-collapse" src="./assets/icons/chevron-right.svg" alt="" aria-hidden="true" />
       </button>
     );
   }
@@ -259,16 +256,10 @@ function ExpandedChapter({ match, number, players, onOpen }: ChapterProps) {
         <span className="journal-chapter-date">{match.date ? shortDate(match.date) : `Match ${match.seq}`} · {match.location ?? "Location unknown"}</span>
         <strong>{winner.displayName} won {score.score}</strong>
         <span className="journal-set-scores">{score.setScores?.join(", ") ?? `${score.score} final`}</span>
-        <span className="journal-chapter-facts">
-          <span className="journal-date-fact"><small>Date</small>{match.date ? shortDate(match.date) : "Unknown"}<img src="./assets/icons/calendar.svg" alt="" aria-hidden="true" /></span>
-          <span><small>Location</small>{match.location ?? "Unknown"}</span>
-          <span><small>Surface</small><SurfaceBadge surface={match.surface} /></span>
-          <span><small>Evidence</small>{match.fidelity === "sets" ? "Full set scores" : "Score summary"}</span>
-        </span>
         <em>{winner.displayName} prevails on {titleCase(match.surface)}.</em>
       </span>
       <SurfaceBadge surface={match.surface} />
-      <img className="journal-collapse" src="./assets/icons/chevron-up.svg" alt="" aria-hidden="true" />
+      <img className="journal-collapse" src="./assets/icons/chevron-right.svg" alt="" aria-hidden="true" />
     </button>
   );
 }
@@ -283,7 +274,7 @@ function ChapterRow({ match, number, players, onOpen }: ChapterProps) {
         <span className="journal-chapter-number journal-chapter-number-neutral">{number}</span>
         <span className="journal-row-copy"><small>{match.date ? shortDate(match.date) : `Match ${match.seq} · date unknown`}{match.location ? ` · ${match.location}` : ""}</small><strong>In progress · {score.alan}—{score.opponent}</strong></span>
         <SurfaceBadge surface={match.surface} />
-        <img className="journal-expand" src="./assets/icons/chevron-down.svg" alt="" aria-hidden="true" />
+        <img className="journal-expand" src="./assets/icons/chevron-right.svg" alt="" aria-hidden="true" />
       </button>
     );
   }
@@ -295,7 +286,7 @@ function ChapterRow({ match, number, players, onOpen }: ChapterProps) {
       <span className="journal-chapter-number" style={{ background: winner.color }}>{number}</span>
       <span className="journal-row-copy"><small>{match.date ? shortDate(match.date) : `Match ${match.seq} · date unknown`}{match.location ? ` · ${match.location}` : ""}</small><strong>{winner.displayName} won {score.score}</strong></span>
       <SurfaceBadge surface={match.surface} />
-      <img className="journal-expand" src="./assets/icons/chevron-down.svg" alt="" aria-hidden="true" />
+      <img className="journal-expand" src="./assets/icons/chevron-right.svg" alt="" aria-hidden="true" />
     </button>
   );
 }
@@ -315,8 +306,14 @@ function titleCase(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
-function numberWord(value: number): string {
-  return ["No", "One", "Two", "Three", "Four", "Five"][value] ?? String(value);
+// Scores like "8–6" or "10–8" must not break at the dash across handnote lines.
+function keepScoresTogether(line: string): ReactNode[] {
+  return line.split(/(\d+–\d+)/).map((part, index) => (index % 2 ? <span key={index} className="nowrap">{part}</span> : part));
+}
+
+// "—" when the player has never won a first set, rather than a misleading 0%.
+function conversionRate(converted: number, firstSetWins: number): string {
+  return firstSetWins ? `${Math.round((converted / firstSetWins) * 100)}%` : "—";
 }
 
 function formatPercentagePair(alan: number, opponent: number): Record<PlayerKey, string> {

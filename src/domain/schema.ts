@@ -168,11 +168,37 @@ export type GamesTally = {
   } | null;
 };
 
+// How a finished match was decided. In the Laver Cup format (adopted 2026-09)
+// one set all goes to a super tiebreak; older matches played a full third set.
+// A 2—1 recorded as a set tally only can't say which, so it stays its own kind
+// rather than being guessed. "other" covers any non-best-of-three tally.
+export type MatchShape = "straight" | "superTiebreak" | "thirdSet" | "scoreOnlyDecider" | "other";
+
 export type ScorelineDistribution = {
   straightSets: Record<PlayerKey, number>;
   deciders: Record<PlayerKey, number>;
-  averageSetsPerMatch: number | null;
+  byShape: Record<MatchShape, Record<PlayerKey, number>>;
+  deciderCount: number;
   finishedMatchCount: number;
+  // Super tiebreaks are points, not a full set: tallied here, never in the set record.
+  superTiebreak: {
+    record: Record<PlayerKey, number>;
+    points: Record<PlayerKey, number>;
+    // Smallest winning margin; the newer match wins a tie. Score is winner-first.
+    closest: { matchId: string; seq: number; score: string; winner: PlayerKey; margin: number } | null;
+  };
+};
+
+// Does winning the first set carry the match? Uses only finished matches with
+// set scores and at least two sets, so the sample is stated beside the result.
+export type FirstSetConversion = {
+  sample: number;
+  finishedMatchCount: number;
+  firstSetWins: Record<PlayerKey, number>;
+  converted: Record<PlayerKey, number>;
+  // Matches won after losing the first set, credited to the winner.
+  comebacks: Record<PlayerKey, number>;
+  comebackMatchIds: string[];
 };
 
 // `lead` is a positive magnitude for the named player. A player who has never
@@ -187,6 +213,7 @@ export type OverviewStats = {
   totalMatches: number;
   detailedMatchCount: number;
   matchRecord: Record<PlayerKey, number>;
+  // Full sets only — a super tiebreak is counted separately (ScorelineDistribution).
   setRecord: Record<PlayerKey, number>;
   deciderRecord: Record<PlayerKey, number>;
   currentStreak: StreakState;

@@ -115,3 +115,14 @@ stateless commit proxy for match publishing.
   `schemaVersion` bump. **Boundary:** old full-third-set matches are never rewritten; a
   full third set stays enterable; no date-based "format era" switch — see
   [ENGINE.md](ENGINE.md) → Domain Model Rules.
+
+- **Set record counts full sets only; super tiebreaks are their own tally.** Alan, 2026-10-04.
+  **Why:** a ten-point tiebreak is not a set's worth of tennis, so counting it inflated the
+  set record. **Boundary:** the match score still reads 2—1 and the match still counts as a
+  decider; a tally-only 2—1 stays an "unrecorded decider" (never guessed as either kind).
+- **The Overview note and next-match lean are derived, transparent and wordy.** Alan,
+  2026-10-04. **Why:** the old note mixed the leader, the streak owner and the last-five
+  leader into one sentence and misattributed runs. **Boundary:** the lean is a fixed public
+  weighting shown in words with every factor visible — no percentages, no stored predictions,
+  no model; tiebreak-in-set ("pressure points") stats are deliberately not built because they
+  need point-level recording.

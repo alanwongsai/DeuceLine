@@ -9,6 +9,7 @@ import {
   sortMatchesNewestFirst,
 } from "../domain/deriveStats";
 import { DeucelineDataset, Match, PlayerKey, SetScore, Surface, SURFACES, WeatherTag, WEATHER_TAGS } from "../domain/schema";
+import { describeFormIssue } from "../domain/formIssues";
 import { DatasetValidationError, validateDataset } from "../domain/validateDataset";
 import { Modal } from "./Modal";
 import { SurfaceBadge } from "./SurfaceBadge";
@@ -144,9 +145,9 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
   // from the last match — only an edited match reseeds its own recorded weather.
   const [conditions, setConditions] = useState<WeatherTag[]>(editMatch?.conditions ?? []);
   const [tempC, setTempC] = useState(editMatch?.tempC !== undefined ? String(editMatch.tempC) : "");
-  // A decisive set tally is the quickest trustworthy record. Per-set game
-  // scores remain one clear expansion rather than the default entry burden.
-  const [fidelity, setFidelity] = useState<"sets" | "matchScore">(editMatch?.fidelity ?? "matchScore");
+  // Per-set scores are the default: the Laver Cup decider (and every set-level
+  // stat) needs them. A set tally alone stays one tap away for a half-remembered match.
+  const [fidelity, setFidelity] = useState<"sets" | "matchScore">(editMatch?.fidelity ?? "sets");
   // Default to Finished. The only edit entry is "Update result" on an unfinished
   // match, where the intent is to complete it — defaulting to Unfinished would
   // silently re-save it as still in progress. The toggle is there if it really is
@@ -300,7 +301,7 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
       // Reveal the password field on review only if we don't already have one.
       setNeedsPassword(!password.trim());
     } catch (reason: unknown) {
-      setIssues(reason instanceof DatasetValidationError ? reason.issues : ["Could not build the match."]);
+      setIssues(reason instanceof DatasetValidationError ? [...new Set(reason.issues.map(describeFormIssue))] : ["Could not build the match."]);
       window.requestAnimationFrame(() => issueListRef.current?.focus());
     }
   };
@@ -396,7 +397,7 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
     setLocation(lastMatch?.location ?? "");
     setConditions([]);
     setTempC("");
-    setFidelity("matchScore");
+    setFidelity("sets");
     setStatus("finished");
     setSetRows(setRowsFromMatch());
     setDecider("matchTiebreak");

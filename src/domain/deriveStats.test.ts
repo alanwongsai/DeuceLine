@@ -3,9 +3,11 @@ import { DetailedMatch, Match, ScoreMatch } from "./schema";
 import {
   deriveCadence,
   deriveDataCoverage,
+  deriveFirstSetConversion,
   deriveGamesTally,
   deriveMatchContext,
   deriveMatchResult,
+  deriveMatchShape,
   deriveOverviewStats,
   deriveScorelineDistribution,
   deriveSurfaceForm,
@@ -292,22 +294,28 @@ describe("deeper rivalry analytics", () => {
     });
   });
 
-  it("derives straight-set, decider and average-set evidence", () => {
+  it("splits matches by how they were decided", () => {
     expect(deriveScorelineDistribution(bishop)).toEqual({
       straightSets: { alan: 2, opponent: 1 },
       deciders: { alan: 2, opponent: 2 },
-      averageSetsPerMatch: 18 / 7,
+      byShape: {
+        straight: { alan: 2, opponent: 1 },
+        superTiebreak: { alan: 0, opponent: 0 },
+        thirdSet: { alan: 1, opponent: 0 },
+        scoreOnlyDecider: { alan: 1, opponent: 2 },
+        other: { alan: 0, opponent: 0 },
+      },
+      deciderCount: 4,
       finishedMatchCount: 7,
+      superTiebreak: { record: { alan: 0, opponent: 0 }, points: { alan: 0, opponent: 0 }, closest: null },
     });
   });
 
-  it("returns null average sets for no finished matches", () => {
-    expect(deriveScorelineDistribution([])).toEqual({
-      straightSets: { alan: 0, opponent: 0 },
-      deciders: { alan: 0, opponent: 0 },
-      averageSetsPerMatch: null,
-      finishedMatchCount: 0,
-    });
+  it("returns empty evidence for no finished matches", () => {
+    const empty = deriveScorelineDistribution([]);
+    expect(empty.deciderCount).toBe(0);
+    expect(empty.finishedMatchCount).toBe(0);
+    expect(empty.superTiebreak.closest).toBeNull();
   });
 
   it("excludes unfinished matches from scoreline distribution", () => {
@@ -511,13 +519,64 @@ describe("match tiebreak (Laver Cup format)", () => {
     expect(formatNeutralScoreline(laver(1, { alan: 9, opponent: 11 })).setScores).toEqual(["6-4", "3-6", "[9-11]"]);
   });
 
-  it("feeds set and decider records but never the games tally", () => {
+  it("feeds the decider record but neither the set record nor the games tally", () => {
     const matches = [laver(1, { alan: 10, opponent: 7 })];
     const stats = deriveOverviewStats(matches);
-    expect(stats.setRecord).toEqual({ alan: 2, opponent: 1 });
+    // Full sets only: the super tiebreak decides the 2—1 but is not a set's worth.
+    expect(stats.setRecord).toEqual({ alan: 1, opponent: 1 });
+    expect(stats.surfaceSplit.hard).toMatchObject({ setsAlan: 1, setsOpponent: 1, decidersAlan: 1 });
     expect(stats.deciderRecord).toEqual({ alan: 1, opponent: 0 });
     expect(matchGamesTally(laver(1, { alan: 10, opponent: 7 }))).toEqual({ alan: 9, opponent: 10 });
     expect(deriveGamesTally(matches).games).toEqual({ alan: 9, opponent: 10 });
     expect(deriveGamesTally(matches).biggestSetMargin?.score).toBe("6-3");
+  });
+});
+
+describe("match shape, super tiebreaks and first-set conversion", () => {
+  const laver = (seq: number, sets: DetailedMatch["sets"], matchTiebreak: { alan: number; opponent: number }): DetailedMatch => ({
+    ...detailed(seq, "hard", sets),
+    matchTiebreak,
+  });
+  const alanFirst = [{ alan: 6, opponent: 4 }, { alan: 3, opponent: 6 }];
+
+  it("classifies every finished match and leaves unfinished ones undecided", () => {
+    expect(deriveMatchShape(score(1, "clay", 2, 0))).toBe("straight");
+    expect(deriveMatchShape(score(2, "clay", 1, 2))).toBe("scoreOnlyDecider");
+    expect(deriveMatchShape(score(3, "clay", 3, 1))).toBe("other");
+    expect(deriveMatchShape(laver(4, alanFirst, { alan: 10, opponent: 8 }))).toBe("superTiebreak");
+    expect(deriveMatchShape(bishop[6])).toBe("thirdSet");
+    expect(deriveMatchShape(unfinished(5, "clay"))).toBeNull();
+  });
+
+  it("tallies super tiebreak record, points and the closest one (newer wins a tie)", () => {
+    const matches = [
+      laver(1, alanFirst, { alan: 12, opponent: 10 }),
+      laver(2, alanFirst, { alan: 7, opponent: 10 }),
+      laver(3, alanFirst, { alan: 8, opponent: 10 }),
+    ];
+    const { superTiebreak, byShape } = deriveScorelineDistribution(matches);
+    expect(byShape.superTiebreak).toEqual({ alan: 1, opponent: 2 });
+    expect(superTiebreak.record).toEqual({ alan: 1, opponent: 2 });
+    expect(superTiebreak.points).toEqual({ alan: 27, opponent: 30 });
+    expect(superTiebreak.closest).toEqual({ matchId: "d-3", seq: 3, score: "10-8", winner: "opponent", margin: 2 });
+  });
+
+  it("measures first-set conversion and lists comebacks newest first", () => {
+    const matches: Match[] = [
+      detailed(1, "hard", [{ alan: 6, opponent: 2 }, { alan: 6, opponent: 3 }]),
+      laver(2, alanFirst, { alan: 8, opponent: 10 }),
+      detailed(3, "hard", [{ alan: 2, opponent: 6 }, { alan: 6, opponent: 3 }, { alan: 7, opponent: 5 }]),
+      score(4, "clay", 2, 1),
+      detailed(5, "hard", [{ alan: 6, opponent: 4 }]),
+      unfinished(6, "hard"),
+    ];
+    expect(deriveFirstSetConversion(matches)).toEqual({
+      sample: 3,
+      finishedMatchCount: 5,
+      firstSetWins: { alan: 2, opponent: 1 },
+      converted: { alan: 1, opponent: 0 },
+      comebacks: { alan: 1, opponent: 1 },
+      comebackMatchIds: ["d-3", "d-2"],
+    });
   });
 });

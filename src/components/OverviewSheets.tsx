@@ -1,17 +1,20 @@
 import {
   deriveCadence,
+  deriveFirstSetConversion,
   deriveGamesTally,
   deriveScorelineDistribution,
   deriveSurfaceForm,
+  formatWinnerScoreline,
   longestRun,
   maxLead,
 } from "../domain/deriveStats";
+import { deriveNextMatchLean, LeanFactor } from "../domain/narrative";
 import { DeucelineDataset, Match, OverviewStats, PlayerKey, Surface, SURFACES } from "../domain/schema";
 import { LeadSparkline } from "./LeadSparkline";
 import { DetailRow, StatDetailSheet } from "./StatDetailSheet";
 
 export type OverviewSheetState =
-  | { kind: "story" | "matchRecord" | "setRecord" | "winRate" | "deciders" | "streak" | "form" | "timeline" | "surfaces" }
+  | { kind: "story" | "setRecord" | "deciders" | "conversion" | "streak" | "form" | "timeline" | "surfaces" }
   | { kind: "surface"; surface: Surface };
 
 type OverviewSheetsProps = {
@@ -30,7 +33,7 @@ const surfaceLabels: Record<Surface, string> = {
   astro: "Astro",
 };
 
-type Metric = "match" | "sets" | "rate" | "deciders";
+type Metric = "match" | "sets" | "rate";
 
 export function OverviewSheets({ sheet, dataset, stats, onChange, onSelectMatch, onClose }: OverviewSheetsProps) {
   const players = dataset.rivalry.players;
@@ -38,6 +41,7 @@ export function OverviewSheets({ sheet, dataset, stats, onChange, onSelectMatch,
   const surfaces = [...SURFACES].sort((a, b) => stats.surfaceSplit[b].played - stats.surfaceSplit[a].played);
   const games = deriveGamesTally(dataset.matches);
   const distribution = deriveScorelineDistribution(dataset.matches);
+  const conversion = deriveFirstSetConversion(dataset.matches);
   const extremes = maxLead(stats.timeline);
   const cadence = deriveCadence(dataset.matches, new Date());
   const winRate = formatPercentagePair(stats.matchRecord.alan, stats.matchRecord.opponent);
@@ -62,9 +66,9 @@ export function OverviewSheets({ sheet, dataset, stats, onChange, onSelectMatch,
   const metricRows = (metric: Metric): DetailRow[] =>
     surfaces.map((surface) => {
       const row = stats.surfaceSplit[surface];
-      const alan = metric === "sets" ? row.setsAlan : metric === "deciders" ? row.decidersAlan : row.alan;
-      const opponent = metric === "sets" ? row.setsOpponent : metric === "deciders" ? row.decidersOpponent : row.opponent;
-      const sample = metric === "deciders" ? alan + opponent : row.played;
+      const alan = metric === "sets" ? row.setsAlan : row.alan;
+      const opponent = metric === "sets" ? row.setsOpponent : row.opponent;
+      const sample = row.played;
       const rowRates = formatPercentagePair(row.alan, row.opponent);
       const value = metric === "rate"
         ? row.played ? `${rowRates.alan} · ${rowRates.opponent}` : "—"
@@ -84,7 +88,7 @@ export function OverviewSheets({ sheet, dataset, stats, onChange, onSelectMatch,
           { key: "margin", label: "Biggest set margin", value: games.biggestSetMargin ? `${games.biggestSetMargin.score} · ${players[games.biggestSetMargin.winner].displayName}` : "—" },
           ...metricRows("sets"),
         ]}
-        note={`Games are based on ${games.detailedMatchCount} of ${games.finishedMatchCount} finished matches with full set scores.`}
+        note={`Full sets only — a super tiebreak is ten points, so it is counted under Deciders instead. Games are based on ${games.detailedMatchCount} of ${games.finishedMatchCount} finished matches with full set scores.`}
         onClose={onClose}
       >
         <SheetFacts
@@ -92,17 +96,17 @@ export function OverviewSheets({ sheet, dataset, stats, onChange, onSelectMatch,
             ["Set share", setTotal ? `${Math.round((stats.setRecord.alan / setTotal) * 100)}% · ${Math.round((stats.setRecord.opponent / setTotal) * 100)}%` : "—"],
             ["Straight sets", `${distribution.straightSets.alan}—${distribution.straightSets.opponent}`],
             ["Deciders won", `${distribution.deciders.alan}—${distribution.deciders.opponent}`],
-            ["Avg sets", distribution.averageSetsPerMatch?.toFixed(1) ?? "—"],
+            ["Super tiebreaks", `${distribution.superTiebreak.record.alan}—${distribution.superTiebreak.record.opponent}`],
           ]}
         />
       </StatDetailSheet>
     );
   }
 
-  if (sheet.kind === "winRate" || sheet.kind === "form") {
+  if (sheet.kind === "form") {
     const latestRolling = stats.timeline.at(-1)?.rollingWinRateAlan;
     return (
-      <StatDetailSheet titleId="statDetailTitle" eyebrow="Match-order form" title={sheet.kind === "form" ? "Recent form" : "Win rate"} rows={metricRows("rate")} onClose={onClose}>
+      <StatDetailSheet titleId="statDetailTitle" eyebrow="Match-order form" title="Recent form" rows={metricRows("rate")} onClose={onClose}>
         <div className="sheet-form sheet-form-actions" aria-label="Last five matches, newest first">
           <span>Last five</span>
           {recentMatches.length ? recentMatches.map((item) => (
@@ -129,21 +133,100 @@ export function OverviewSheets({ sheet, dataset, stats, onChange, onSelectMatch,
   }
 
   if (sheet.kind === "deciders") {
-    const total = stats.deciderRecord.alan + stats.deciderRecord.opponent;
+    const { byShape, superTiebreak } = distribution;
+    const closest = superTiebreak.closest;
+    const closestMatch = closest ? dataset.matches.find((match) => match.id === closest.matchId) : undefined;
+    const shapeRow = (key: string, label: string, record: Record<PlayerKey, number>, meta?: string): DetailRow => {
+      const sample = record.alan + record.opponent;
+      return { key, label, meta, value: sample ? `${record.alan}—${record.opponent}` : "—", bar: recordBar(record.alan, record.opponent), isEmpty: sample === 0 };
+    };
+    const rows: DetailRow[] = [
+      shapeRow("superTiebreak", "Super tiebreak", byShape.superTiebreak, "Laver Cup"),
+      shapeRow("thirdSet", "Third set", byShape.thirdSet, "older format"),
+      ...(byShape.scoreOnlyDecider.alan + byShape.scoreOnlyDecider.opponent
+        ? [shapeRow("scoreOnly", "Unrecorded decider", byShape.scoreOnlyDecider, "set tally only")]
+        : []),
+      ...(closest && closestMatch
+        ? [{
+            key: "closest",
+            label: "Closest super tiebreak",
+            meta: `M${closest.seq}`,
+            value: `${closest.score} · ${players[closest.winner].displayName}`,
+            onClick: () => onSelectMatch(closestMatch),
+            ariaLabel: `Closest super tiebreak: ${players[closest.winner].displayName} won ${closest.score} in match ${closest.seq}. Open match detail`,
+          }]
+        : []),
+    ];
     return (
       <StatDetailSheet
         titleId="statDetailTitle"
         eyebrow="Pressure points"
-        title="Deciding sets"
-        rows={metricRows("deciders")}
-        note={`Values run ${names.alan}—${names.opponent}. A decider is a finished match that reached its final available set; surface rows show deciders only.`}
+        title="Deciders"
+        rows={rows}
+        note={`Values run ${names.alan}—${names.opponent}. A decider is a match that reached one set all. Since the Laver Cup format, that is a super tiebreak (first to 10, win by 2); older matches played a full third set.`}
         onClose={onClose}
       >
         <SheetFacts facts={[
-          [`${names.alan}—${names.opponent}`, total ? `${stats.deciderRecord.alan}—${stats.deciderRecord.opponent}` : "—"],
-          ["Decider sample", `${total} of ${distribution.finishedMatchCount}`],
+          [`${names.alan}—${names.opponent}`, distribution.deciderCount ? `${distribution.deciders.alan}—${distribution.deciders.opponent}` : "—"],
+          ["Decider rate", distribution.finishedMatchCount ? `${Math.round((distribution.deciderCount / distribution.finishedMatchCount) * 100)}% · ${distribution.deciderCount}/${distribution.finishedMatchCount}` : "—"],
           ["Straight-set wins", `${distribution.straightSets.alan}—${distribution.straightSets.opponent}`],
-          ["Avg match length", distribution.averageSetsPerMatch ? `${distribution.averageSetsPerMatch.toFixed(1)} sets` : "—"],
+          ["Super TB points", superTiebreak.points.alan + superTiebreak.points.opponent ? `${superTiebreak.points.alan}—${superTiebreak.points.opponent}` : "—"],
+        ]} />
+      </StatDetailSheet>
+    );
+  }
+
+  if (sheet.kind === "conversion") {
+    const comebackMatches = conversion.comebackMatchIds
+      .map((id) => dataset.matches.find((match) => match.id === id))
+      .filter((match): match is Match => match !== undefined);
+    const conversionRow = (player: PlayerKey): DetailRow => {
+      const won = conversion.firstSetWins[player];
+      const kept = conversion.converted[player];
+      return {
+        key: player,
+        label: `${players[player].displayName} after winning set 1`,
+        value: won ? `${kept}/${won} · ${Math.round((kept / won) * 100)}%` : "—",
+        bar: won
+          ? {
+              leftPct: player === "alan" ? (kept / won) * 100 : 0,
+              rightPct: player === "opponent" ? (kept / won) * 100 : 0,
+              leftColor: players.alan.color,
+              rightColor: players.opponent.color,
+            }
+          : undefined,
+        isEmpty: won === 0,
+      };
+    };
+    const rows: DetailRow[] = [
+      conversionRow("alan"),
+      conversionRow("opponent"),
+      ...comebackMatches.map((match) => {
+        const winner = formatWinnerScoreline(match);
+        return {
+          key: match.id,
+          label: `Comeback · M${match.seq}`,
+          meta: match.date ? shortDate(match.date) : undefined,
+          value: `${players[winner.winner].displayName} · ${winner.setScores?.join(" ") ?? winner.score}`,
+          onClick: () => onSelectMatch(match),
+          ariaLabel: `${players[winner.winner].displayName} came back from a set down in match ${match.seq}. Open match detail`,
+        };
+      }),
+    ];
+    return (
+      <StatDetailSheet
+        titleId="statDetailTitle"
+        eyebrow="Set-one momentum"
+        title="1st-set conversion"
+        rows={rows}
+        note={`How often the first-set winner went on to win the match. Based on ${conversion.sample} of ${conversion.finishedMatchCount} finished matches with set scores; comebacks are matches won from a set down, newest first.`}
+        onClose={onClose}
+      >
+        <SheetFacts facts={[
+          [`${names.alan} kept`, `${conversion.converted.alan}/${conversion.firstSetWins.alan}`],
+          [`${names.opponent} kept`, `${conversion.converted.opponent}/${conversion.firstSetWins.opponent}`],
+          ["Comebacks", `${conversion.comebacks.alan}—${conversion.comebacks.opponent}`],
+          ["Evidence", `${conversion.sample} matches`],
         ]} />
       </StatDetailSheet>
     );
@@ -249,6 +332,7 @@ export function OverviewSheets({ sheet, dataset, stats, onChange, onSelectMatch,
       note={`Dates are recorded for ${stats.coverage.datedMatches} of ${stats.coverage.finishedMatches} finished matches; the curve therefore uses match order.`}
       onClose={onClose}
     >
+      {sheet.kind === "story" ? <LeanSummary dataset={dataset} /> : null}
       <LeadSparkline timeline={stats.timeline} matches={dataset.matches} players={players} ariaLabel="Cumulative match lead across the rivalry" />
       <SheetFacts facts={[
         ["Current gap", lead === 0 ? "Level" : `${Math.abs(lead)} · ${lead > 0 ? names.alan : names.opponent}`],
@@ -266,12 +350,47 @@ export function OverviewSheets({ sheet, dataset, stats, onChange, onSelectMatch,
   );
 }
 
+const leanFactorLabels: Record<LeanFactor["key"], string> = {
+  headToHead: "Head-to-head",
+  recentForm: "Last five",
+  surface: "On this court",
+  superTiebreaks: "Super tiebreaks",
+};
+
+// The next-match lean and every factor behind it, so the handnote's one-line
+// verdict is never a black box.
+function LeanSummary({ dataset }: { dataset: DeucelineDataset }) {
+  const lean = deriveNextMatchLean(dataset.matches);
+  if (!lean) return null;
+  const players = dataset.rivalry.players;
+  const verdict = lean.verdict === "tossUp" || !lean.favourite
+    ? "A toss-up"
+    : `${players[lean.favourite].displayName} ${lean.verdict === "slightEdge" ? "slightly favoured" : "favoured"}`;
+  return (
+    <section className="sheet-lean" aria-label="Next-match lean">
+      <p className="sheet-lean-verdict"><span>Next match</span><strong style={lean.favourite ? { color: players[lean.favourite].color } : undefined}>{verdict}</strong></p>
+      <SheetFacts facts={lean.factors.map((factor) => {
+        const label = factor.key === "surface" ? `On ${surfaceLabels[lean.surface]}` : leanFactorLabels[factor.key];
+        const sample = factor.record.alan + factor.record.opponent;
+        const value = !factor.counted
+          ? sample ? `${factor.record.alan}—${factor.record.opponent} · too few` : "—"
+          : `${factor.record.alan}—${factor.record.opponent}${factor.favours ? ` · ${players[factor.favours].abbr}` : " · even"}`;
+        return [`${label} ${Math.round(factor.weight * 100)}%`, value];
+      })} />
+    </section>
+  );
+}
+
 function SheetFacts({ facts }: { facts: Array<[string, string]> }) {
   return (
     <div className="sheet-facts">
       {facts.map(([label, value]) => <div className="sheet-fact" key={label}><span>{label}</span><strong>{value}</strong></div>)}
     </div>
   );
+}
+
+function shortDate(value: string): string {
+  return new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(`${value}T12:00:00`));
 }
 
 function formatPercentagePair(alan: number, opponent: number): Record<PlayerKey, string> {

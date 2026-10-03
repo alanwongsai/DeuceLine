@@ -2,11 +2,13 @@ import {
   Cadence,
   DataCoverage,
   DetailedMatch,
+  FirstSetConversion,
   GamesTally,
   LeadExtreme,
   Match,
   MatchContext,
   MatchResult,
+  MatchShape,
   OverviewStats,
   PlayerKey,
   PointScore,
@@ -105,6 +107,29 @@ export function deriveMatchResult(match: Match): MatchResult {
   };
 }
 
+// Full sets won. A super tiebreak is ten points, not a set's worth of games,
+// so the set record leaves it out (it still decides the 2—1 match score).
+// A set-tally-only match can't tell, so its tally counts as recorded.
+function fullSetsWon(match: Match): Record<PlayerKey, number> {
+  if (match.fidelity !== "sets") return { ...match.matchScore };
+  const sets = emptyRecord();
+  match.sets.forEach((set) => {
+    sets[deriveSetWinner(set)] += 1;
+  });
+  return sets;
+}
+
+// How a finished match was decided (null while unfinished — nothing is decided).
+export function deriveMatchShape(match: Match): MatchShape | null {
+  const result = deriveMatchResult(match);
+  if (result.winner === null) return null;
+  const loser: PlayerKey = result.winner === "alan" ? "opponent" : "alan";
+  if (result.matchScore[loser] === 0) return "straight";
+  if (!result.isDecider) return "other";
+  if (match.fidelity !== "sets") return "scoreOnlyDecider";
+  return match.matchTiebreak ? "superTiebreak" : "thirdSet";
+}
+
 export function formatMatchScore(match: Match): string {
   const { matchScore } = deriveMatchResult(match);
   return `${matchScore.alan}—${matchScore.opponent}`;
@@ -172,15 +197,16 @@ export function deriveOverviewStats(matches: Match[]): OverviewStats {
   let detailedMatchCount = 0;
 
   for (const { match, result } of results) {
+    const sets = fullSetsWon(match);
     matchRecord[result.winner] += 1;
-    setRecord.alan += result.matchScore.alan;
-    setRecord.opponent += result.matchScore.opponent;
+    setRecord.alan += sets.alan;
+    setRecord.opponent += sets.opponent;
     if (result.isDecider) deciderRecord[result.winner] += 1;
     if (result.hasSetDetail) detailedMatchCount += 1;
     surfaceSplit[match.surface].played += 1;
     surfaceSplit[match.surface][result.winner] += 1;
-    surfaceSplit[match.surface].setsAlan += result.matchScore.alan;
-    surfaceSplit[match.surface].setsOpponent += result.matchScore.opponent;
+    surfaceSplit[match.surface].setsAlan += sets.alan;
+    surfaceSplit[match.surface].setsOpponent += sets.opponent;
     if (result.isDecider) {
       surfaceSplit[match.surface][result.winner === "alan" ? "decidersAlan" : "decidersOpponent"] += 1;
     }
@@ -378,26 +404,77 @@ export function deriveGamesTally(matches: Match[]): GamesTally {
   };
 }
 
+const emptyShapes = (): ScorelineDistribution["byShape"] => ({
+  straight: emptyRecord(),
+  superTiebreak: emptyRecord(),
+  thirdSet: emptyRecord(),
+  scoreOnlyDecider: emptyRecord(),
+  other: emptyRecord(),
+});
+
+// How finished matches were decided: straight sets vs one set all, and — at one
+// set all — super tiebreak vs a full third set (older format) vs unknown.
 export function deriveScorelineDistribution(matches: Match[]): ScorelineDistribution {
-  const finished = matches.filter((match) => !isUnfinished(match));
-  const straightSets = emptyRecord();
+  const finished = sortMatchesNewestFirst(matches).filter((match) => !isUnfinished(match));
+  const byShape = emptyShapes();
   const deciders = emptyRecord();
-  let totalSets = 0;
+  const points = emptyRecord();
+  let closest: ScorelineDistribution["superTiebreak"]["closest"] = null;
 
   finished.forEach((match) => {
     const result = deriveMatchResult(match) as MatchResult & { winner: PlayerKey };
-    const loser: PlayerKey = result.winner === "alan" ? "opponent" : "alan";
-    totalSets += result.matchScore.alan + result.matchScore.opponent;
-    if (result.matchScore[loser] === 0) straightSets[result.winner] += 1;
+    const shape = deriveMatchShape(match) as MatchShape;
+    byShape[shape][result.winner] += 1;
     if (result.isDecider) deciders[result.winner] += 1;
+
+    if (match.fidelity === "sets" && match.matchTiebreak) {
+      const tiebreak = match.matchTiebreak;
+      points.alan += tiebreak.alan;
+      points.opponent += tiebreak.opponent;
+      const winner = deriveSetWinner(tiebreak);
+      const loser: PlayerKey = winner === "alan" ? "opponent" : "alan";
+      const margin = tiebreak[winner] - tiebreak[loser];
+      // Newest first, so a strict comparison keeps the newer match on a tie.
+      if (!closest || margin < closest.margin) {
+        closest = { matchId: match.id, seq: match.seq, score: `${tiebreak[winner]}-${tiebreak[loser]}`, winner, margin };
+      }
+    }
   });
 
   return {
-    straightSets,
+    straightSets: byShape.straight,
     deciders,
-    averageSetsPerMatch: finished.length ? totalSets / finished.length : null,
+    byShape,
+    deciderCount: deciders.alan + deciders.opponent,
     finishedMatchCount: finished.length,
+    superTiebreak: { record: byShape.superTiebreak, points, closest },
   };
+}
+
+// Does the first set carry the match? Comebacks are matches won from a set down.
+export function deriveFirstSetConversion(matches: Match[]): FirstSetConversion {
+  const finished = sortMatchesNewestFirst(matches).filter((match) => !isUnfinished(match));
+  const firstSetWins = emptyRecord();
+  const converted = emptyRecord();
+  const comebacks = emptyRecord();
+  const comebackMatchIds: string[] = [];
+  let sample = 0;
+
+  finished.forEach((match) => {
+    if (match.fidelity !== "sets" || match.sets.length < 2) return;
+    sample += 1;
+    const winner = deriveMatchResult(match).winner as PlayerKey;
+    const firstSetWinner = deriveSetWinner(match.sets[0]);
+    firstSetWins[firstSetWinner] += 1;
+    if (firstSetWinner === winner) {
+      converted[winner] += 1;
+    } else {
+      comebacks[winner] += 1;
+      comebackMatchIds.push(match.id);
+    }
+  });
+
+  return { sample, finishedMatchCount: finished.length, firstSetWins, converted, comebacks, comebackMatchIds };
 }
 
 export function longestRun(

@@ -7,3 +7,5 @@ export * from "./schema";
 export * from "./validateDataset";
 export * from "./deriveStats";
 export * from "./addMatch";
+export * from "./narrative";
+export * from "./formIssues";
