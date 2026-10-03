@@ -244,6 +244,32 @@
           "opponent": 6
         }
       ]
+    },
+    {
+      "id": "match-14",
+      "seq": 14,
+      "date": "2026-10-03",
+      "surface": "hard",
+      "location": "Bishop",
+      "conditions": [
+        "cloudy"
+      ],
+      "tempC": 19,
+      "fidelity": "sets",
+      "sets": [
+        {
+          "alan": 6,
+          "opponent": 4
+        },
+        {
+          "alan": 3,
+          "opponent": 6
+        }
+      ],
+      "matchTiebreak": {
+        "alan": 8,
+        "opponent": 10
+      }
     }
   ]
 }
