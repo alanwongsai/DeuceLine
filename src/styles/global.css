@@ -1,3 +1,4 @@
+/* Shared evidence, detail and entry presentation. Skin tokens own all chrome colours. */
 @import "./skins.css";
 
 :root {
@@ -8,18 +9,7 @@
     sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
-
-  /* iOS-style two-tier corner scale: big cards get the generous, rounder
-     radius; smaller controls (buttons, list rows, badges) get the tighter
-     one. Pills (999px) and circles (50%) are unaffected. */
-  --radius-lg: 22px;
-  --radius-md: 14px;
-
-  /* Structural (non-skin) tokens: the shell gutter, referenced by the masthead
-     bleed, and the blur radius of the floating-layer material. */
-  --shell-pad: 16px;
   --material-blur: 22px;
-  --bottom-chrome-clearance: 84px;
 }
 
 * {
@@ -30,7 +20,6 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: var(--bg);
 }
 
 button {
@@ -44,24 +33,11 @@ pre {
 }
 
 .app-shell {
-  width: min(100%, 520px);
-  min-height: 100svh;
   margin: 0 auto;
-  padding: max(var(--shell-pad), env(safe-area-inset-top)) var(--shell-pad)
-    calc(78px + env(safe-area-inset-bottom));
-}
-
-.screen {
-  display: grid;
-  gap: 14px;
 }
 
 .eyebrow {
   margin: 0 0 5px;
-  color: var(--muted);
-  font-size: 0.72rem;
-  font-weight: 900;
-  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -80,116 +56,6 @@ h1 {
 h2 {
   margin: 0;
   font-size: 1rem;
-}
-
-/* Masthead: both page headers bleed to the shell edges as a deep-green band —
-   the Championships chrome — with white type and the gold eyebrow on top. */
-.app-header,
-.page-header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px;
-  margin: calc(-1 * max(var(--shell-pad), env(safe-area-inset-top)))
-    calc(-1 * var(--shell-pad)) 2px;
-  padding: calc(max(var(--shell-pad), env(safe-area-inset-top)) + 12px) 20px 18px;
-  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-  color: var(--masthead-ink);
-  background: linear-gradient(168deg, var(--masthead-glow), var(--masthead-bg) 58%);
-  box-shadow: 0 14px 30px rgba(10, 47, 33, 0.16);
-}
-
-.app-header {
-  display: block;
-}
-
-.app-header .eyebrow,
-.page-header .eyebrow {
-  color: var(--masthead-accent);
-}
-
-.app-header p:last-child {
-  margin: 0;
-  color: var(--masthead-muted);
-  font-weight: 800;
-}
-
-.hero-score {
-  overflow: hidden;
-  position: relative;
-  min-height: 238px;
-  padding: 22px;
-  border-radius: var(--radius-lg);
-  color: var(--hero-ink);
-  background: var(--hero-fallback);
-  box-shadow: 0 16px 34px rgba(12, 47, 34, 0.2);
-}
-
-.court-backdrop {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-
-.score-grid {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  align-items: center;
-  column-gap: 8px;
-  margin: 40px 0 22px;
-}
-
-.score-name {
-  min-width: 0;
-  overflow: hidden;
-  margin-bottom: 6px;
-  color: rgba(255, 255, 255, 0.88);
-  font-size: 0.82rem;
-  font-weight: 900;
-  text-align: center;
-  text-overflow: ellipsis;
-  text-transform: uppercase;
-  white-space: nowrap;
-  text-shadow: 0 1px 5px rgba(8, 21, 13, 0.6);
-}
-
-.score-val {
-  text-align: center;
-  font-size: clamp(4.2rem, 22vw, 7rem);
-  font-weight: 950;
-  line-height: 0.9;
-  text-shadow:
-    0 3px 16px rgba(6, 21, 13, 0.78),
-    0 1px 2px rgba(0, 0, 0, 0.5);
-}
-
-/* The white court net is the divider, so the typographic dash is hidden. */
-.score-divider {
-  display: none;
-}
-
-.hero-score p,
-.hero-score > span {
-  position: relative;
-  z-index: 1;
-  text-shadow: 0 1px 6px rgba(8, 21, 13, 0.55);
-}
-
-.hero-score p {
-  margin-bottom: 5px;
-  color: rgba(255, 255, 255, 0.95);
-  font-weight: 900;
-}
-
-.hero-score > span {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 0.9rem;
-  font-weight: 800;
 }
 
 .panel,
@@ -234,7 +100,7 @@ h2 {
 .panel-header span {
   color: var(--muted);
   font-size: 0.78rem;
-  font-weight: 800;
+  font-weight: 650;
 }
 
 .form-row {
@@ -250,9 +116,9 @@ h2 {
   border: 0;
   padding: 0;
   border-radius: var(--radius-md);
-  color: white;
+  color: var(--on-identity);
   font-size: 0.82rem;
-  font-weight: 950;
+  font-weight: 650;
   cursor: pointer;
   transition: transform 0.1s ease;
 }
@@ -281,7 +147,7 @@ h2 {
   margin-bottom: 5px;
   color: var(--muted);
   font-size: 0.76rem;
-  font-weight: 900;
+  font-weight: 650;
   text-transform: uppercase;
 }
 
@@ -305,7 +171,7 @@ h2 {
   margin-top: 7px;
   color: var(--muted);
   font-size: 0.82rem;
-  font-weight: 800;
+  font-weight: 650;
 }
 
 .surface-list {
@@ -376,14 +242,14 @@ button.surface-row.surface-row-action {
 
 .surface-row > span {
   color: var(--ink);
-  font-weight: 900;
+  font-weight: 650;
   white-space: nowrap;
 }
 
 .surface-count {
   color: var(--muted);
   font-style: normal;
-  font-weight: 800;
+  font-weight: 650;
 }
 
 .surface-row-empty {
@@ -425,10 +291,6 @@ button.surface-row.surface-row-action {
   height: 9px;
   border-radius: 50%;
 }
-
-/* Rivalry timeline — the lead curve and the date-backed cadence strip.
-   Charts are inline SVG scaled to the panel width (viewBox + preserveAspectRatio
-   none); colours come from identity/skin tokens, never hardcoded. */
 .panel-timeline {
   display: grid;
   gap: 12px;
@@ -464,13 +326,13 @@ button.surface-row.surface-row-action {
   justify-content: space-between;
   margin-top: 4px;
   font-size: 0.68rem;
-  font-weight: 800;
+  font-weight: 650;
 }
 
 .timeline-caption {
   color: var(--ink);
   font-size: 0.9rem;
-  font-weight: 900;
+  font-weight: 650;
 }
 
 .cadence-strip {
@@ -497,7 +359,7 @@ button.surface-row.surface-row-action {
 .cadence-cell span {
   color: var(--muted);
   font-size: 0.68rem;
-  font-weight: 900;
+  font-weight: 650;
   text-transform: uppercase;
 }
 
@@ -519,11 +381,6 @@ button.surface-row.surface-row-action {
   display: inline-grid;
   place-items: center;
   min-height: 26px;
-  padding: 4px 9px;
-  border-radius: 999px;
-  color: white;
-  font-size: 0.74rem;
-  font-weight: 950;
 }
 
 .surface-hard {
@@ -551,11 +408,8 @@ button.surface-row.surface-row-action {
   border-radius: 999px;
   color: var(--accent-ink);
   background: var(--accent);
-  font-weight: 950;
+  font-weight: 650;
 }
-
-/* Neutral, outlined pill for a match with no winner yet. Deliberately not a
-   player colour — "in progress" belongs to neither side. */
 .status-pill {
   display: inline-grid;
   place-items: center;
@@ -565,7 +419,7 @@ button.surface-row.surface-row-action {
   background: transparent;
   box-shadow: inset 0 0 0 1.5px var(--line);
   font-size: 0.68rem;
-  font-weight: 950;
+  font-weight: 650;
   letter-spacing: 0.03em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -592,7 +446,7 @@ button.surface-row.surface-row-action {
 }
 
 .match-card:hover {
-  box-shadow: inset 0 0 0 1px rgba(12, 47, 34, 0.28);
+  box-shadow: inset 0 0 0 1px var(--line);
 }
 
 .match-card:focus-visible {
@@ -606,18 +460,12 @@ button.surface-row.surface-row-action {
 
 .match-card-chevron {
   align-self: center;
-  width: 30px;
-  height: 18px;
   padding: 0 10px 0 4px;
   object-fit: contain;
 }
 
 .match-card:hover .match-card-chevron {
   color: var(--ink);
-}
-
-.match-card-body {
-  padding: 14px;
 }
 
 .match-card-top {
@@ -631,7 +479,7 @@ button.surface-row.surface-row-action {
 .match-card .match-seq {
   color: var(--muted);
   font-size: 0.82rem;
-  font-weight: 900;
+  font-weight: 650;
 }
 
 .match-card h2 {
@@ -642,11 +490,9 @@ button.surface-row.surface-row-action {
 .set-line {
   margin-bottom: 5px;
   color: var(--muted);
-  font-weight: 900;
+  font-weight: 650;
   white-space: pre-wrap;
 }
-
-/* Quiet placeholder for pre-record-keeping matches — informative, not shouty. */
 .set-line-missing {
   font-size: 0.82rem;
   font-weight: 700;
@@ -663,25 +509,11 @@ button.surface-row.surface-row-action {
 .match-notes {
   margin-top: 6px;
 }
-
-/* Floating layer (Liquid-Glass-style material). Per Apple's guidance, glass is
-   reserved for the controls layer floating above content — the nav bar, the FAB
-   and the modal sheet — never for content itself, and never glass-on-glass. */
 .bottom-nav {
   position: fixed;
-  /* Centered with auto margins, not transform: translateX — a transform on a
-     fixed element makes mobile WebKit/Chrome repaint it late during scroll,
-     so the bar visibly drifted on a real phone. */
-  left: 0;
-  right: 0;
-  bottom: 0;
   z-index: 5;
-  width: min(100%, 520px);
-  margin: 0 auto;
   display: grid;
-  grid-template-columns: 1fr 86px 1fr;
   align-items: center;
-  padding: 6px 18px calc(6px + env(safe-area-inset-bottom));
   border-top: 1px solid var(--material-edge);
   background: var(--material-bg);
   backdrop-filter: blur(var(--material-blur)) saturate(1.7);
@@ -692,13 +524,9 @@ button.surface-row.surface-row-action {
 .nav-item {
   display: grid;
   place-items: center;
-  gap: 2px;
-  min-height: 44px;
   border: 0;
   color: var(--muted);
   background: transparent;
-  font-size: 0.72rem;
-  font-weight: 950;
 }
 
 .nav-item span {
@@ -706,28 +534,16 @@ button.surface-row.surface-row-action {
   line-height: 1;
 }
 
-.nav-item.active {
-  color: var(--ink);
-}
-
 .add-button {
   display: grid;
   place-items: center;
   width: 52px;
   height: 52px;
-  margin: -14px auto 0;
   padding: 0;
-  border: 3px solid var(--panel);
   border-radius: 50%;
   color: var(--accent-ink);
-  background: var(--accent);
-  /* Top specular highlight gives the gold button its lensed, glassy read. */
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.5),
-    inset 0 -6px 12px rgba(12, 47, 34, 0.18),
-    0 10px 22px rgba(12, 47, 34, 0.24);
   font-size: 1.9rem;
-  font-weight: 900;
+  font-weight: 650;
   line-height: 1;
 }
 
@@ -756,7 +572,7 @@ button.surface-row.surface-row-action {
 
 .error-details summary {
   color: var(--muted);
-  font-weight: 800;
+  font-weight: 650;
   cursor: pointer;
 }
 
@@ -783,87 +599,38 @@ button.surface-row.surface-row-action {
   display: grid;
   align-items: end;
   justify-items: center;
-  /* This padding is the margin the glass floats inside: it detaches the sheet
-     from every screen edge, so the panel never meets a screen seam. Bottom
-     clears the home indicator; top clears the status bar with real breathing
-     room (safe-area alone puts the sheet flush against the clock). */
   padding: max(var(--shell-pad), calc(env(safe-area-inset-top) + 10px))
     var(--shell-pad) calc(var(--shell-pad) + env(safe-area-inset-bottom));
-  /* Frosted glass, not a solid scrim (Alan: the near-opaque field felt 割裂 —
-     the sheet should open naturally over the page). Heavy blur does the
-     covering; the tint only takes the edge off the brightness. The page's
-     dark-masthead/cream split still reads through, but blurred this soft it
-     is a gentle gradient, not the hard dark-vs-milky band of the 0.72 era. */
-  background: var(--material-scrim);
-  backdrop-filter: blur(28px) saturate(1.3);
-  -webkit-backdrop-filter: blur(28px) saturate(1.3);
-  /* Keep sheet scrolling from chaining into the page behind it. */
   overscroll-behavior: contain;
 }
-
-/* While any sheet is open the bottom nav is hidden (see Modal.tsx): its own
-   backdrop-filter makes it immune to the dim on iOS, so it would otherwise
-   bleed through as a milky slab under the floating panel. */
 body.modal-open .bottom-nav {
   display: none;
 }
-
-/* iOS paints the screen's safe-area fringes (behind the home indicator, and
-   any strip a dynamic viewport briefly uncovers) with the ROOT background —
-   normally cream — and a fixed backdrop can't reach there. While a sheet is
-   open, match the root canvas to what the glass composites to over the cream
-   content that sits at the bottom of both pages (0.55 × cream + 0.45 × tint),
-   so any uncovered fringe blends into the frosted field instead of showing
-   up as a bright milky band. */
 html:has(body.modal-open) {
   background: var(--material-scrim-solid);
 }
-
-/* Floating glass sheet (Apple Liquid Glass): detached on all four edges, fully
-   rounded, one uniform glass material lifted off the dim layer by its own
-   shadow and hairline edge. Fills the space the backdrop's padding leaves,
-   capping and scrolling internally when its content is tall. */
 .modal-panel {
   width: min(100%, 496px);
   max-height: 100%;
-  /* Vertical scroll only. Setting overflow-y:auto alone makes the browser
-     compute overflow-x to `auto` too, turning the sheet into a horizontal
-     scroll container that touch can rubber-band left/right (the "wobble").
-     Nothing ever overflows horizontally (verified down to 320px), so hiding
-     overflow-x clips nothing — it just kills the sideways drag. */
   overflow-x: hidden;
   overflow-y: auto;
   scrollbar-gutter: stable;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  padding: 20px 18px 22px;
-  border-radius: var(--radius-lg);
-  background: var(--material-bg-strong);
-  backdrop-filter: blur(calc(var(--material-blur) + 8px)) saturate(1.5);
-  -webkit-backdrop-filter: blur(calc(var(--material-blur) + 8px)) saturate(1.5);
-  box-shadow:
-    inset 0 1px 0 var(--material-border),
-    inset 0 0 0 1px var(--material-edge),
-    0 18px 50px rgba(8, 20, 15, 0.42);
 }
 
 .modal-header {
   position: sticky;
-  top: -20px;
   z-index: 2;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin: -20px -18px 12px;
-  padding: 18px 18px 12px;
   border-bottom: 1px solid var(--material-edge);
-  background: var(--material-bg-strong);
 }
 
 .modal-panel p {
   color: var(--muted);
-  line-height: 1.5;
 }
 
 .icon-button,
@@ -871,7 +638,7 @@ html:has(body.modal-open) {
   min-height: 44px;
   border-radius: var(--radius-md);
   border: 1px solid transparent;
-  font-weight: 950;
+  font-weight: 650;
 }
 
 .sheet-actions {
@@ -880,10 +647,7 @@ html:has(body.modal-open) {
 }
 
 .icon-button {
-  width: 44px;
-  min-width: 44px;
   color: var(--ink);
-  background: white;
   border-color: var(--line);
   font-size: 1.15rem;
 }
@@ -898,8 +662,6 @@ html:has(body.modal-open) {
   color: var(--accent-ink);
   background: var(--accent);
 }
-
-/* Add-match form */
 .add-form {
   display: grid;
   gap: 14px;
@@ -913,7 +675,7 @@ html:has(body.modal-open) {
 .add-details summary {
   color: var(--muted);
   font-size: 0.82rem;
-  font-weight: 900;
+  font-weight: 650;
   cursor: pointer;
 }
 
@@ -934,13 +696,8 @@ html:has(body.modal-open) {
 
 .field-label {
   color: var(--muted);
-  font-size: 0.76rem;
-  font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
 }
-
-/* Inline helper text under a control (e.g. what "Unfinished" means). */
 .field-hint {
   margin: 0;
   color: var(--muted);
@@ -950,8 +707,6 @@ html:has(body.modal-open) {
 
 .text-input,
 .num-input {
-  /* width + min-width beat the browser's intrinsic input width, which would
-     otherwise blow grid columns out past the sheet on narrow screens. */
   width: 100%;
   min-width: 0;
   min-height: 44px;
@@ -959,35 +714,18 @@ html:has(body.modal-open) {
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   color: var(--ink);
-  background: white;
+  background: var(--content);
   font: inherit;
-  font-weight: 800;
+  font-weight: 650;
 }
-
-/* iOS Safari's date control ignores the input's own width when sizing its
-   calendar icon — the UA stylesheet gives ::-webkit-calendar-picker-indicator
-   generous default padding/margin that isn't counted against `width: 100%`,
-   so the control silently renders wider than its box and bleeds into (then,
-   post-v0.7.2, gets clipped by) the sheet's edge. Trimming the icon's own
-   padding reclaims that overflow. */
 input[type="date"].text-input::-webkit-calendar-picker-indicator {
   margin-left: 4px;
   padding: 4px;
 }
-
-/* iOS Safari sizes the native date control from its own intrinsic layout and
-   lets it render wider than `width: 100%`, so the field poked out past the
-   sheet's right edge on real iPhones no matter the font size. Stripping the
-   native appearance is the one reliable cure: the control becomes a normal
-   box that obeys its width. The whole field stays tappable and still opens
-   the system date picker; iOS just stops drawing its oversized chrome. */
 input[type="date"].text-input {
   -webkit-appearance: none;
   appearance: none;
 }
-
-/* With appearance off, iOS still centres the value via this inner pseudo —
-   left-align it so Date lines up with Location and the other text fields. */
 input[type="date"].text-input::-webkit-date-and-time-value {
   text-align: left;
 }
@@ -1008,7 +746,6 @@ input[type="date"].text-input::-webkit-date-and-time-value {
   padding: 4px;
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
-  background: var(--bg);
 }
 
 .segment {
@@ -1019,19 +756,8 @@ input[type="date"].text-input::-webkit-date-and-time-value {
   border-radius: calc(var(--radius-md) - 4px);
   color: var(--muted);
   background: transparent;
-  font-size: 0.82rem;
-  font-weight: 900;
   cursor: pointer;
 }
-
-.segment-active {
-  color: var(--ink);
-  background: var(--panel);
-  box-shadow: 0 1px 4px rgba(12, 47, 34, 0.14);
-}
-
-/* Weather condition chips — a multi-select toggle group (overlapping tags are
-   valid), and the temperature field with its unit suffix. */
 .chip-row {
   display: flex;
   flex-wrap: wrap;
@@ -1044,21 +770,13 @@ input[type="date"].text-input::-webkit-date-and-time-value {
   border: 1px solid var(--line);
   border-radius: 999px;
   color: var(--muted);
-  background: var(--bg);
-  font-size: 0.85rem;
-  font-weight: 800;
+  font-weight: 650;
   cursor: pointer;
   transition: transform 0.1s ease;
 }
 
 .chip:active {
   transform: scale(0.96);
-}
-
-.chip-active {
-  color: var(--panel);
-  background: var(--ink);
-  border-color: var(--ink);
 }
 
 .chip:focus-visible {
@@ -1078,15 +796,12 @@ input[type="date"].text-input::-webkit-date-and-time-value {
 
 .temp-unit {
   color: var(--muted);
-  font-weight: 900;
+  font-weight: 650;
 }
-
-/* One quiet text summary keeps weather contextual rather than a competing
-   decorative badge system. */
 .weather-summary {
   color: var(--muted);
   font-size: 0.8rem;
-  font-weight: 800;
+  font-weight: 650;
   white-space: nowrap;
 }
 
@@ -1095,7 +810,7 @@ input[type="date"].text-input::-webkit-date-and-time-value {
   grid-template-columns: 72px 1fr 1fr;
   gap: 8px;
   font-size: 0.82rem;
-  font-weight: 900;
+  font-weight: 650;
   text-align: center;
 }
 
@@ -1123,8 +838,6 @@ input[type="date"].text-input::-webkit-date-and-time-value {
   min-height: 34px;
   opacity: 0.85;
 }
-
-/* At one set all: choose match tiebreak vs third set, then enter it. */
 .decider-block {
   display: grid;
   gap: 6px;
@@ -1152,24 +865,20 @@ input[type="date"].text-input::-webkit-date-and-time-value {
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   color: var(--ink);
-  background: white;
-  font-weight: 950;
   cursor: pointer;
 }
-
-/* Add-match review step */
 .review-result {
   margin-bottom: 14px;
   padding: 14px;
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
-  background: white;
+  background: var(--content);
 }
 
 .review-headline {
   margin: 0 0 4px;
   font-size: 1.25rem;
-  font-weight: 950;
+  font-weight: 650;
 }
 
 .review-meta {
@@ -1179,13 +888,12 @@ input[type="date"].text-input::-webkit-date-and-time-value {
   gap: 10px;
   margin: 8px 0 0;
   color: var(--muted);
-  font-weight: 800;
+  font-weight: 650;
 }
 
 .review-h2h {
   margin: 10px 0 0;
-  color: var(--ink);
-  font-weight: 900;
+  font-weight: 650;
 }
 
 .review-steps {
@@ -1199,7 +907,7 @@ input[type="date"].text-input::-webkit-date-and-time-value {
   margin-bottom: 12px;
   color: var(--ink);
   font-size: 0.9rem;
-  font-weight: 900;
+  font-weight: 650;
 }
 
 .json-fallback {
@@ -1212,8 +920,6 @@ input[type="date"].text-input::-webkit-date-and-time-value {
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   font-size: 0.72rem;
 }
-
-/* One-tap publish: error notice + the collapsed GitHub-editor fallback. */
 .publish-error {
   margin: 0 0 12px;
   padding: 10px 12px;
@@ -1221,7 +927,7 @@ input[type="date"].text-input::-webkit-date-and-time-value {
   color: var(--danger);
   background: var(--danger-bg);
   font-size: 0.85rem;
-  font-weight: 800;
+  font-weight: 650;
 }
 
 .publish-fallback {
@@ -1231,7 +937,7 @@ input[type="date"].text-input::-webkit-date-and-time-value {
 .publish-fallback > summary {
   color: var(--muted);
   font-size: 0.85rem;
-  font-weight: 900;
+  font-weight: 650;
   cursor: pointer;
 }
 
@@ -1246,7 +952,7 @@ input[type="date"].text-input::-webkit-date-and-time-value {
   gap: 10px;
   margin-bottom: 14px;
   color: var(--muted);
-  font-weight: 800;
+  font-weight: 650;
 }
 
 .detail-sets {
@@ -1276,8 +982,7 @@ input[type="date"].text-input::-webkit-date-and-time-value {
   padding: 9px 14px;
   border-bottom: 1px solid var(--journal-rule);
   color: var(--muted);
-  font-size: 0.7rem;
-  font-weight: 850;
+  font-weight: 650;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -1315,8 +1020,7 @@ input[type="date"].text-input::-webkit-date-and-time-value {
 
 .detail-set-label {
   color: var(--muted);
-  font-size: 0.82rem;
-  font-weight: 900;
+  font-weight: 650;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -1326,7 +1030,7 @@ input[type="date"].text-input::-webkit-date-and-time-value {
   align-items: baseline;
   gap: 6px;
   font-size: 1.3rem;
-  font-weight: 950;
+  font-weight: 650;
 }
 
 .detail-set-score i {
@@ -1339,7 +1043,7 @@ input[type="date"].text-input::-webkit-date-and-time-value {
   color: var(--muted);
   font-size: 0.82rem;
   font-style: normal;
-  font-weight: 800;
+  font-weight: 650;
 }
 
 .detail-impact {
@@ -1351,7 +1055,7 @@ input[type="date"].text-input::-webkit-date-and-time-value {
 .detail-h2h {
   margin: 0 0 4px;
   font-size: 1.3rem;
-  font-weight: 950;
+  font-weight: 650;
 }
 
 .detail-h2h i {
@@ -1362,7 +1066,7 @@ input[type="date"].text-input::-webkit-date-and-time-value {
 .detail-sub {
   margin: 2px 0 0;
   color: var(--muted);
-  font-weight: 800;
+  font-weight: 650;
 }
 
 @media (max-width: 390px) {
@@ -1370,25 +1074,9 @@ input[type="date"].text-input::-webkit-date-and-time-value {
     --shell-pad: 12px;
   }
 
-  .hero-score {
-    min-height: 226px;
-    padding: 18px;
-  }
-
   .surface-row {
     grid-template-columns: 64px 1fr auto;
   }
-}
-
-/* ---------------------------------------------------------------------------
-   v0.11 Matchday Journal — shared sheet / chart / motion utilities
-   The Overview/Matches page chrome lives in the second Matchday Journal block
-   further down; this section holds the detail-sheet, lead-sparkline, filter and
-   motion styles those pages depend on. The existing skin remains the colour owner.
-   --------------------------------------------------------------------------- */
-
-.app-shell {
-  --journal-texture: none;
 }
 
 .screen {
@@ -1426,17 +1114,9 @@ input[type="date"].text-input::-webkit-date-and-time-value {
   font-weight: 600;
 }
 
-.screen-matches .page-header {
-  border-bottom: 1px solid rgba(217, 188, 114, 0.56);
-}
-
 .screen-matches .match-list {
   gap: 0;
   overflow: hidden;
-  border: 1px solid var(--journal-rule);
-  border-radius: var(--radius-lg);
-  background: var(--journal-paper) var(--journal-texture);
-  box-shadow: var(--shadow-card);
 }
 
 .archive-summary {
@@ -1445,16 +1125,11 @@ input[type="date"].text-input::-webkit-date-and-time-value {
   justify-content: space-between;
   gap: 12px;
   margin: 0;
-  padding: 0 4px 0 32px;
   color: var(--muted);
-  font-size: 0.78rem;
-  font-weight: 750;
 }
 
 .archive-summary strong {
-  color: var(--journal-ink);
   font-family: Georgia, "Times New Roman", serif;
-  font-size: 0.94rem;
 }
 
 .archive-empty {
@@ -1462,7 +1137,7 @@ input[type="date"].text-input::-webkit-date-and-time-value {
   padding: 28px 18px;
   color: var(--muted);
   text-align: center;
-  font-weight: 750;
+  font-weight: 600;
 }
 
 .match-card-top {
@@ -1487,9 +1162,9 @@ input[type="date"].text-input::-webkit-date-and-time-value {
   border: 1px solid var(--journal-rule);
   border-radius: 999px;
   color: var(--muted);
-  background: rgba(255, 255, 255, 0.32);
+  background: var(--glass-low);
   font-size: 0.61rem;
-  font-weight: 850;
+  font-weight: 650;
   letter-spacing: 0.02em;
   white-space: nowrap;
 }
@@ -1500,7 +1175,6 @@ input[type="date"].text-input::-webkit-date-and-time-value {
 
 .match-filters {
   display: flex;
-  gap: 8px;
   overflow-x: auto;
   padding: 2px 1px 5px;
   scrollbar-width: none;
@@ -1510,31 +1184,13 @@ input[type="date"].text-input::-webkit-date-and-time-value {
 
 .filter-chip {
   flex: 0 0 auto;
-  min-height: 44px;
-  padding: 8px 13px;
-  border: 1px solid var(--journal-rule);
-  border-radius: 999px;
   color: var(--muted);
-  background: var(--journal-paper);
-  font-size: 0.76rem;
-  font-weight: 850;
-}
-
-.filter-chip.active {
-  color: var(--masthead-ink);
-  border-color: var(--masthead-bg);
-  background: var(--masthead-bg);
 }
 
 .modal-panel {
   color: var(--journal-ink);
-  background: var(--material-bg-strong);
   backdrop-filter: blur(calc(var(--material-blur) + 8px)) saturate(1.5);
   -webkit-backdrop-filter: blur(calc(var(--material-blur) + 8px)) saturate(1.5);
-  box-shadow:
-    inset 0 1px 0 var(--material-border),
-    inset 0 0 0 1px var(--material-edge),
-    var(--shadow-card-raised);
 }
 
 .modal-header h2,
@@ -1562,8 +1218,6 @@ input[type="date"].text-input::-webkit-date-and-time-value {
 
 .sheet-fact span {
   color: var(--muted);
-  font-size: 0.68rem;
-  font-weight: 850;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -1584,7 +1238,7 @@ input[type="date"].text-input::-webkit-date-and-time-value {
 .sheet-lean-verdict span {
   color: var(--muted);
   font-size: 0.68rem;
-  font-weight: 850;
+  font-weight: 650;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -1612,7 +1266,6 @@ input[type="date"].text-input::-webkit-date-and-time-value {
   padding: 9px 12px;
   border: 1px solid var(--journal-rule);
   border-radius: var(--radius-md);
-  background: var(--journal-paper);
 }
 
 .sheet-back {
@@ -1626,7 +1279,7 @@ input[type="date"].text-input::-webkit-date-and-time-value {
   border-radius: var(--radius-md);
   color: var(--ink);
   background: var(--journal-paper);
-  font-weight: 850;
+  font-weight: 650;
   cursor: pointer;
 }
 
@@ -1645,7 +1298,7 @@ input[type="date"].text-input::-webkit-date-and-time-value {
   margin-right: auto;
   color: var(--muted);
   font-size: 0.72rem;
-  font-weight: 850;
+  font-weight: 650;
   text-transform: uppercase;
 }
 
@@ -1659,10 +1312,10 @@ input[type="date"].text-input::-webkit-date-and-time-value {
   padding: 0;
   border: 0;
   border-radius: 50%;
-  color: white;
+  color: var(--on-identity);
   font-size: 0.7rem;
   font-style: normal;
-  font-weight: 900;
+  font-weight: 650;
 }
 
 .sheet-form-actions button {
@@ -1745,14 +1398,14 @@ input[type="date"].text-input::-webkit-date-and-time-value {
   padding-top: 6px;
   color: var(--muted);
   font-size: 0.74rem;
-  font-weight: 750;
+  font-weight: 600;
   line-height: 1.35;
 }
 
 .detail-games {
   margin-top: 10px !important;
   font-size: 0.78rem;
-  font-weight: 850;
+  font-weight: 650;
 }
 
 .detail-pagination {
@@ -1772,7 +1425,7 @@ input[type="date"].text-input::-webkit-date-and-time-value {
   border-radius: var(--radius-md);
   color: var(--ink);
   background: var(--journal-paper);
-  font-weight: 850;
+  font-weight: 650;
 }
 
 .pagination-chevron {
@@ -1794,8 +1447,6 @@ input[type="date"].text-input::-webkit-date-and-time-value {
     box-shadow: var(--shadow-card-raised);
   }
 }
-
-/* Motion is additive. Reduced-motion users retain the complete instantaneous UI. */
 @media (prefers-reduced-motion: no-preference) {
   @keyframes backdrop-in { from { opacity: 0; } to { opacity: 1; } }
   @keyframes backdrop-out { from { opacity: 1; } to { opacity: 0; } }
@@ -1832,10 +1483,6 @@ input[type="date"].text-input::-webkit-date-and-time-value {
     grid-template-columns: 1fr;
   }
 
-  .screen-matches .page-header {
-    min-height: 130px;
-  }
-
   .screen-matches .archive-summary {
     padding-left: 64px;
   }
@@ -1845,3 +1492,37 @@ input[type="date"].text-input::-webkit-date-and-time-value {
   .screen-matches .match-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; }
   .screen-matches .match-card:nth-child(even) { border-left: 1px solid var(--journal-rule); }
 }
+.modal-backdrop { background: var(--material-scrim); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+.modal-panel { border: 1px solid var(--rim); border-radius: 30px; background: var(--sheet); padding: 24px; box-shadow: inset 0 1px 0 var(--rim),0 18px 50px var(--shadow); }
+.modal-header { top: -24px; margin: -24px -24px 20px; padding: 20px 24px 14px; background: var(--sheet); border-color: var(--line); }
+.modal-header h2 { font: 30px/1.15 Georgia,serif; letter-spacing: -.04em; }
+.modal-panel p { font-size: 14px; line-height: 1.65; }
+.modal-panel .eyebrow { font-size: 10px; }
+.icon-button { min-width: 36px; width: 36px; min-height: 36px; border-radius: 50%; background: var(--glass-low); }
+.primary-button { min-height: 48px; border-radius: 50px; font-size: 13px; font-weight: 650; }
+.secondary-button { background: var(--content); font-size: 13px; font-weight: 600; }
+.sheet-fact,.lead-sparkline,.detail-impact,.review-result { background: var(--content); border-color: var(--line); }
+.sheet-fact strong { font: 22px/1.25 Georgia,serif; font-variant-numeric: tabular-nums; }
+.sheet-fact span { font-size: 10px; font-weight: 600; }
+.sheet-form { background: var(--glass-low); }
+.sheet-back,.detail-pagination button { background: var(--content); font-size: 12px; font-weight: 600; }
+.sheet-form button,.form-dot { box-shadow: inset 0 0 0 1px var(--rim); }
+.text-input,.num-input { background: var(--content); font-size: 14px; font-weight: 500; }
+.field-label { font-size: 10px; font-weight: 650; letter-spacing: .08em; }
+.segmented { background: var(--glass-low); }
+.segment { font-size: 12px; font-weight: 600; }
+.segment-active { background: var(--accent); color: var(--on-accent); box-shadow: none; }
+.chip { background: var(--content); font-size: 12px; }
+.chip-active { background: var(--accent); color: var(--on-accent); border-color: transparent; }
+.modal-panel .review-headline { font: 28px/1.2 Georgia,serif; color: var(--ink) !important; }
+.review-h2h { color: var(--ink) !important; }
+.lead-sparkline-point,.timeline-point { stroke: var(--rim); }
+.detail-set-score { font: 24px Georgia,serif; font-variant-numeric: tabular-nums; }
+.detail-set-legend { font-size: 12px; }
+.detail-set-label { font-size: 12px; }
+.issue-list:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+@media (max-width:350px) { .sheet-facts { grid-template-columns: 1fr; } .modal-panel { padding: 20px; } .modal-header { top: -20px; margin: -20px -20px 16px; padding: 16px 20px 12px; } }
+@media (min-width:768px) { .modal-backdrop { align-items: center; } .modal-panel { max-height: min(760px,calc(100svh - 40px)); } }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .modal-backdrop { background: var(--material-scrim-solid); } .modal-panel,.modal-header { background: var(--wash); } }
+@media (prefers-reduced-transparency:reduce) { .modal-backdrop { background: var(--material-scrim-solid); backdrop-filter: none; -webkit-backdrop-filter: none; } .modal-panel,.modal-header { background: var(--wash); backdrop-filter: none; -webkit-backdrop-filter: none; } }
+@media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration: 1ms !important; animation-delay: 0ms !important; transition: none !important; } }

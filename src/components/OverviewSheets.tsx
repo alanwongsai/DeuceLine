@@ -1,3 +1,4 @@
+import { identityTextStyle } from "./identityStyle";
 import {
   deriveCadence,
   deriveFirstSetConversion,
@@ -368,7 +369,7 @@ function LeanSummary({ dataset }: { dataset: DeucelineDataset }) {
     : `${players[lean.favourite].displayName} ${lean.verdict === "slightEdge" ? "slightly favoured" : "favoured"}`;
   return (
     <section className="sheet-lean" aria-label="Next-match lean">
-      <p className="sheet-lean-verdict"><span>Next match</span><strong style={lean.favourite ? { color: players[lean.favourite].color } : undefined}>{verdict}</strong></p>
+      <p className="sheet-lean-verdict"><span>Next match</span><strong style={lean.favourite ? identityTextStyle(players[lean.favourite].color) : undefined}>{verdict}</strong></p>
       <SheetFacts facts={lean.factors.map((factor) => {
         const label = factor.key === "surface" ? `On ${surfaceLabels[lean.surface]}` : leanFactorLabels[factor.key];
         const sample = factor.record.alan + factor.record.opponent;

@@ -1,3 +1,4 @@
+import { identityTextStyle } from "./identityStyle";
 import { useRef } from "react";
 import {
   deriveMatchContext,
@@ -91,11 +92,11 @@ export function MatchDetail({ match, players, matches, onClose, onUpdate, onSele
       <div className="detail-impact">
         <p className="eyebrow">Rivalry impact</p>
         <p className="detail-h2h">
-          <span style={{ color: players.alan.color }}>
+          <span style={identityTextStyle(players.alan.color)}>
             {players.alan.displayName} {context.recordAfter.alan}
           </span>
           <i aria-hidden="true"> — </i>
-          <span style={{ color: players.opponent.color }}>
+          <span style={identityTextStyle(players.opponent.color)}>
             {context.recordAfter.opponent} {players.opponent.displayName}
           </span>
         </p>
@@ -227,7 +228,7 @@ function SetList({ match, players }: { match: Extract<Match, { fidelity: "sets" 
     <div className="detail-set-table">
       <div className="detail-set-legend" aria-label={`Set score order: ${players.alan.displayName}, then ${players.opponent.displayName}`}>
         <span>Set</span>
-        <strong><b style={{ color: players.alan.color }}>{players.alan.displayName}</b><i>—</i><b style={{ color: players.opponent.color }}>{players.opponent.displayName}</b></strong>
+        <strong><b style={identityTextStyle(players.alan.color)}>{players.alan.displayName}</b><i>—</i><b style={identityTextStyle(players.opponent.color)}>{players.opponent.displayName}</b></strong>
       </div>
       <ol className="detail-sets">
         {match.sets.map((set, index) => {
@@ -236,9 +237,9 @@ function SetList({ match, players }: { match: Extract<Match, { fidelity: "sets" 
             <li key={index} aria-label={`Set ${index + 1}: ${players.alan.displayName} ${set.alan}, ${players.opponent.displayName} ${set.opponent}`}>
               <span className="detail-set-label">Set {index + 1}</span>
               <span className="detail-set-score">
-                <b style={{ color: setWinner === "alan" ? players.alan.color : undefined }}>{set.alan}</b>
+                <b style={identityTextStyle(setWinner === "alan" ? players.alan.color : undefined)}>{set.alan}</b>
                 <i aria-hidden="true">–</i>
-                <b style={{ color: setWinner === "opponent" ? players.opponent.color : undefined }}>{set.opponent}</b>
+                <b style={identityTextStyle(setWinner === "opponent" ? players.opponent.color : undefined)}>{set.opponent}</b>
                 {set.tiebreak ? (
                   <em>
                     ({set.tiebreak.alan}-{set.tiebreak.opponent})
@@ -262,9 +263,9 @@ function MatchTiebreakRow({ points, players }: { points: PointScore; players: Re
       <span className="detail-set-label">Match TB</span>
       <span className="detail-set-score">
         <i aria-hidden="true">[</i>
-        <b style={{ color: winner === "alan" ? players.alan.color : undefined }}>{points.alan}</b>
+        <b style={identityTextStyle(winner === "alan" ? players.alan.color : undefined)}>{points.alan}</b>
         <i aria-hidden="true">–</i>
-        <b style={{ color: winner === "opponent" ? players.opponent.color : undefined }}>{points.opponent}</b>
+        <b style={identityTextStyle(winner === "opponent" ? players.opponent.color : undefined)}>{points.opponent}</b>
         <i aria-hidden="true">]</i>
       </span>
     </li>

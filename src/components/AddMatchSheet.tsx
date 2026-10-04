@@ -1,3 +1,4 @@
+import { identityTextStyle } from "./identityStyle";
 import { KeyboardEvent as ReactKeyboardEvent, useMemo, useRef, useState } from "react";
 import { DATASET_EDIT_URL } from "../data/datasetSource";
 import { appendMatch, NewMatchInput, replaceMatch, serializeDataset } from "../domain/addMatch";
@@ -664,8 +665,8 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
 
         <div className="field">
           <div className="score-head" aria-hidden="true">
-            <span style={{ color: players.alan.color }}>{players.alan.displayName}</span>
-            <span style={{ color: players.opponent.color }}>{players.opponent.displayName}</span>
+            <span style={identityTextStyle(players.alan.color)}>{players.alan.displayName}</span>
+            <span style={identityTextStyle(players.opponent.color)}>{players.opponent.displayName}</span>
           </div>
 
           {fidelity === "sets" ? (

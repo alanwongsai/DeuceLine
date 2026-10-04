@@ -24,6 +24,7 @@
   --shadow-card: 0 8px 24px var(--shadow);
   --shadow-card-raised: 0 14px 32px var(--shadow);
   --hard: var(--court); --clay: var(--court); --grass: var(--court); --astro: var(--court);
+  --on-identity: #ffffff;
   --danger: #8c302d; --danger-bg: #fff0ed;
 
 }

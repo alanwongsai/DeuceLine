@@ -1,3 +1,4 @@
+import { identityTextStyle } from "./identityStyle";
 import { formatNeutralScoreline, formatWinnerScoreline, isUnfinished } from "../domain/deriveStats";
 import { Match, Player, PlayerKey } from "../domain/schema";
 import { SurfaceBadge } from "./SurfaceBadge";
@@ -81,8 +82,8 @@ function UnfinishedCard({ match, players, onOpen }: MatchCardProps) {
           <SurfaceBadge surface={match.surface} />
         </div>
         <h2>
-          <span style={{ color: players.alan.color }}>{players.alan.displayName}</span> {neutral.alan}—{neutral.opponent}{" "}
-          <span style={{ color: players.opponent.color }}>{players.opponent.displayName}</span>
+          <span style={identityTextStyle(players.alan.color)}>{players.alan.displayName}</span> {neutral.alan}—{neutral.opponent}{" "}
+          <span style={identityTextStyle(players.opponent.color)}>{players.opponent.displayName}</span>
         </h2>
         {neutral.setScores ? (
           <p className="set-line">{neutral.setScores.join("   ")}</p>

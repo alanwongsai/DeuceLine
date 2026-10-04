@@ -54,6 +54,21 @@
 
 ## Log
 
+### v0.14.1 — 2026-10-04
+- Visual migration stage 2: unify all analysis sheets, charts, match detail, add/update,
+  review, discard and publisher-error/fallback states under the shared material. Fields,
+  selected controls, error colours and icons follow skin/mode tokens; identity text stays
+  dataset-owned and readable at night. Prune obsolete hero/header rules and overwritten
+  CSS declarations without moving cascade order.
+- Preserve every React/domain interaction, validation rule, Modal focus/scroll behavior
+  and publish path. No schema/dataset/server change. Refreshed generated core/version copies.
+- Verified typecheck, 124 tests, build, typecheck:functions, build:core and browser acceptance:
+  all analysis kinds, surface drill-down, match paging, keyboard chart selection/focus loop,
+  320px form, validation, draft keep/discard, both score fidelity modes, set/match tiebreak,
+  third set, optional details, update/add success, 401/409/503 and reachable GitHub fallback.
+  Publish checks use fictional in-memory localhost fixtures; no live match was written.
+- Local staged commit only; cache cleanup, skeleton review and final matrix remain stage 3.
+
 ### v0.14.0 — 2026-10-04
 - Visual migration stage 1: replace physical book/crest/stamp main-page presentation with
   shared CSS material; retain serif type, large H2H, derived story, ledger, chapter archive,

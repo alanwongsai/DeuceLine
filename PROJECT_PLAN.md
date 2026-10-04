@@ -221,7 +221,8 @@ with the selected CSS glass study. No match-data changes or live test matches.
 
 1. Material tokens, four skins + day/evening, Overview, Matches and navigation — implemented;
    stage validation and commit are recorded in MAINTENANCE_LOG.md.
-2. All evidence sheets, charts, detail and complete add/update/review/publish/fallback — next.
+2. All evidence sheets, charts, detail and complete add/update/review/publish/fallback — implemented;
+   acceptance evidence is in design-qa.md.
 3. PWA/cache, legacy resource cleanup, build:core and existing mini skeleton sync, full acceptance.
 4. Re-read remote main, preserve any new match commits, then deploy through Git → Cloudflare
    Pages and verify the published result. No early deployment of intermediate stages.

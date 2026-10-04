@@ -310,9 +310,10 @@ mode/skin overrides are not exported by that regex. Player colours always come f
 rivalry dataset. `identityTextStyle` provides an accessible night treatment without altering
 those values; labelled neutral surface badges separate court category from player identity.
 
-`global.css` owns existing sheets, forms, charts and motion; `journal.css` owns the migrated
+`global.css` owns shared evidence sheets, forms, charts and motion; `journal.css` owns the migrated
 shell, Overview, archive and navigation. Structural radii and spacing are shared. Both
-consume skin tokens. Retired physical-page overrides have been removed from the cascade.
+consume skin tokens. Retired physical-page rules and overwritten declarations have been removed from the cascade.
+All add/update/review/discard states reuse the same material; their React logic remains intact.
 
 ## Material Layer
 

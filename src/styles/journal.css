@@ -2,7 +2,8 @@
    The existing sheets/forms/charts remain in global.css during staged migration. */
 :root { --shell-pad: 24px; --radius-lg: 28px; --radius-md: 14px; --bottom-chrome-clearance: 110px; }
 body { color: var(--ink); background: var(--base); -webkit-font-smoothing: antialiased; }
-body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: radial-gradient(ellipse 80% 60% at 0 5%,var(--halo),transparent 80%),radial-gradient(ellipse 70% 55% at 100% 35%,var(--halo-alt),transparent 80%),linear-gradient(150deg,var(--wash),var(--base)); pointer-events: none; }
+body::before { content: ""; position: fixed; inset: 0; background: radial-gradient(ellipse 80% 60% at 0 5%,var(--halo),transparent 80%),radial-gradient(ellipse 70% 55% at 100% 35%,var(--halo-alt),transparent 80%),linear-gradient(150deg,var(--wash),var(--base)); pointer-events: none; }
+button img { filter: grayscale(1); }
 button { color: inherit; cursor: pointer; transition: background 180ms, transform 160ms; }
 button:active { transform: scale(.98); }
 button:disabled { cursor: default; }
@@ -61,7 +62,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .journal-expanded-chapter { position: relative; display: grid; grid-template-columns: 1fr auto; text-align: left; width: 100%; padding: 18px; background: var(--content); border: 1px solid var(--rim); border-radius: 22px; box-shadow: inset 0 1px 0 var(--rim),0 6px 20px var(--shadow); }
 .journal-expanded-chapter > .journal-chapter-number { font: 30px Georgia,serif; color: var(--court); background: transparent !important; }
 .journal-chapter-stripe { display: none; }
-.journal-chapter-copy { display: block; grid-column: 1 / -1; min-width: 0; }
+.journal-chapter-copy { grid-column: 1 / -1; min-width: 0; }
 .journal-chapter-eyebrow { display: block; color: var(--court); font-size: 9px; font-weight: 700; letter-spacing: .16em; margin: 10px 0; text-transform: uppercase; }
 .journal-chapter-date { display: block; color: var(--muted); font-size: 11px; line-height: 1.6; }
 .journal-chapter-copy > strong { display: block; font: 24px/1.2 Georgia,serif; letter-spacing: -.035em; margin: 10px 0 7px; }
@@ -108,7 +109,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .nav-item img { width: 20px; height: 20px; }
 .add-button { margin: auto; border: 0; background: linear-gradient(140deg,var(--court),var(--accent)); box-shadow: inset 0 1px 0 var(--rim),0 5px 13px var(--shadow); }
 .add-button img { width: 25px; height: 25px; filter: invert(1); }
-[data-mode="evening"] button img,[data-mode="evening"] .journal-coverage > img { filter: invert(1); }
+[data-mode="evening"] button img,[data-mode="evening"] .journal-coverage > img { filter: grayscale(1) invert(1); }
 [data-mode="evening"] .add-button img { filter: none; }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .bottom-nav,.mode-button { background: var(--sheet); } }
 @media (prefers-reduced-transparency: reduce) { body::before { display: none; } .bottom-nav,.mode-button { background: var(--sheet); backdrop-filter: none; -webkit-backdrop-filter: none; } }

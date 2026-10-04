@@ -49,3 +49,33 @@ states. Stage 3 must verify offline/PWA resources, the mini skeleton and full th
 matrix. No deployment is authorized before these staged acceptance checks are complete.
 
 final result: passed
+
+## Stage 2
+
+Same selected reference supplies the shared typography, material and token direction;
+production evidence/form states intentionally extend its simplified dialogs.
+
+- Evidence: `deuceline-stage2-detail.jpg` (1280 × 900, DPR 1) and
+  `deuceline-stage2-conflict.jpg` (320 × 740, DPR 1), in the stage-1 evidence directory.
+- Analysis: all eight top-level kinds (story, sets, deciders, conversion, streak, form,
+  surfaces, timeline), Hard drill-down and return, last-five match links, score details
+  and previous/next paging retain their original information and no-sample statements.
+- Keyboard/mobile: chart ArrowLeft changes M14 to M13; close Shift+Tab reaches the final
+  form control; Escape returns to the trigger; body stays fixed while open and restores
+  after closing; navigation is display:none while open. 320px form has no panel overflow.
+- Local fixture server at port 5286: Avery/Blake only, in-memory DatasetStore using the
+  existing domain/publish bundles. No external calls, credentials, Git writes or canonical
+  dataset writes. Update a one-set-all unfinished match with [10–8], rejected password,
+  success/instant refresh, optional set TB, third set, details/weather/temperature/notes,
+  dirty close → keep editing and discard, review/back, 409/503 with expanded fallback,
+  tally-only unfinished add, unchanged finished H2H and Record another reset all passed.
+- GitHub fallback button/JSON serialization path remains unchanged and was verified
+  reachable after failure. The final Copy JSON & open GitHub action was intentionally not
+  executed with fixture data, avoiding a fixture handoff into the real GitHub editor.
+- Corrected review headline selector specificity so the sheet paragraph style cannot
+  flatten its serif score hierarchy. Existing source logic changed only identity styling.
+- Day/night detail/form/chart material reviewed. Fonts, spacing, readable token colours,
+  licensed icon assets and production copy remain consistent with the selected direction.
+- No remaining P0/P1/P2 issues in stage-2 surfaces. Full skin/width/PWA matrix is stage 3.
+
+final result: passed
