@@ -28,23 +28,12 @@ export function MatchesPage({ dataset, onUpdateMatch }: MatchesPageProps) {
 
   return (
     <main className="screen screen-matches journal-book">
-      <header className="app-header journal-cover journal-archive-cover">
-        <img className="journal-cover-crest" src="./assets/journal-crest-transparent.png" alt="" />
-        <div className="journal-cover-title">
-          <h1 data-page-title tabIndex={-1}>Match archive</h1>
-          <p>Matchday Journal</p>
-        </div>
-        <span className="journal-version journal-archive-count" aria-live="polite" aria-label={`${visibleMatches.length} matches shown`}>
-          <strong>{visibleMatches.length}</strong>
-          <small>matches</small>
-        </span>
+      <header className="journal-page-heading">
+        <div><p className="eyebrow">Complete record</p><h1 data-page-title tabIndex={-1}>Recorded chapters.</h1></div>
+        <span aria-live="polite">{visibleMatches.length} matches shown</span>
       </header>
       <section className="journal-archive-page" aria-label="Complete match archive">
         <header className="archive-page-heading">
-          <div>
-            <p>Complete record</p>
-            <h2>Recorded chapters</h2>
-          </div>
           <p className="archive-summary">
             <strong>{sortedMatches.length} recorded</strong>
             <span>{finishedCount} finished{unfinishedCount ? ` · ${unfinishedCount} in progress` : ""}</span>

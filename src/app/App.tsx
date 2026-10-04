@@ -1,5 +1,6 @@
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { AddMatchSheet } from "../components/AddMatchSheet";
+import { ThemeControls } from "../components/ThemeControls";
 import { BottomNav } from "../components/BottomNav";
 import { loadDataset } from "../data/loadDataset";
 import { DeucelineDataset, Match } from "../domain/schema";
@@ -66,6 +67,7 @@ export function App() {
       className="app-shell"
       style={dataset ? ({ "--player-alan": dataset.rivalry.players.alan.color, "--player-opponent": dataset.rivalry.players.opponent.color } as CSSProperties) : undefined}
     >
+      <ThemeControls />
       {content}
       <BottomNav
         activeView={activeView}

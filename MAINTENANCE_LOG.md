@@ -54,6 +54,20 @@
 
 ## Log
 
+### v0.14.0 — 2026-10-04
+- Visual migration stage 1: replace physical book/crest/stamp main-page presentation with
+  shared CSS material; retain serif type, large H2H, derived story, ledger, chapter archive,
+  analysis entry points, existing filters and navigation. Desktop uses two editorial columns;
+  phones retain source order and safe-area clearance.
+- Add Wimbledon / Roland-Garros / US Open / Australian Open and day/evening controls.
+  Persist appearance only; player identity remains dataset-owned, with readable night text.
+  Surface badges are labelled neutral pills. Remove retired page-era global CSS overrides.
+- Existing sheets/forms/chart logic and match dataset are untouched. Generated default WXSS
+  and version copies refreshed with build:core. This is a local staged commit, not deployed.
+- Verified typecheck, 124 tests, build, typecheck:functions and build:core; browser checks
+  cover desktop/mobile main pages, filters, theme persistence and navigation. Stage 2 owns
+  complete evidence/form acceptance; stage 3 owns cache/resource cleanup and mini styling.
+
 ### v0.13.0 — 2026-10-04
 - **The Overview note is now a derived story, not a fixed template.** It said "Alan edges ahead
   again on Hard. Two wins in a row and three of the last five." even while Andy held the run:

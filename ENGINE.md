@@ -226,28 +226,17 @@ Validation is pragmatic. Historical tennis data may be imperfect, but obviously 
   with the complete archive. Overview renders the newest raw match plus two compact recent
   matches; Matches renders every raw match, including unfinished ones. Derived figures on both
   routes still use finished matches only.
-- The large head-to-head score is the visual anchor inside the **Matchday Journal**: a
-  continuous physical book rather than a dashboard-card stack. Overview reads in DOM order
-  as leather masthead → rivalry spread → handwritten note → compact Rivalry ledger → expanded
-  latest chapter → exploration lenses → two-row recent chapter index → evidence footer. The package
-  version stays on the leather cover instead of repeating in the endpaper transition. The
-  ledger is the shallow comparison layer (Set record / Deciders / Set 1 → win / Current run); each
-  value opens the existing evidence-aware sheet layer, so the physical-journal treatment does
-  not make core rivalry data undiscoverable. Wider screens
-  enlarge that page rather than splitting it back into dashboard columns; source and
-  keyboard order remain identical at every width.
-- Surface badges use distinct colors.
-- Results are colored by **player identity**, not win/loss: recent form shows the winner's
-  `abbr` in their color, and match cards take the winner's stripe color.
-- Match scorelines read from the **winner's perspective** (tennis convention):
-  `formatWinnerScoreline` in `src/domain/deriveStats.ts` produces "Andy won 2—1" with
-  winner-first set lines. Views that lay out Alan-left / Andy-right (the detail set list,
-  the H2H impact line) keep the fixed orientation — names and colours make those explicit.
-- Overview and Matches share one **journal cover language** without sharing one page plate.
-  Overview keeps the full leather/book/paper composition. Matches clips only the leather
-  region into a semantic cover, then owns an opaque textured-paper archive beneath it; the
-  baked Overview bookmark never continues through archive rows. Both covers use the same crest,
-  gold type and physical seam, while the archive heading, filters and ruled rows remain live UI.
+- The large head-to-head score anchors a serif **Matchday Journal** with a shared CSS
+  material, a derived sidelines note, an actionable ledger, latest/recent chapters and
+  an evidence footer. Overview keeps that DOM order on phones; wider screens group the
+  rivalry/ledger on the left and chapters/exploration on the right. Matches is a ruled
+  archive. Physical book plates, paper textures, ribbons and stamps are retired.
+- Results retain dataset player identity colours independently of the Grand Slam theme.
+  Night text uses a neutral foreground plus an underline in the original identity hue
+  (`identityTextStyle`); it does not replace the dataset colour. Surface badges are neutral,
+  explicitly labelled pills so court category cannot be mistaken for player identity.
+- Match scorelines read from the winner's perspective (`formatWinnerScoreline`); detail
+  tables and head-to-head impact keep Alan-left / Andy-right with names attached.
 - The Matches archive optimises for scanning and comparison rather than repeating Overview:
   surface filters remain, date/surface/location/status are always explicit, and every row labels
   whether it has full set scores or only a set-tally summary before opening shared match detail.
@@ -267,7 +256,7 @@ Validation is pragmatic. Historical tennis data may be imperfect, but obviously 
   dataset. The Deciders sheet splits super tiebreak / third set / unrecorded decider and shows
   the decider rate; the Set 1 → win sheet uses only finished matches with set scores (sample
   stated) and lists comebacks. Win rate sits under the head-to-head instead of in the ledger.
-- The **handwritten note** is derived, never stored: `deriveRivalryNote`
+- The **sidelines note** is derived, never stored: `deriveRivalryNote`
   (`src/domain/narrative.ts`) picks what the latest finished match did (super tiebreak,
   comeback, third set, straight sets), where the head-to-head stands from its winner's view
   (moves ahead / extends / still trails / level, naming whose run it is), and the next-match
@@ -295,13 +284,13 @@ Validation is pragmatic. Historical tennis data may be imperfect, but obviously 
   confirmation when a draft exists. The scroll lock pins the body
   with `position: fixed` + a remembered scroll offset, because mobile WebKit (Safari *and*
   iPhone Chrome) ignores `overflow: hidden` on body for touch scrolling.
-- `.modal-panel` is a detached journal sheet inside the existing blurred backdrop: fully
+- `.modal-panel` is a detached material sheet inside the existing blurred backdrop: fully
   rounded on phones, centered on wider screens, bounded by safe-area-aware backdrop padding,
   and internally scrollable. Exit animation finishes before body scroll/focus cleanup.
 - Fixed chrome must not be positioned with `transform` (mobile browsers repaint it late
   during scroll, so it visibly drifts) — `.bottom-nav` centers with auto margins instead.
-- `viewport-fit=cover` is intentional. Journal covers extend behind iPhone status chrome, but
-  title content and the leather-to-paper seam are offset by `env(safe-area-inset-top)`. In
+- `viewport-fit=cover` is intentional. The shell offsets important content
+  by `env(safe-area-inset-top)` and leaves clearance beneath the floating navigation. In
   installed `display-mode: standalone`, the bottom navigation owns the whole bottom inset:
   controls remain above the Home Indicator while its glass material continues to the physical
   edge. Standalone height uses conservative `100vh` to avoid WebKit's dynamic-viewport gap.
@@ -310,49 +299,27 @@ Validation is pragmatic. Historical tennis data may be imperfect, but obviously 
 
 ## Skin / Theme Layer
 
-Chrome colour (everything that is *not* a player's identity colour) lives in one place:
-`src/styles/skins.css`. Each look is a block of CSS custom properties keyed by a
-`[data-skin="…"]` attribute on `<html>`; `:root` carries the default (Wimbledon).
+`src/styles/skins.css` owns chrome colours for Wimbledon, Roland-Garros, US Open and
+Australian Open, each with day/evening overrides on `<html data-skin data-mode>`.
+`ThemeControls` persists only appearance under `deuceline-appearance`; unavailable storage
+falls back safely. The live browser theme-colour meta follows the selected base.
 
-- `global.css` `@import`s `skins.css` first, then consumes only the vars (`--bg`, `--ink`,
-  `--accent`, `--court-line`, `--hard/clay/grass/astro`, …). It must never hardcode a chrome
-  colour — that is what keeps skins swappable.
-- **Player identity colours are not skin tokens.** They come from the dataset; a skin only
-  *suggests* a palette via `--skin-player-a` / `--skin-player-b` (reference only).
-- SVG note: CSS `var()` does not resolve in SVG presentation attributes, so `CourtBackdrop`
-  sets skin-driven fills/strokes via inline `style`, and player-half fills via the literal
-  hex from the dataset.
-- Adding a Grand Slam skin = one new `[data-skin="roland-garros|us-open|australian-open"]`
-  block + setting `data-skin` on `<html>`. Zero component changes. There is no skin-switcher
-  UI yet (deferred — see [PROJECT_PLAN.md](PROJECT_PLAN.md)).
-- Known deferred clash: surface badge `--grass` (green) and `--clay` (terracotta) overlap
-  Andy's / a player's identity colour; and Wimbledon is itself a grass event. Left as-is this
-  version — see [PROJECT_PLAN.md](PROJECT_PLAN.md).
+The default selector must stay `:root, [data-skin="wimbledon"]`: `build:core` extracts that
+block only, including compatibility aliases, for the current mini program skeleton. Web
+mode/skin overrides are not exported by that regex. Player colours always come from the
+rivalry dataset. `identityTextStyle` provides an accessible night treatment without altering
+those values; labelled neutral surface badges separate court category from player identity.
 
-Corner radius is a separate, non-skin token: a two-tier scale in `global.css` `:root`
-(`--radius-lg` for big cards/panels/modals, `--radius-md` for buttons/badges/list chrome).
-It lives outside `skins.css` because it is structural consistency, not part of a Grand Slam
-look. Pills (`999px`) and circles (`50%`) are unaffected by the scale.
+`global.css` owns existing sheets, forms, charts and motion; `journal.css` owns the migrated
+shell, Overview, archive and navigation. Structural radii and spacing are shared. Both
+consume skin tokens. Retired physical-page overrides have been removed from the cascade.
 
-## Material Layer (Liquid-Glass-style)
+## Material Layer
 
-Floating chrome uses a translucent blurred material, kept deliberately restrained per
-Apple's Liquid Glass guidance:
-
-- **Glass is only for the floating system layer** — bottom navigation, centre Add, and the
-  shared modal shell used by match detail, analysis and add/update flows. Journal pages, archive
-  rows, charts, fact blocks and form fields remain opaque paper inside it. Never glass on glass.
-- Colour tokens (`--material-bg`, `--material-bg-strong`, `--material-border`,
-  `--material-edge`, translucent/solid scrims and the accent material) live in `skins.css`;
-  the structural blur radius lives in `global.css` `:root`.
-- Fallbacks are final-cascade rules: both standard and prefixed no-`backdrop-filter` support
-  tests, plus `prefers-reduced-transparency`, remove blur and use solid panel/scrim/accent
-  colours. `prefers-reduced-motion` keeps the same state transitions but makes them effectively
-  instantaneous.
-- Visual semantics stay separate: journal materials describe content; glass describes system
-  controls; dataset player colours describe identity; surface tokens describe court category.
-- This is the seam for a future native app: swapping `.bottom-nav` / `.modal-panel`
-  materials for platform-native ones touches no component code.
+Ambient CSS washes, translucent content and floating chrome use one material vocabulary
+from `skins.css`. Navigation centers with auto margins, never a fixed-element transform.
+Sheets retain the shared Modal focus, dismissal and mobile body-scroll lock. No-blur and
+reduced-transparency fallbacks use solid surfaces; reduced-motion keeps all interactions.
 
 ## Testing And Build Expectations
 

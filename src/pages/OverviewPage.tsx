@@ -1,3 +1,4 @@
+import { identityTextStyle } from "../components/identityStyle";
 import { ReactNode, useState } from "react";
 import { MatchDetail } from "../components/MatchDetail";
 import { OverviewSheets, OverviewSheetState } from "../components/OverviewSheets";
@@ -45,42 +46,39 @@ export function OverviewPage({ dataset, onUpdateMatch, onShowMatches }: Overview
 
   return (
     <main className="screen screen-overview journal-book">
-      <header className="app-header journal-cover">
-        <img className="journal-cover-crest" src="./assets/journal-crest-transparent.png" alt="" />
-        <div className="journal-cover-title">
-          <h1 data-page-title tabIndex={-1}>Deuceline</h1>
-          <p>Matchday Journal</p>
-        </div>
-        <span className="journal-version">v{__APP_VERSION__}</span>
+      <header className="journal-page-heading">
+        <div><p className="eyebrow">A shared competition</p><h1 data-page-title tabIndex={-1}>The rivalry.</h1></div>
+        <span>{dataset.matches.length} chapters</span>
       </header>
 
       <section className="journal-page" aria-label="Rivalry journal overview">
+        <div className="journal-main">
         <button
           className="journal-rivalry"
           type="button"
           onClick={() => setSheet({ kind: "story" })}
           aria-label={`Rivalry record: ${names.alan} ${stats.matchRecord.alan}, ${names.opponent} ${stats.matchRecord.opponent}; ${stats.totalMatches} finished matches; win rate ${names.alan} ${winRates.alan}, ${names.opponent} ${winRates.opponent}. Open the full rivalry story`}
         >
-          <span className="journal-rivalry-kicker">The rivalry</span>
+          <span className="journal-rivalry-kicker">Head-to-head</span>
           <span className="journal-rivalry-names">
-            <strong style={{ color: players.alan.color }}>{names.alan}</strong>
+            <strong><span className="identity-mark" style={{ background: players.alan.color }} />{names.alan}</strong>
             <i>vs</i>
-            <strong style={{ color: players.opponent.color }}>{names.opponent}</strong>
+            <strong><span className="identity-mark" style={{ background: players.opponent.color }} />{names.opponent}</strong>
           </span>
-          <span className="journal-rivalry-subtitle">Private record of a shared competition</span>
+
           <span className="journal-rivalry-score" aria-hidden="true">
-            <strong style={{ color: players.alan.color }}>{alanScore}</strong><i>—</i><strong style={{ color: players.opponent.color }}>{opponentScore}</strong>
+            <strong>{alanScore}</strong><i>—</i><strong>{opponentScore}</strong>
           </span>
-          <span className="journal-rivalry-label">Head-to-head</span>
-          <span className="journal-rivalry-meta">{stats.totalMatches} finished matches{stats.totalMatches ? <> · {leader ? <b style={{ color: players[leader].color }}>{players[leader].displayName} {winRates[leader]}</b> : <b>50% each</b>}</> : null}</span>
+          <span className="journal-ratio" aria-hidden="true"><span style={{ flex: stats.matchRecord.alan || 0.01, background: players.alan.color }} /><span style={{ flex: stats.matchRecord.opponent || 0.01, background: players.opponent.color }} /></span>
+          <span className="journal-rivalry-meta">{stats.totalMatches} finished matches{stats.totalMatches ? <> · {leader ? <b style={identityTextStyle(players[leader].color)}>{players[leader].displayName} {winRates[leader]}</b> : <b>50% each</b>}</> : null}</span>
           <span className="journal-rivalry-action">Open rivalry story <img src="./assets/icons/chevron-right.svg" alt="" aria-hidden="true" /></span>
         </button>
 
         <div className="journal-handnote">
+          <span className="eyebrow">From the sidelines</span>
           <p>
             {note.length ? note.map((line, index) => <span key={index} className={index === 2 ? "journal-handnote-lean" : undefined}>{keepScoresTogether(line)}</span>) : <span>No finished chapters yet. The next result starts the rivalry story.</span>}
           </p>
-          <img src="./assets/journal-stamp.png" alt="" />
         </div>
 
         <section className="journal-ledger" aria-labelledby="journal-ledger-title">
@@ -118,12 +116,15 @@ export function OverviewPage({ dataset, onUpdateMatch, onShowMatches }: Overview
               aria-label={`Current run: ${streakWinner ? `${players[streakWinner].displayName} ${stats.currentStreak.count}` : "none"}. Open streak history`}
             >
               <span>Current run</span>
-              <strong style={streakWinner ? { color: players[streakWinner].color } : undefined}>{stats.currentStreak.count || "—"}</strong>
+              <strong style={streakWinner ? identityTextStyle(players[streakWinner].color) : undefined}>{stats.currentStreak.count || "—"}</strong>
               <small>{streakWinner ? players[streakWinner].displayName : "No run"}</small>
             </button>
           </div>
         </section>
 
+        </div>
+        <div className="journal-recent">
+        <h2 className="journal-section-title">Latest chapter</h2>
         {latest ? (
           <ExpandedChapter match={latest} number={latest.seq} players={players} onOpen={() => setSelectedMatch(latest)} />
         ) : null}
@@ -132,7 +133,7 @@ export function OverviewPage({ dataset, onUpdateMatch, onShowMatches }: Overview
           <button type="button" onClick={() => setSheet({ kind: "form" })}>
             <img src="./assets/icons/chart-line.svg" alt="" />
             <strong>Form</strong><span>Last 5</span>
-            <small><b style={{ color: players.alan.color }}>{names.alan} {recent.alan}</b>—{recent.opponent} <b style={{ color: players.opponent.color }}>{names.opponent}</b></small>
+            <small><b style={identityTextStyle(players.alan.color)}>{names.alan} {recent.alan}</b>—{recent.opponent} <b style={identityTextStyle(players.opponent.color)}>{names.opponent}</b></small>
           </button>
           <button type="button" onClick={() => setSheet({ kind: "surfaces" })}>
             <img src="./assets/icons/table-cells.svg" alt="" />
@@ -158,6 +159,7 @@ export function OverviewPage({ dataset, onUpdateMatch, onShowMatches }: Overview
           {onShowMatches ? <button type="button" className="journal-view-all" onClick={onShowMatches}>View all {dataset.matches.length} matches <img src="./assets/icons/chevron-right.svg" alt="" aria-hidden="true" /></button> : null}
         </section>
 
+        </div>
         <footer className="journal-coverage">
           <img src="./assets/icons/book-open.svg" alt="" />
           <p>
@@ -216,9 +218,9 @@ function LedgerButton({ label, alanValue, opponentValue, note, players, onOpen }
     >
       <span>{label}</span>
       <strong>
-        <b style={{ color: players.alan.color }}>{alanValue}</b>
+        <b style={identityTextStyle(players.alan.color)}>{alanValue}</b>
         <i>—</i>
-        <b style={{ color: players.opponent.color }}>{opponentValue}</b>
+        <b style={identityTextStyle(players.opponent.color)}>{opponentValue}</b>
       </strong>
       {note ? <small>{note}</small> : null}
     </button>
@@ -236,7 +238,7 @@ function ExpandedChapter({ match, number, players, onOpen }: ChapterProps) {
         <span className="journal-chapter-copy">
           <span className="journal-chapter-eyebrow">Latest match · In progress</span>
           <span className="journal-chapter-date">{match.date ? shortDate(match.date) : `Match ${match.seq}`} · {match.location ?? "Location unknown"}</span>
-          <strong><span style={{ color: players.alan.color }}>{players.alan.displayName} {score.alan}</span>—<span style={{ color: players.opponent.color }}>{score.opponent} {players.opponent.displayName}</span></strong>
+          <strong><span style={identityTextStyle(players.alan.color)}>{players.alan.displayName} {score.alan}</span>—<span style={identityTextStyle(players.opponent.color)}>{score.opponent} {players.opponent.displayName}</span></strong>
           <span className="journal-set-scores">{score.setScores?.join(", ") ?? `${score.alan}—${score.opponent} so far`}</span>
           <em>Awaiting the final result.</em>
         </span>
@@ -250,13 +252,12 @@ function ExpandedChapter({ match, number, players, onOpen }: ChapterProps) {
   return (
     <button type="button" className="journal-expanded-chapter" onClick={onOpen} aria-label={`Latest chapter. ${winner.displayName} won ${score.score}. Open details`}>
       <span className="journal-chapter-stripe" style={{ background: winner.color }} />
-      <span className="journal-chapter-number" style={{ background: winner.color }}>{number}</span>
       <span className="journal-chapter-copy">
-        <span className="journal-chapter-eyebrow">Latest chapter</span>
+        <span className="journal-chapter-eyebrow">Chapter {number}</span>
         <span className="journal-chapter-date">{match.date ? shortDate(match.date) : `Match ${match.seq}`} · {match.location ?? "Location unknown"}</span>
-        <strong>{winner.displayName} won {score.score}</strong>
+        <strong><span className="identity-mark" style={{ background: winner.color }} />{winner.displayName} won {score.score}</strong>
         <span className="journal-set-scores">{score.setScores?.join(", ") ?? `${score.score} final`}</span>
-        <em>{winner.displayName} prevails on {titleCase(match.surface)}.</em>
+        <em>Read this chapter</em>
       </span>
       <SurfaceBadge surface={match.surface} />
       <img className="journal-collapse" src="./assets/icons/chevron-right.svg" alt="" aria-hidden="true" />
@@ -284,7 +285,7 @@ function ChapterRow({ match, number, players, onOpen }: ChapterProps) {
     <button type="button" className="journal-chapter-row" onClick={onOpen} aria-label={`${winner.displayName} won ${score.score}. Open match detail`}>
       <span className="journal-chapter-stripe" style={{ background: winner.color }} />
       <span className="journal-chapter-number" style={{ background: winner.color }}>{number}</span>
-      <span className="journal-row-copy"><small>{match.date ? shortDate(match.date) : `Match ${match.seq} · date unknown`}{match.location ? ` · ${match.location}` : ""}</small><strong>{winner.displayName} won {score.score}</strong></span>
+      <span className="journal-row-copy"><small>{match.date ? shortDate(match.date) : `Match ${match.seq} · date unknown`}{match.location ? ` · ${match.location}` : ""}</small><strong><span className="identity-mark" style={{ background: winner.color }} />{winner.displayName} won {score.score}</strong></span>
       <SurfaceBadge surface={match.surface} />
       <img className="journal-expand" src="./assets/icons/chevron-right.svg" alt="" aria-hidden="true" />
     </button>

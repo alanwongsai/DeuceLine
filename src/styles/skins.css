@@ -1,74 +1,66 @@
-/* Skin token layer — the single place chrome colour lives.
-
-   Each Grand Slam look is one [data-skin] block of CSS custom properties.
-   global.css consumes these vars and never hardcodes a chrome colour, so adding
-   a future skin (Roland-Garros / US Open / Australian Open) is just one new
-   block here plus data-skin="<name>" on <html> — zero component changes.
-
-   Player IDENTITY colours (Alan / Andy) are NOT skin tokens: they belong to this
-   rivalry and live in the dataset (public/data/deuceline-data.json). A skin only
-   *suggests* a palette via --skin-player-a / --skin-player-b for reference. The
-   Wimbledon skin's suggestion is Alan = purple, Andy = grass green, which the
-   dataset currently mirrors. */
-
+/* Material is shared; court colours are skin tokens. Player identity comes from the dataset. */
 :root,
 [data-skin="wimbledon"] {
-  /* Championships look: crisp near-white content on a deep-green masthead,
-     gold reserved for honours (masthead eyebrow, count pill, primary action). */
-  --bg: #f4f6f2;
-  --ink: #0c2f22;
-  --muted: #5a6b61;
-  --panel: #ffffff;
-  --line: #e2e7e0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-synthesis: none; -webkit-font-smoothing: antialiased;
+  --base: #e8eee7; --wash: #f9fbf6; --ink: #18362c; --muted: #52665b;
+  --court: #1a5942; --accent: #574274; --halo: #bbcbbc; --halo-alt: #ddd5eb;
+  --line: #18362c24; --content: #fbfcf6c2;
+  --glass: #ffffff94; --glass-low: #ffffff38; --rim: #ffffffed;
+  --shadow: #16352515; --sheet: #f2f6efee; --on-accent: #fff;
+  color-scheme: light;
+  /* Compatibility names for the existing evidence sheets and WXSS skeleton.
+     Every alias resolves from this default block, which build:core extracts. */
+  --swatch-wimbledon: #245d44; --swatch-roland: #b36c45;
+  --swatch-us: #345c9a; --swatch-australian: #1683a7;
+  --bg: var(--base); --panel: var(--content);
+  --accent-ink: var(--on-accent);
+  --material-bg: var(--glass); --material-bg-strong: var(--sheet);
+  --material-border: var(--rim); --material-edge: var(--line);
+  --material-accent-bg: var(--court); --material-accent-border: var(--rim);
+  --material-scrim: #071a214a; --material-scrim-solid: #152a23;
+  --journal-paper: var(--content); --journal-paper-deep: var(--glass-low);
+  --journal-rule: var(--line); --journal-ink: var(--ink);
+  --shadow-card: 0 8px 24px var(--shadow);
+  --shadow-card-raised: 0 14px 32px var(--shadow);
+  --hard: var(--court); --clay: var(--court); --grass: var(--court); --astro: var(--court);
+  --danger: #8c302d; --danger-bg: #fff0ed;
 
-  --accent: #c19a4b;
-  --accent-ink: #0c2f22;
-
-  /* Masthead (deep-green header band, like the official app's chrome) */
-  --masthead-bg: #0a2f21;
-  --masthead-glow: #14523a;
-  --masthead-ink: #ffffff;
-  --masthead-muted: rgba(255, 255, 255, 0.76);
-  --masthead-accent: #d9bc72;
-
-  /* Hero court (the head-to-head scoreboard) */
-  --hero-ink: #ffffff;
-  --hero-fallback: #0c2f22;
-  --court-lighten: rgba(255, 255, 255, 0.15);
-  --court-line: rgba(255, 255, 255, 0.55);
-  --court-net: #ffffff;
-  --court-pocket: #06150d;
-
-  /* Floating-layer material (Liquid-Glass-style). Only nav / FAB / sheets use
-     these — content stays opaque. Blur radius lives in global.css (structural). */
-  --material-bg: rgba(255, 255, 255, 0.68);
-  --material-bg-strong: rgba(255, 255, 255, 0.86);
-  --material-border: rgba(255, 255, 255, 0.55);
-  --material-edge: rgba(12, 47, 34, 0.12);
-  --material-accent-bg: rgba(193, 154, 75, 0.78);
-  --material-accent-border: rgba(255, 248, 221, 0.82);
-  --material-scrim: rgba(10, 24, 18, 0.45);
-  --material-scrim-solid: #29342e;
-
-  /* Matchday Journal surfaces */
-  --journal-paper: #f8f5ec;
-  --journal-paper-deep: #efe9da;
-  --journal-rule: rgba(65, 58, 43, 0.24);
-  --journal-ink: #163327;
-  --shadow-card: 0 8px 24px rgba(12, 47, 34, 0.09);
-  --shadow-card-raised: 0 14px 32px rgba(12, 47, 34, 0.15);
-
-  /* Surface badges — kept on the existing palette this skin. The grass/Andy and
-     clay/Alan collisions are a known, deferred issue (see PROJECT_PLAN.md). */
-  --hard: #446a87;
-  --clay: #a96a50;
-  --grass: #5a7f70;
-  --astro: #4b278e;
-
-  /* Suggested player palette for this skin (reference only; dataset is source of truth) */
-  --skin-player-a: #57298a;
-  --skin-player-b: #1e7a45;
 }
-
-/* Future skins drop in below as additional [data-skin="…"] blocks, e.g.
-   [data-skin="roland-garros"] { --bg: #f4ede1; --ink: …; --clay: …; } */
+:root[data-skin="roland-garros"] {
+  --base: #f0e3d8; --wash: #fff8ed; --ink: #4b3023; --muted: #765b4b;
+  --court: #a64d2e; --accent: #1e605c; --halo: #e8b296; --halo-alt: #c9dcd0;
+  --line: #583b2826; --content: #fff8edc2; --shadow: #60382215; --sheet: #fbefe4ee;
+}
+:root[data-skin="us-open"] {
+  --base: #e5eaf3; --wash: #f6f8ff; --ink: #20324b; --muted: #58677d;
+  --court: #244c91; --accent: #7b551a; --halo: #afc4e8; --halo-alt: #eadbb0;
+  --line: #20324b26; --content: #f7f9ffc2; --shadow: #14335e15; --sheet: #eff3fbee;
+}
+:root[data-skin="australian-open"] {
+  --base: #dfeef2; --wash: #f5fcfc; --ink: #173b4a; --muted: #4d6b76;
+  --court: #006d96; --accent: #875131; --halo: #a1d4e5; --halo-alt: #f1d1b5;
+  --line: #173b4a26; --content: #f4fcfcc2; --shadow: #163d4e15; --sheet: #ecf7f9ee;
+}
+:root[data-mode="evening"] {
+  color-scheme: dark; --danger: #ffb6ac; --danger-bg: #462726; --base: #101e19; --wash: #152c23; --ink: #eff3e8;
+  --muted: #b2bfb6; --court: #92baa4; --accent: #cebde1;
+  --halo: #2c6045; --halo-alt: #41374e; --line: #d6e3d626;
+  --content: #1c312bd6; --glass: #20382bae; --glass-low: #728b7530;
+  --rim: #ffffff55; --shadow: #00000040; --sheet: #1c3029f5; --on-accent: #17271d;
+}
+:root[data-mode="evening"][data-skin="roland-garros"] {
+  --base: #251b17; --wash: #3b2720; --ink: #fbefdf; --muted: #cab5a6;
+  --court: #e7ac86; --accent: #9cc7ba; --halo: #80472c; --halo-alt: #254944;
+  --content: #412b22d6; --glass: #493024ae; --sheet: #35251ef5; --on-accent: #213530;
+}
+:root[data-mode="evening"][data-skin="us-open"] {
+  --base: #101a30; --wash: #172a48; --ink: #eef3fc; --muted: #b4c1d7;
+  --court: #a3bce9; --accent: #e5d294; --halo: #254987; --halo-alt: #555040;
+  --content: #1d2c47d6; --glass: #243552ae; --sheet: #1d2b43f5; --on-accent: #21304c;
+}
+:root[data-mode="evening"][data-skin="australian-open"] {
+  --base: #0d2330; --wash: #123849; --ink: #e8f7fa; --muted: #acc7d0;
+  --court: #8ed4eb; --accent: #e9bc99; --halo: #176281; --halo-alt: #5e493e;
+  --content: #173c4bd6; --glass: #194656ae; --sheet: #163644f5; --on-accent: #293b44;
+}

@@ -110,17 +110,9 @@ Reskin the app to a Wimbledon palette and lay the interface for future Grand Sla
 - Hero rebuilt as a full split court; readability-tuned scores. — done
 - Liquid-glass app icon; PNGs re-rasterised from `public/assets/icon*.svg`. — done
 
-Status: complete. Interface is in place; **no skin-switcher UI yet** (a skin is chosen by
-the `data-skin` attribute at build time).
+Status: complete. The runtime four-skin/day-evening extension is owned by the visual migration below.
 
 Deferred / parked from this phase:
-- **Future Grand Slam skins**: Roland-Garros, US Open, Australian Open. Each is one new
-  `[data-skin="…"]` block in `skins.css` + the matching `data-skin` value. Will likely also
-  want a runtime skin-switcher and a per-skin suggested player palette.
-- **Colour clashes left unresolved this round**: surface `--grass`/`--clay` collide with a
-  player's identity colour, and Wimbledon is itself a grass event (theme ↔ surface semantic
-  overlap). Revisit when a skin-switcher or surface-colour rework lands.
-
 ## Phase 9: Unfinished matches + one-tap update
 
 Support recording a match that was suspended before a winner was decided, and completing it
@@ -170,8 +162,8 @@ the single-rivalry data and publishing architecture.
 - Overview is the current-state and insight surface (H2H, actionable ledger, latest + two recent
   chapters, data coverage); Matches is the complete filterable archive, including unfinished
   rows and explicit full-score vs summary fidelity. — done
-- Liquid Glass is limited to floating system chrome; paper remains the content material across
-  Overview, archive rows, detail, add/update and analysis. — done
+- The original physical-journal material shipped here; the CSS material replacement is
+  owned by the visual migration below.
 - Evidence-aware stat sheets with interactive match-order charts. — done
 - Derived game totals, scoreline distribution, longest runs, maximum leads and surface form. — done
 - Reduced-motion-safe sheet exits, count-up and timeline motion. — done
@@ -219,8 +211,22 @@ Deferred / parked from this phase:
 - **CloudBase database as the source of truth** — only if CloudBase cannot reach GitHub
   reliably; it would reverse the repo-JSON decision and needs Alan's call.
 - **WeChat OPENID allowlist** instead of the shared password for the mini program.
-- **Lifting the journal cover/paper colours into skin tokens** (they are hard-coded in
-  `global.css`), so `build:core` can export them too.
+- Full mini client and 体验版 release remain a separate port stage; this visual migration
+  synchronizes the existing skeleton only.
+
+## Visual migration — staged delivery
+
+Retain existing React/domain/publishing behavior while replacing physical journal materials
+with the selected CSS glass study. No match-data changes or live test matches.
+
+1. Material tokens, four skins + day/evening, Overview, Matches and navigation — implemented;
+   stage validation and commit are recorded in MAINTENANCE_LOG.md.
+2. All evidence sheets, charts, detail and complete add/update/review/publish/fallback — next.
+3. PWA/cache, legacy resource cleanup, build:core and existing mini skeleton sync, full acceptance.
+4. Re-read remote main, preserve any new match commits, then deploy through Git → Cloudflare
+   Pages and verify the published result. No early deployment of intermediate stages.
+
+Full WeChat client behavior and 体验版 upload remain Phase 12, outside this migration.
 
 ## Future Phases
 
@@ -231,7 +237,6 @@ Deferred / parked from this phase:
   id/seq, show a clearly labeled per-set before/after review, reject tiebreak
   details that contradict the set winner, and keep corrections traceable through
   Git commits. This is a parked idea, not an implementation decision.
-- Future Grand Slam skins (Roland-Garros / US Open / Australian Open) + skin-switcher UI.
 - Multi-rivalry support.
 - Import/export as a non-canonical helper.
 - Admin editor.
