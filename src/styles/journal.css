@@ -1,6 +1,6 @@
 /* Main journal presentation. Display palettes belong to skins.css; default identity to the dataset.
    The existing sheets/forms/charts remain in global.css during staged migration. */
-:root { --shell-pad: 24px; --radius-lg: 28px; --radius-md: 14px; --bottom-chrome-clearance: 110px; }
+:root { --shell-pad: 24px; --radius-lg: 28px; --radius-md: 14px; --radius-sheet: 30px; --record-track: 3px; --bottom-chrome-clearance: 110px; }
 body { color: var(--ink); background: var(--base); -webkit-font-smoothing: antialiased; }
 body::before { content: ""; position: fixed; inset: 0; background: radial-gradient(ellipse 80% 60% at 0 5%,var(--halo),transparent 80%),radial-gradient(ellipse 70% 55% at 100% 35%,var(--halo-alt),transparent 80%),linear-gradient(150deg,var(--wash),var(--base)); pointer-events: none; }
 button img { filter: grayscale(1); }
@@ -37,11 +37,11 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .journal-rivalry-score i { font: 30px Georgia,serif; color: var(--muted); }
 .journal-rivalry-meta { order: 1; font-size: 12px; color: var(--muted); line-height: 1.5; }
 .journal-rivalry-meta b { font-weight: 600; }
-.journal-ratio { order: 2; display: flex; gap: 3px; height: 3px; align-self: stretch; margin: 20px 4px 15px; }
+.journal-ratio { order: 2; display: flex; gap: 3px; height: var(--record-track); align-self: stretch; margin: 20px 4px 15px; }
 .journal-ratio span { border-radius: 2px; }
 .journal-rivalry-action { order: 3; display: inline-flex; align-items: center; gap: 4px; color: var(--court); font-size: 12px; min-height: 20px; }
 .journal-rivalry-action img { width: 14px; height: 14px; }
-.journal-handnote { margin: 25px 2px 30px; padding-left: 17px; border-left: 2px solid var(--accent); }
+.journal-handnote { margin: 25px 2px 30px; padding-left: 17px; border-left: 1px solid var(--accent); }
 .journal-handnote .eyebrow { color: var(--accent); font-size: 9px; }
 .journal-handnote p { margin: 8px 0 0; font: italic 19px/1.45 Georgia,serif; letter-spacing: -.02em; }
 .journal-handnote p > span { display: block; }

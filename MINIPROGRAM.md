@@ -268,5 +268,6 @@ Component map (web → mini program):
 - [ ] Mini program Overview shows the same H2H, ledger and latest chapter as the web.
 - [ ] A match added from the mini program appears there immediately and on the web after redeploy; and vice versa.
 - [ ] Wrong password → "Wrong password." and the stored key is cleared; a finished match cannot be updated.
-- [ ] Player colours come from the dataset; changing them in the JSON recolours both clients.
+- [ ] Mini player colours come from the dataset; changing them recolours the mini client
+  and web fallback palette. Web theme overrides remain presentation-only (ENGINE.md).
 - [ ] Main package under 2 MB; no secret (token, password) in any committed file.

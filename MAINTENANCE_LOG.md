@@ -55,6 +55,14 @@
 ## Log
 
 ### v0.14.4 — 2026-10-04
+- Material stage (local, not deployed): share 3px record tracks across the homepage and
+  evidence sheets; keep decorative rules thin and selection/focus distinct. Give Impact
+  the shared 14px inner radius and 16px padding, removing its nested chart plate. Match
+  near-solid sheet tones to an explicit solid sticky header; enlarge the close target to
+  44px around its 36px circle. Existing Modal scroll/focus/draft behaviour is unchanged.
+- Material-stage typecheck, 124 tests, build and build:core pass. Mobile browser readback
+  confirms Impact radius/padding, 44px close target, themed SVG fills and no page overflow;
+  visual checks cover Roland-Garros detail and surface tally. Full acceptance follows.
 - Palette stage (local, not deployed): resolve player display colours once at the web shell,
   with dataset colours as fallback. Wimbledon day keeps its original identity; the other
   themes use terracotta/graphite, blue/bronze and cyan/coral, with readable evening variants.

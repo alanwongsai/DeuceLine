@@ -325,7 +325,12 @@ All add/update/review/discard states reuse the same material; their React logic 
 ## Material Layer
 
 Ambient CSS washes, translucent content and floating chrome use one material vocabulary
-from `skins.css`. Navigation centers with auto margins, never a fixed-element transform.
+from `skins.css`. Sheets use one near-solid theme tone with a matching solid sticky header
+so the title does not compound translucent layers. Inner evidence cards use the content
+material and shared medium radius; Impact contains its chart without a second card plate.
+Record bars share a 3px track; decorative rules remain thin while focus/selection retains
+its emphasis. The close control has a 44px target around a 36px visual circle.
+Navigation centers with auto margins, never a fixed-element transform.
 Sheets retain the shared Modal focus, dismissal and mobile body-scroll lock. No-blur and
 reduced-transparency fallbacks use solid surfaces; reduced-motion keeps all interactions.
 

@@ -7,7 +7,7 @@ page {
   --court: #1a5942; --accent: #574274; --halo: #bbcbbc; --halo-alt: #ddd5eb;
   --line: #18362c24; --content: #fbfcf6c2;
   --glass: #ffffff94; --glass-low: #ffffff38; --rim: #ffffffed;
-  --shadow: #16352515; --sheet: #f2f6efee; --on-accent: #fff;
+  --shadow: #16352515; --sheet: #f2f6effa; --sheet-solid: #f2f6ef; --on-accent: #fff;
   color-scheme: light;
   --swatch-wimbledon: #245d44; --swatch-roland: #a55235;
   --swatch-us: #315d9c; --swatch-australian: #147a9b;
