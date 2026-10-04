@@ -1,4 +1,4 @@
-/* Main journal presentation. Colour belongs to skins.css; identity to the dataset.
+/* Main journal presentation. Display palettes belong to skins.css; default identity to the dataset.
    The existing sheets/forms/charts remain in global.css during staged migration. */
 :root { --shell-pad: 24px; --radius-lg: 28px; --radius-md: 14px; --bottom-chrome-clearance: 110px; }
 body { color: var(--ink); background: var(--base); -webkit-font-smoothing: antialiased; }
@@ -71,7 +71,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .journal-chapter-copy em { display: block; padding-top: 12px; border-top: 1px solid var(--line); color: var(--muted); font: 11px/1.5 ui-sans-serif,system-ui,sans-serif; }
 .journal-expanded-chapter > .surface-badge { position: absolute; top: 18px; right: 18px; }
 .journal-collapse { width: 16px; height: 16px; position: absolute; right: 18px; bottom: 18px; }
-.surface-badge { color: var(--muted); background: transparent; border: 1px solid var(--line); border-radius: 50px; padding: 5px 9px; font-size: 9px; font-weight: 650; letter-spacing: .08em; text-transform: uppercase; }
+.surface-badge { color: var(--surface-ink); background: var(--surface-wash); border: 1px solid var(--line); border-radius: 50px; padding: 5px 9px; font-size: 9px; font-weight: 650; letter-spacing: .08em; text-transform: uppercase; }
 .journal-lens-strip { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 6px; padding: 20px 0; border-bottom: 1px solid var(--line); }
 .journal-lens-strip button { display: flex; align-items: center; flex-direction: column; gap: 5px; padding: 6px 0; border: 0; background: transparent; min-width: 0; }
 .journal-lens-strip img { width: 20px; height: 20px; }
@@ -117,8 +117,6 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 @media (prefers-reduced-motion: reduce) { *,*::before,*::after { transition: none !important; scroll-behavior: auto !important; } }
 @media (max-width:350px) { :root { --shell-pad: 17px; } .theme-picker button { font-size: 8px; } .journal-rivalry-score strong { font-size: 76px; } .journal-chapter-row { gap: 8px; } }
 @media (min-width:760px) { .app-shell { padding-top: max(42px,calc(env(safe-area-inset-top,0px) + 32px)); } .brand { font-size: 35px; } .brand-caption { font-size: 10px; } .theme-picker { max-width: 490px; } .theme-picker button { font-size: 11px; } .journal-page-heading h1 { font-size: 46px; } .journal-page { grid-template-columns: 1.12fr 1fr; gap: 36px; align-items: start; } .journal-coverage { grid-column: 1 / -1; } .journal-rivalry-score strong { font-size: 100px; } .journal-rivalry { padding-top: 32px; } .journal-handnote p { font-size: 22px; } .journal-ledger-grid { grid-template-columns: repeat(4,minmax(0,1fr)); } .journal-ledger-cell:nth-child(-n+2),.journal-ledger-cell:nth-child(odd) { border: 0; } .journal-ledger-cell > span { font-size: 9px; } .journal-ledger-cell > strong { font-size: 19px; } }
-/* Night text keeps the original identity hue as its underline. */
-[data-mode="evening"] [style*="--identity:"] { color: var(--ink) !important; text-decoration: underline; text-decoration-color: var(--identity); text-decoration-thickness: 2px; text-underline-offset: 4px; }
 
 /* The ambient wash sits above the body paint and below the live journal. */
 body::before { z-index: 0; }

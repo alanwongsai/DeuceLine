@@ -1,4 +1,4 @@
-import { identityTextStyle } from "../components/identityStyle";
+import { identityColor, identityTextStyle } from "../components/identityStyle";
 import { ReactNode, useState } from "react";
 import { MatchDetail } from "../components/MatchDetail";
 import { OverviewSheets, OverviewSheetState } from "../components/OverviewSheets";
@@ -61,23 +61,23 @@ export function OverviewPage({ dataset, onUpdateMatch, onShowMatches }: Overview
         >
           <span className="journal-rivalry-kicker">Head-to-head</span>
           <span className="journal-rivalry-names">
-            <strong><span className="identity-mark" style={{ background: players.alan.color }} />{names.alan}</strong>
+            <strong><span className="identity-mark" style={{ background: identityColor("alan") }} />{names.alan}</strong>
             <i>vs</i>
-            <strong><span className="identity-mark" style={{ background: players.opponent.color }} />{names.opponent}</strong>
+            <strong><span className="identity-mark" style={{ background: identityColor("opponent") }} />{names.opponent}</strong>
           </span>
 
           <span className="journal-rivalry-score" aria-hidden="true">
-            <strong>{alanScore}</strong><i>—</i><strong>{opponentScore}</strong>
+            <strong style={identityTextStyle("alan")}>{alanScore}</strong><i>—</i><strong style={identityTextStyle("opponent")}>{opponentScore}</strong>
           </span>
-          <span className="journal-ratio" aria-hidden="true"><span style={{ flex: stats.matchRecord.alan || 0.01, background: players.alan.color }} /><span style={{ flex: stats.matchRecord.opponent || 0.01, background: players.opponent.color }} /></span>
-          <span className="journal-rivalry-meta">{stats.totalMatches} finished matches{stats.totalMatches ? <> · {leader ? <b style={identityTextStyle(players[leader].color)}>{players[leader].displayName} {winRates[leader]}</b> : <b>50% each</b>}</> : null}</span>
+          <span className="journal-ratio" aria-hidden="true"><span style={{ flex: stats.matchRecord.alan || 0.01, background: identityColor("alan") }} /><span style={{ flex: stats.matchRecord.opponent || 0.01, background: identityColor("opponent") }} /></span>
+          <span className="journal-rivalry-meta">{stats.totalMatches} finished matches{stats.totalMatches ? <> · {leader ? <b style={identityTextStyle(leader)}>{players[leader].displayName} {winRates[leader]}</b> : <b>50% each</b>}</> : null}</span>
           <span className="journal-rivalry-action">Open rivalry story <img src="./assets/icons/chevron-right.svg" alt="" aria-hidden="true" /></span>
         </button>
 
         <div className="journal-handnote">
           <span className="eyebrow">From the sidelines</span>
           <p>
-            {note.length ? note.map((line, index) => <span key={index} className={index === 2 ? "journal-handnote-lean" : undefined}>{keepScoresTogether(line)}</span>) : <span>No finished chapters yet. The next result starts the rivalry story.</span>}
+            {note.length ? note.map((line, index) => <span key={index} className={index === 2 ? "journal-handnote-lean" : undefined}>{keepScoresTogether(line, names)}</span>) : <span>No finished chapters yet. The next result starts the rivalry story.</span>}
           </p>
         </div>
 
@@ -116,7 +116,7 @@ export function OverviewPage({ dataset, onUpdateMatch, onShowMatches }: Overview
               aria-label={`Current run: ${streakWinner ? `${players[streakWinner].displayName} ${stats.currentStreak.count}` : "none"}. Open streak history`}
             >
               <span>Current run</span>
-              <strong style={streakWinner ? identityTextStyle(players[streakWinner].color) : undefined}>{stats.currentStreak.count || "—"}</strong>
+              <strong style={streakWinner ? identityTextStyle(streakWinner) : undefined}>{stats.currentStreak.count || "—"}</strong>
               <small>{streakWinner ? players[streakWinner].displayName : "No run"}</small>
             </button>
           </div>
@@ -133,7 +133,7 @@ export function OverviewPage({ dataset, onUpdateMatch, onShowMatches }: Overview
           <button type="button" onClick={() => setSheet({ kind: "form" })}>
             <img src="./assets/icons/chart-line.svg" alt="" />
             <strong>Form</strong><span>Last 5</span>
-            <small><b style={identityTextStyle(players.alan.color)}>{names.alan} {recent.alan}</b>—{recent.opponent} <b style={identityTextStyle(players.opponent.color)}>{names.opponent}</b></small>
+            <small><b style={identityTextStyle("alan")}>{names.alan} {recent.alan}</b>—<b style={identityTextStyle("opponent")}>{recent.opponent} {names.opponent}</b></small>
           </button>
           <button type="button" onClick={() => setSheet({ kind: "surfaces" })}>
             <img src="./assets/icons/table-cells.svg" alt="" />
@@ -218,9 +218,9 @@ function LedgerButton({ label, alanValue, opponentValue, note, players, onOpen }
     >
       <span>{label}</span>
       <strong>
-        <b style={identityTextStyle(players.alan.color)}>{alanValue}</b>
+        <b style={identityTextStyle("alan")}>{alanValue}</b>
         <i>—</i>
-        <b style={identityTextStyle(players.opponent.color)}>{opponentValue}</b>
+        <b style={identityTextStyle("opponent")}>{opponentValue}</b>
       </strong>
       {note ? <small>{note}</small> : null}
     </button>
@@ -230,14 +230,14 @@ function LedgerButton({ label, alanValue, opponentValue, note, players, onOpen }
 function ExpandedChapter({ match, number, players, onOpen }: ChapterProps) {
   if (isUnfinished(match)) {
     const score = formatNeutralScoreline(match);
-    const splitStripe = `linear-gradient(180deg, ${players.alan.color} 0 50%, ${players.opponent.color} 50% 100%)`;
+    const splitStripe = `linear-gradient(180deg, ${identityColor("alan")} 0 50%, ${identityColor("opponent")} 50% 100%)`;
     return (
       <button type="button" className="journal-expanded-chapter journal-expanded-unfinished" onClick={onOpen} aria-label={`Latest match in progress. ${players.alan.displayName} ${score.alan}, ${players.opponent.displayName} ${score.opponent}. Open details`}>
         <span className="journal-chapter-stripe" style={{ background: splitStripe }} />
         <span className="journal-chapter-copy">
           <span className="journal-chapter-eyebrow">Chapter {number} · In progress</span>
           <span className="journal-chapter-date">{match.date ? shortDate(match.date) : `Match ${match.seq}`} · {match.location ?? "Location unknown"}</span>
-          <strong><span style={identityTextStyle(players.alan.color)}>{players.alan.displayName} {score.alan}</span>—<span style={identityTextStyle(players.opponent.color)}>{score.opponent} {players.opponent.displayName}</span></strong>
+          <strong><span style={identityTextStyle("alan")}>{players.alan.displayName} {score.alan}</span>—<span style={identityTextStyle("opponent")}>{score.opponent} {players.opponent.displayName}</span></strong>
           <span className="journal-set-scores">{score.setScores?.join(", ") ?? `${score.alan}—${score.opponent} so far`}</span>
           <em>Awaiting the final result.</em>
         </span>
@@ -250,11 +250,11 @@ function ExpandedChapter({ match, number, players, onOpen }: ChapterProps) {
   const winner = players[score.winner];
   return (
     <button type="button" className="journal-expanded-chapter" onClick={onOpen} aria-label={`Latest chapter. ${winner.displayName} won ${score.score}. Open details`}>
-      <span className="journal-chapter-stripe" style={{ background: winner.color }} />
+      <span className="journal-chapter-stripe" style={{ background: identityColor(score.winner) }} />
       <span className="journal-chapter-copy">
         <span className="journal-chapter-eyebrow">Chapter {number}</span>
         <span className="journal-chapter-date">{match.date ? shortDate(match.date) : `Match ${match.seq}`} · {match.location ?? "Location unknown"}</span>
-        <strong><span className="identity-mark" style={{ background: winner.color }} />{winner.displayName} won {score.score}</strong>
+        <strong><span className="identity-mark" style={{ background: identityColor(score.winner) }} /><span style={identityTextStyle(score.winner)}>{winner.displayName}</span> won <span style={identityTextStyle(score.winner)}>{score.score}</span></strong>
         <span className="journal-set-scores">{score.setScores?.join(", ") ?? `${score.score} final`}</span>
         <em>Read this chapter</em>
       </span>
@@ -267,7 +267,7 @@ function ExpandedChapter({ match, number, players, onOpen }: ChapterProps) {
 function ChapterRow({ match, number, players, onOpen }: ChapterProps) {
   if (isUnfinished(match)) {
     const score = formatNeutralScoreline(match);
-    const splitStripe = `linear-gradient(180deg, ${players.alan.color} 0 50%, ${players.opponent.color} 50% 100%)`;
+    const splitStripe = `linear-gradient(180deg, ${identityColor("alan")} 0 50%, ${identityColor("opponent")} 50% 100%)`;
     return (
       <button type="button" className="journal-chapter-row journal-chapter-row-unfinished" onClick={onOpen} aria-label={`Match in progress. ${players.alan.displayName} ${score.alan}, ${players.opponent.displayName} ${score.opponent}. Open match detail`}>
         <span className="journal-chapter-stripe" style={{ background: splitStripe }} />
@@ -282,9 +282,9 @@ function ChapterRow({ match, number, players, onOpen }: ChapterProps) {
   const winner = players[score.winner];
   return (
     <button type="button" className="journal-chapter-row" onClick={onOpen} aria-label={`${winner.displayName} won ${score.score}. Open match detail`}>
-      <span className="journal-chapter-stripe" style={{ background: winner.color }} />
-      <span className="journal-chapter-number" style={{ background: winner.color }}>{number}</span>
-      <span className="journal-row-copy"><small>{match.date ? shortDate(match.date) : `Match ${match.seq} · date unknown`}{match.location ? ` · ${match.location}` : ""}</small><strong><span className="identity-mark" style={{ background: winner.color }} />{winner.displayName} won {score.score}</strong></span>
+      <span className="journal-chapter-stripe" style={{ background: identityColor(score.winner) }} />
+      <span className="journal-chapter-number" style={{ background: identityColor(score.winner) }}>{number}</span>
+      <span className="journal-row-copy"><small>{match.date ? shortDate(match.date) : `Match ${match.seq} · date unknown`}{match.location ? ` · ${match.location}` : ""}</small><strong><span className="identity-mark" style={{ background: identityColor(score.winner) }} /><span style={identityTextStyle(score.winner)}>{winner.displayName}</span> won <span style={identityTextStyle(score.winner)}>{score.score}</span></strong></span>
       <SurfaceBadge surface={match.surface} />
       <img className="journal-expand" src="./assets/icons/chevron-right.svg" alt="" aria-hidden="true" />
     </button>
@@ -307,8 +307,16 @@ function titleCase(value: string): string {
 }
 
 // Scores like "8–6" or "10–8" must not break at the dash across handnote lines.
-function keepScoresTogether(line: string): ReactNode[] {
-  return line.split(/(\d+–\d+)/).map((part, index) => (index % 2 ? <span key={index} className="nowrap">{part}</span> : part));
+function keepScoresTogether(line: string, names: Record<PlayerKey, string>): ReactNode[] {
+  // Match literal names without assuming a score in prose is Alan-first.
+  const escape = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const tokens = new RegExp(`(\\d+–\\d+|${escape(names.alan)}|${escape(names.opponent)})`, "g");
+  return line.split(tokens).map((part, index) => {
+    if (part === names.alan || part === names.opponent) {
+      return <span key={index} style={identityTextStyle(part === names.alan ? "alan" : "opponent")}>{part}</span>;
+    }
+    return /^\d+–\d+$/.test(part) ? <span key={index} className="nowrap">{part}</span> : part;
+  });
 }
 
 // "—" when the player has never won a first set, rather than a misleading 0%.

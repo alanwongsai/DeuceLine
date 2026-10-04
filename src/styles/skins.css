@@ -1,4 +1,4 @@
-/* Material is shared; court colours are skin tokens. Player identity comes from the dataset. */
+/* Material and display palettes are shared. Dataset colours remain the default identity. */
 :root,
 [data-skin="wimbledon"] {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -11,8 +11,8 @@
   color-scheme: light;
   /* Compatibility names for the existing evidence sheets and WXSS skeleton.
      Every alias resolves from this default block, which build:core extracts. */
-  --swatch-wimbledon: #245d44; --swatch-roland: #b36c45;
-  --swatch-us: #345c9a; --swatch-australian: #1683a7;
+  --swatch-wimbledon: #245d44; --swatch-roland: #a55235;
+  --swatch-us: #315d9c; --swatch-australian: #147a9b;
   --bg: var(--base); --panel: var(--content);
   --accent-ink: var(--on-accent);
   --material-bg: var(--glass); --material-bg-strong: var(--sheet);
@@ -24,26 +24,31 @@
   --shadow-card: 0 8px 24px var(--shadow);
   --shadow-card-raised: 0 14px 32px var(--shadow);
   --hard: var(--court); --clay: var(--court); --grass: var(--court); --astro: var(--court);
+  --surface-ink: var(--court); --surface-wash: var(--glass-low);
   --on-identity: #ffffff;
   --danger: #8c302d; --danger-bg: #fff0ed;
 
 }
 :root[data-skin="roland-garros"] {
+  --theme-alan: #a55235; --theme-opponent: #414145;
   --base: #f0e3d8; --wash: #fff8ed; --ink: #4b3023; --muted: #765b4b;
-  --court: #a64d2e; --accent: #1e605c; --halo: #e8b296; --halo-alt: #c9dcd0;
+  --court: #a55235; --accent: #414145; --halo: #e8b296; --halo-alt: #d4cece;
   --line: #583b2826; --content: #fff8edc2; --shadow: #60382215; --sheet: #fbefe4ee;
 }
 :root[data-skin="us-open"] {
+  --theme-alan: #315d9c; --theme-opponent: #896627;
   --base: #e5eaf3; --wash: #f6f8ff; --ink: #20324b; --muted: #58677d;
-  --court: #244c91; --accent: #7b551a; --halo: #afc4e8; --halo-alt: #eadbb0;
+  --court: #315d9c; --accent: #896627; --halo: #afc4e8; --halo-alt: #eadbb0;
   --line: #20324b26; --content: #f7f9ffc2; --shadow: #14335e15; --sheet: #eff3fbee;
 }
 :root[data-skin="australian-open"] {
+  --theme-alan: #086b88; --theme-opponent: #aa503f;
   --base: #dfeef2; --wash: #f5fcfc; --ink: #173b4a; --muted: #4d6b76;
-  --court: #006d96; --accent: #875131; --halo: #a1d4e5; --halo-alt: #f1d1b5;
+  --court: #086b88; --accent: #aa503f; --halo: #a1d4e5; --halo-alt: #ecc4b9;
   --line: #173b4a26; --content: #f4fcfcc2; --shadow: #163d4e15; --sheet: #ecf7f9ee;
 }
 :root[data-mode="evening"] {
+  --theme-alan: #c5a3ed; --theme-opponent: #88c79e; --on-identity: #17271d;
   color-scheme: dark; --danger: #ffb6ac; --danger-bg: #462726; --base: #101e19; --wash: #152c23; --ink: #eff3e8;
   --muted: #b2bfb6; --court: #92baa4; --accent: #cebde1;
   --halo: #2c6045; --halo-alt: #41374e; --line: #d6e3d626;
@@ -51,17 +56,20 @@
   --rim: #ffffff55; --shadow: #00000040; --sheet: #1c3029f5; --on-accent: #17271d;
 }
 :root[data-mode="evening"][data-skin="roland-garros"] {
+  --theme-alan: #e7a080; --theme-opponent: #c8c5ce; --on-identity: #251b17;
   --base: #251b17; --wash: #3b2720; --ink: #fbefdf; --muted: #cab5a6;
-  --court: #e7ac86; --accent: #9cc7ba; --halo: #80472c; --halo-alt: #254944;
-  --content: #412b22d6; --glass: #493024ae; --sheet: #35251ef5; --on-accent: #213530;
+  --court: #e7a080; --accent: #c8c5ce; --halo: #80472c; --halo-alt: #49434a;
+  --content: #412b22d6; --glass: #493024ae; --sheet: #35251ef5; --on-accent: #251b17;
 }
 :root[data-mode="evening"][data-skin="us-open"] {
+  --theme-alan: #a3bce9; --theme-opponent: #e5c77c; --on-identity: #101a30;
   --base: #101a30; --wash: #172a48; --ink: #eef3fc; --muted: #b4c1d7;
-  --court: #a3bce9; --accent: #e5d294; --halo: #254987; --halo-alt: #555040;
+  --court: #a3bce9; --accent: #e5c77c; --halo: #254987; --halo-alt: #555040;
   --content: #1d2c47d6; --glass: #243552ae; --sheet: #1d2b43f5; --on-accent: #21304c;
 }
 :root[data-mode="evening"][data-skin="australian-open"] {
+  --theme-alan: #8ed4e5; --theme-opponent: #f0ab98; --on-identity: #0d2330;
   --base: #0d2330; --wash: #123849; --ink: #e8f7fa; --muted: #acc7d0;
-  --court: #8ed4eb; --accent: #e9bc99; --halo: #176281; --halo-alt: #5e493e;
+  --court: #8ed4e5; --accent: #f0ab98; --halo: #176281; --halo-alt: #623e39;
   --content: #173c4bd6; --glass: #194656ae; --sheet: #163644f5; --on-accent: #293b44;
 }

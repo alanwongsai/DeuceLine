@@ -39,8 +39,10 @@ Do not overbuild this into a tournament, coaching analytics, social, or live sco
 - Never store match winner, records, streaks, or surface splits — always derive them.
   Unfinished matches have no winner and are excluded from every derived stat until completed.
 - Each player carries identity config — `displayName`, `color` (hex), and `abbr` — in the
-  dataset. The UI is colored by **player identity** (Alan = terracotta `#b85c3d`, Andy = grass
-  `#2d7c46`), not by win/loss. Read those values from the dataset; do not hardcode them in CSS.
+  dataset. The UI is colored by **player identity**, never win/loss. Dataset colours are the
+  default; web themes may supply display palettes through the shared identity mapping
+  (see ENGINE.md). Never rewrite dataset colours to change appearance or hardcode player
+  colours in individual components.
 - Do not use `localStorage` as canonical storage.
 - Do not hardcode match data in React components.
 - Use repo-hosted JSON as the v1 source of truth.

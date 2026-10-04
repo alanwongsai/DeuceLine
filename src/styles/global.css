@@ -1526,3 +1526,9 @@ input[type="date"].text-input::-webkit-date-and-time-value {
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .modal-backdrop { background: var(--material-scrim-solid); } .modal-panel,.modal-header { background: var(--wash); } }
 @media (prefers-reduced-transparency:reduce) { .modal-backdrop { background: var(--material-scrim-solid); backdrop-filter: none; -webkit-backdrop-filter: none; } .modal-panel,.modal-header { background: var(--wash); backdrop-filter: none; -webkit-backdrop-filter: none; } }
 @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration: 1ms !important; animation-delay: 0ms !important; transition: none !important; } }
+
+/* Explicit player comparisons share the same palette as bars and chart points. */
+.player-comparison { display: inline-flex; align-items: baseline; gap: .2em; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.comparison-separator { color: var(--muted); }
+.set-input-row > .num-input:first-of-type { color: var(--player-alan); }
+.set-input-row > .num-input:last-of-type { color: var(--player-opponent); }

@@ -1,4 +1,6 @@
-import { identityTextStyle } from "./identityStyle";
+import { ReactNode } from "react";
+import { PlayerComparison } from "./PlayerComparison";
+import { identityColor, identityTextStyle } from "./identityStyle";
 import {
   deriveCadence,
   deriveFirstSetConversion,
@@ -59,8 +61,8 @@ export function OverviewSheets({ sheet, dataset, stats, onChange, onSelectMatch,
       ? {
           leftPct: (alan / total) * 100,
           rightPct: (opponent / total) * 100,
-          leftColor: players.alan.color,
-          rightColor: players.opponent.color,
+          leftColor: identityColor("alan"),
+          rightColor: identityColor("opponent"),
         }
       : undefined;
   };
@@ -72,9 +74,9 @@ export function OverviewSheets({ sheet, dataset, stats, onChange, onSelectMatch,
       const sample = row.played;
       const rowRates = formatPercentagePair(row.alan, row.opponent);
       const value = metric === "rate"
-        ? row.played ? `${rowRates.alan} · ${rowRates.opponent}` : "—"
-        : sample ? `${alan}—${opponent}` : "—";
-      return { key: surface, label: surfaceLabels[surface], meta: sample ? String(sample) : undefined, value, bar: recordBar(alan, opponent), isEmpty: sample === 0 };
+        ? row.played ? <PlayerComparison alan={rowRates.alan} opponent={rowRates.opponent} separator=" · " /> : "—"
+        : sample ? <PlayerComparison alan={alan} opponent={opponent} /> : "—";
+      return { key: surface, surface, label: surfaceLabels[surface], meta: sample ? String(sample) : undefined, value, bar: recordBar(alan, opponent), isEmpty: sample === 0 };
     });
 
   if (sheet.kind === "setRecord") {
@@ -85,7 +87,7 @@ export function OverviewSheets({ sheet, dataset, stats, onChange, onSelectMatch,
         eyebrow="Score evidence"
         title="Set record"
         rows={[
-          { key: "games", label: "Known games", meta: `${games.detailedMatchCount}/${games.finishedMatchCount}`, value: games.detailedMatchCount ? `${games.games.alan}—${games.games.opponent}` : "—", bar: recordBar(games.games.alan, games.games.opponent) },
+          { key: "games", label: "Known games", meta: `${games.detailedMatchCount}/${games.finishedMatchCount}`, value: games.detailedMatchCount ? <PlayerComparison alan={games.games.alan} opponent={games.games.opponent} /> : "—", bar: recordBar(games.games.alan, games.games.opponent) },
           { key: "margin", label: "Biggest set margin", value: games.biggestSetMargin ? `${games.biggestSetMargin.score} · ${players[games.biggestSetMargin.winner].displayName}` : "—" },
           ...metricRows("sets"),
         ]}
@@ -94,10 +96,10 @@ export function OverviewSheets({ sheet, dataset, stats, onChange, onSelectMatch,
       >
         <SheetFacts
           facts={[
-            ["Set share", setTotal ? `${Math.round((stats.setRecord.alan / setTotal) * 100)}% · ${Math.round((stats.setRecord.opponent / setTotal) * 100)}%` : "—"],
-            ["Straight sets", `${distribution.straightSets.alan}—${distribution.straightSets.opponent}`],
-            ["Deciders won", `${distribution.deciders.alan}—${distribution.deciders.opponent}`],
-            ["Super tiebreaks", `${distribution.superTiebreak.record.alan}—${distribution.superTiebreak.record.opponent}`],
+            ["Set share", setTotal ? <PlayerComparison alan={`${Math.round((stats.setRecord.alan / setTotal) * 100)}%`} opponent={`${Math.round((stats.setRecord.opponent / setTotal) * 100)}%`} separator=" · " /> : "—"],
+            ["Straight sets", <PlayerComparison alan={distribution.straightSets.alan} opponent={distribution.straightSets.opponent} />],
+            ["Deciders won", <PlayerComparison alan={distribution.deciders.alan} opponent={distribution.deciders.opponent} />],
+            ["Super tiebreaks", <PlayerComparison alan={distribution.superTiebreak.record.alan} opponent={distribution.superTiebreak.record.opponent} />],
           ]}
         />
       </StatDetailSheet>
@@ -114,7 +116,7 @@ export function OverviewSheets({ sheet, dataset, stats, onChange, onSelectMatch,
             <button
               type="button"
               key={item.matchId}
-              style={{ background: players[item.winner].color }}
+              style={{ background: identityColor(item.winner) }}
               onClick={() => onSelectMatch(item.match)}
               aria-label={`${players[item.winner].displayName} won match ${item.match.seq}. Open match detail`}
             >
@@ -124,8 +126,8 @@ export function OverviewSheets({ sheet, dataset, stats, onChange, onSelectMatch,
         </div>
         <LeadSparkline timeline={stats.timeline} matches={dataset.matches} players={players} mode="rolling" ariaLabel={`Rolling five-match win share for ${names.alan}`} />
         <SheetFacts facts={[
-          ["All matches", `${winRate.alan} · ${winRate.opponent}`],
-          ["Last five", `${recent.alan}—${recent.opponent}`],
+          ["All matches", <PlayerComparison alan={winRate.alan} opponent={winRate.opponent} separator=" · " />],
+          ["Last five", <PlayerComparison alan={recent.alan} opponent={recent.opponent} />],
           ["Latest rolling", latestRolling === undefined ? "—" : `${Math.round(latestRolling * 100)}% ${names.alan}`],
           ["Evidence", `${stats.totalMatches} matches`],
         ]} />
@@ -139,7 +141,7 @@ export function OverviewSheets({ sheet, dataset, stats, onChange, onSelectMatch,
     const closestMatch = closest ? dataset.matches.find((match) => match.id === closest.matchId) : undefined;
     const shapeRow = (key: string, label: string, record: Record<PlayerKey, number>, meta?: string): DetailRow => {
       const sample = record.alan + record.opponent;
-      return { key, label, meta, value: sample ? `${record.alan}—${record.opponent}` : "—", bar: recordBar(record.alan, record.opponent), isEmpty: sample === 0 };
+      return { key, label, meta, value: sample ? <PlayerComparison alan={record.alan} opponent={record.opponent} /> : "—", bar: recordBar(record.alan, record.opponent), isEmpty: sample === 0 };
     };
     const rows: DetailRow[] = [
       shapeRow("superTiebreak", "Super tiebreak", byShape.superTiebreak, "Laver Cup"),
@@ -168,10 +170,10 @@ export function OverviewSheets({ sheet, dataset, stats, onChange, onSelectMatch,
         onClose={onClose}
       >
         <SheetFacts facts={[
-          [`${names.alan}—${names.opponent}`, distribution.deciderCount ? `${distribution.deciders.alan}—${distribution.deciders.opponent}` : "—"],
+          [`${names.alan}—${names.opponent}`, distribution.deciderCount ? <PlayerComparison alan={distribution.deciders.alan} opponent={distribution.deciders.opponent} /> : "—"],
           ["Decider rate", distribution.finishedMatchCount ? `${Math.round((distribution.deciderCount / distribution.finishedMatchCount) * 100)}% · ${distribution.deciderCount}/${distribution.finishedMatchCount}` : "—"],
-          ["Straight-set wins", `${distribution.straightSets.alan}—${distribution.straightSets.opponent}`],
-          ["Super TB points", superTiebreak.points.alan + superTiebreak.points.opponent ? `${superTiebreak.points.alan}—${superTiebreak.points.opponent}` : "—"],
+          ["Straight-set wins", <PlayerComparison alan={distribution.straightSets.alan} opponent={distribution.straightSets.opponent} />],
+          ["Super TB points", superTiebreak.points.alan + superTiebreak.points.opponent ? <PlayerComparison alan={superTiebreak.points.alan} opponent={superTiebreak.points.opponent} /> : "—"],
         ]} />
       </StatDetailSheet>
     );
@@ -186,14 +188,15 @@ export function OverviewSheets({ sheet, dataset, stats, onChange, onSelectMatch,
       const kept = conversion.converted[player];
       return {
         key: player,
+        identity: player,
         label: `${players[player].displayName} after winning set 1`,
         value: won ? `${kept}/${won} · ${Math.round((kept / won) * 100)}%` : "—",
         bar: won
           ? {
               leftPct: player === "alan" ? (kept / won) * 100 : 0,
               rightPct: player === "opponent" ? (kept / won) * 100 : 0,
-              leftColor: players.alan.color,
-              rightColor: players.opponent.color,
+              leftColor: identityColor("alan"),
+              rightColor: identityColor("opponent"),
             }
           : undefined,
         isEmpty: won === 0,
@@ -226,7 +229,7 @@ export function OverviewSheets({ sheet, dataset, stats, onChange, onSelectMatch,
         <SheetFacts facts={[
           [`${names.alan} kept`, `${conversion.converted.alan}/${conversion.firstSetWins.alan}`],
           [`${names.opponent} kept`, `${conversion.converted.opponent}/${conversion.firstSetWins.opponent}`],
-          ["Comebacks", `${conversion.comebacks.alan}—${conversion.comebacks.opponent}`],
+          ["Comebacks", <PlayerComparison alan={conversion.comebacks.alan} opponent={conversion.comebacks.opponent} />],
           ["Evidence", `${conversion.sample} matches`],
         ]} />
       </StatDetailSheet>
@@ -240,13 +243,14 @@ export function OverviewSheets({ sheet, dataset, stats, onChange, onSelectMatch,
     const rows: DetailRow[] = [
       ...stats.streakHistory.map((run, index) => ({
         key: `${run.winner}-${index}`,
+        identity: run.winner,
         label: players[run.winner].displayName,
         value: `${run.count} in a row`,
         bar: {
           leftPct: run.winner === "alan" ? (run.count / scale) * 100 : 0,
           rightPct: run.winner === "opponent" ? (run.count / scale) * 100 : 0,
-          leftColor: players.alan.color,
-          rightColor: players.opponent.color,
+          leftColor: identityColor("alan"),
+          rightColor: identityColor("opponent"),
         },
       })),
       ...surfaces.map((surface) => {
@@ -280,10 +284,10 @@ export function OverviewSheets({ sheet, dataset, stats, onChange, onSelectMatch,
         eyebrow="Surface chapter"
         title={surfaceLabels[sheet.surface]}
         rows={[
-          { key: "matches", label: "Match record", value: row.played ? `${row.alan}—${row.opponent}` : "—", bar: recordBar(row.alan, row.opponent) },
-          { key: "sets", label: "Set record", value: row.played ? `${row.setsAlan}—${row.setsOpponent}` : "—", bar: recordBar(row.setsAlan, row.setsOpponent) },
-          { key: "rate", label: "Win rate", value: row.played ? `${surfaceRates.alan} · ${surfaceRates.opponent}` : "—", bar: recordBar(row.alan, row.opponent) },
-          { key: "deciders", label: "Deciders", value: deciders ? `${row.decidersAlan}—${row.decidersOpponent}` : "—", bar: recordBar(row.decidersAlan, row.decidersOpponent) },
+          { key: "matches", label: "Match record", value: row.played ? <PlayerComparison alan={row.alan} opponent={row.opponent} /> : "—", bar: recordBar(row.alan, row.opponent) },
+          { key: "sets", label: "Set record", value: row.played ? <PlayerComparison alan={row.setsAlan} opponent={row.setsOpponent} /> : "—", bar: recordBar(row.setsAlan, row.setsOpponent) },
+          { key: "rate", label: "Win rate", value: row.played ? <PlayerComparison alan={surfaceRates.alan} opponent={surfaceRates.opponent} separator=" · " /> : "—", bar: recordBar(row.alan, row.opponent) },
+          { key: "deciders", label: "Deciders", value: deciders ? <PlayerComparison alan={row.decidersAlan} opponent={row.decidersOpponent} /> : "—", bar: recordBar(row.decidersAlan, row.decidersOpponent) },
           { key: "run", label: "Current run", value: run.winner ? `${run.count} · ${players[run.winner].displayName}` : "—" },
         ]}
         note={`Values run ${names.alan}—${names.opponent}. ${row.played} finished match${row.played === 1 ? "" : "es"} recorded on ${surfaceLabels[sheet.surface].toLowerCase()}.`}
@@ -299,7 +303,7 @@ export function OverviewSheets({ sheet, dataset, stats, onChange, onSelectMatch,
             <button
               type="button"
               key={item.matchId}
-              style={{ background: players[item.winner].color }}
+              style={{ background: identityColor(item.winner) }}
               onClick={() => onSelectMatch(item.match)}
               aria-label={`${players[item.winner].displayName} won match ${item.match.seq}. Open match detail`}
             >
@@ -369,20 +373,20 @@ function LeanSummary({ dataset }: { dataset: DeucelineDataset }) {
     : `${players[lean.favourite].displayName} ${lean.verdict === "slightEdge" ? "slightly favoured" : "favoured"}`;
   return (
     <section className="sheet-lean" aria-label="Next-match lean">
-      <p className="sheet-lean-verdict"><span>Next match</span><strong style={lean.favourite ? identityTextStyle(players[lean.favourite].color) : undefined}>{verdict}</strong></p>
-      <SheetFacts facts={lean.factors.map((factor) => {
+      <p className="sheet-lean-verdict"><span>Next match</span><strong style={lean.favourite ? identityTextStyle(lean.favourite) : undefined}>{verdict}</strong></p>
+      <SheetFacts facts={lean.factors.map((factor): [string, ReactNode] => {
         const label = factor.key === "surface" ? `On ${surfaceLabels[lean.surface]}` : leanFactorLabels[factor.key];
         const sample = factor.record.alan + factor.record.opponent;
         const value = !factor.counted
-          ? sample ? `${factor.record.alan}—${factor.record.opponent} · too few` : "—"
-          : `${factor.record.alan}—${factor.record.opponent}${factor.favours ? ` · ${players[factor.favours].abbr}` : " · even"}`;
+          ? sample ? <><PlayerComparison alan={factor.record.alan} opponent={factor.record.opponent} /> · too few</> : "—"
+          : <><PlayerComparison alan={factor.record.alan} opponent={factor.record.opponent} />{factor.favours ? ` · ${players[factor.favours].abbr}` : " · even"}</>;
         return [`${label} ${Math.round(factor.weight * 100)}%`, value];
       })} />
     </section>
   );
 }
 
-function SheetFacts({ facts }: { facts: Array<[string, string]> }) {
+function SheetFacts({ facts }: { facts: Array<[string, ReactNode]> }) {
   return (
     <div className="sheet-facts">
       {facts.map(([label, value]) => <div className="sheet-fact" key={label}><span>{label}</span><strong>{value}</strong></div>)}

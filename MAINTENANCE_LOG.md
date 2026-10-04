@@ -54,6 +54,20 @@
 
 ## Log
 
+### v0.14.4 — 2026-10-04
+- Palette stage (local, not deployed): resolve player display colours once at the web shell,
+  with dataset colours as fallback. Wimbledon day keeps its original identity; the other
+  themes use terracotta/graphite, blue/bronze and cyan/coral, with readable evening variants.
+  Apply the mapping to H2H, ledger and evidence comparisons, match record/history, detail,
+  form/review, bars and SVG markers. Sideline names, court chrome and labelled surface pills
+  follow the selected theme. Small bronze/cyan/coral tones were deepened for readable text.
+- Preserve canonical data, derivation, winner-first score order and publishing behaviour.
+  Update the identity contract in AGENTS, ENGINE and MEMORY; document the unchanged
+  default-only mini export seam. Refresh generated core/version copies.
+- Palette-stage typecheck, 124 tests, build and build:core pass. Browser checks confirm
+  shared palette resolution and the Roland-Garros mobile/desktop main page. Material
+  polishing and the full theme/mode acceptance matrix follow before release.
+
 ### v0.14.3 — 2026-10-04
 - Give the shared web shell 32px of breathing room beyond the top safe area, following
   the Norns Flow spacing reference: mobile padding is

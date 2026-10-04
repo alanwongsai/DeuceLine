@@ -1,4 +1,5 @@
 import { identityTextStyle } from "./identityStyle";
+import { PlayerComparison } from "./PlayerComparison";
 import { KeyboardEvent as ReactKeyboardEvent, useMemo, useRef, useState } from "react";
 import { DATASET_EDIT_URL } from "../data/datasetSource";
 import { appendMatch, NewMatchInput, replaceMatch, serializeDataset } from "../domain/addMatch";
@@ -478,14 +479,14 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
           {unfinished && neutral ? (
             <>
               <p className="review-headline">
-                In progress · {players.alan.displayName} {neutral.alan}—{neutral.opponent} {players.opponent.displayName}
+                In progress · <PlayerComparison alan={`${players.alan.displayName} ${neutral.alan}`} opponent={`${neutral.opponent} ${players.opponent.displayName}`} />
               </p>
               {neutral.setScores ? <p className="set-line">{neutral.setScores.join("   ")}</p> : null}
             </>
           ) : (
             <>
               <p className="review-headline">
-                {players[scoreline!.winner].displayName} won {scoreline!.score}
+                <span style={identityTextStyle(scoreline!.winner)}>{players[scoreline!.winner].displayName}</span> won <span style={identityTextStyle(scoreline!.winner)}>{scoreline!.score}</span>
               </p>
               {scoreline!.setScores ? <p className="set-line">{scoreline!.setScores.join("   ")}</p> : null}
             </>
@@ -497,7 +498,7 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
             <WeatherBadges conditions={newMatch.conditions} tempC={newMatch.tempC} />
           </p>
           <p className="review-h2h">
-            {unfinished ? "H2H unchanged — counts once finished" : `H2H becomes ${record.alan}—${record.opponent}`}
+            {unfinished ? "H2H unchanged — counts once finished" : <>H2H becomes <PlayerComparison alan={record.alan} opponent={record.opponent} /></>}
           </p>
         </div>
 
@@ -665,8 +666,8 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
 
         <div className="field">
           <div className="score-head" aria-hidden="true">
-            <span style={identityTextStyle(players.alan.color)}>{players.alan.displayName}</span>
-            <span style={identityTextStyle(players.opponent.color)}>{players.opponent.displayName}</span>
+            <span style={identityTextStyle("alan")}>{players.alan.displayName}</span>
+            <span style={identityTextStyle("opponent")}>{players.opponent.displayName}</span>
           </div>
 
           {fidelity === "sets" ? (

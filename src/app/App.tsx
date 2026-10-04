@@ -1,4 +1,5 @@
-import { CSSProperties, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { identityPaletteStyle } from "../components/identityStyle";
 import { AddMatchSheet } from "../components/AddMatchSheet";
 import { ThemeControls } from "../components/ThemeControls";
 import { BottomNav } from "../components/BottomNav";
@@ -65,7 +66,7 @@ export function App() {
   return (
     <div
       className="app-shell"
-      style={dataset ? ({ "--player-alan": dataset.rivalry.players.alan.color, "--player-opponent": dataset.rivalry.players.opponent.color } as CSSProperties) : undefined}
+      style={dataset ? identityPaletteStyle(dataset.rivalry.players) : undefined}
     >
       <ThemeControls />
       {content}

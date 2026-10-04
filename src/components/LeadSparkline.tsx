@@ -1,3 +1,4 @@
+import { identityColor } from "./identityStyle";
 import { PointerEvent, useEffect, useMemo, useState } from "react";
 import { deriveMatchResult } from "../domain/deriveStats";
 import { Match, Player, PlayerKey, TimelinePoint } from "../domain/schema";
@@ -74,7 +75,7 @@ export function LeadSparkline({
           cx={xAt(index, timeline.length)}
           cy={yAt(point)}
           r={index === selectedIndex ? 5 : 3.2}
-          fill={players[point.winner].color}
+          fill={identityColor(point.winner)}
           className={index === selectedIndex ? "lead-sparkline-point is-selected" : "lead-sparkline-point"}
         />
       ))}

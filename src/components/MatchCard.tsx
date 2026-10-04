@@ -1,4 +1,4 @@
-import { identityTextStyle } from "./identityStyle";
+import { identityColor, identityTextStyle } from "./identityStyle";
 import { formatNeutralScoreline, formatWinnerScoreline, isUnfinished } from "../domain/deriveStats";
 import { Match, Player, PlayerKey } from "../domain/schema";
 import { SurfaceBadge } from "./SurfaceBadge";
@@ -24,7 +24,7 @@ export function MatchCard({ match, players, onOpen }: MatchCardProps) {
       onClick={onOpen}
       aria-label={`${match.date ? formatDate(match.date) : `Match ${match.seq}, date unknown`}. ${winner.displayName} won ${scoreline.score} on ${match.surface}, ${match.location ?? "location unknown"}. ${match.fidelity === "sets" ? "Full set scores" : "Score summary"}. Open match detail`}
     >
-      <div className="match-card-stripe" aria-hidden="true" style={{ background: winner.color }} />
+      <div className="match-card-stripe" aria-hidden="true" style={{ background: identityColor(scoreline.winner) }} />
       <div className="match-card-body">
         <div className="match-card-top">
           {match.date ? (
@@ -35,7 +35,7 @@ export function MatchCard({ match, players, onOpen }: MatchCardProps) {
           <SurfaceBadge surface={match.surface} />
         </div>
         <h2>
-          {winner.displayName} won {scoreline.score}
+          <span style={identityTextStyle(scoreline.winner)}>{winner.displayName}</span> won <span style={identityTextStyle(scoreline.winner)}>{scoreline.score}</span>
         </h2>
         {scoreline.setScores ? (
           <p className="set-line">{scoreline.setScores.join("   ")}</p>
@@ -61,7 +61,7 @@ export function MatchCard({ match, players, onOpen }: MatchCardProps) {
 // in its own colour, and an "In progress" tag makes the no-winner state explicit.
 function UnfinishedCard({ match, players, onOpen }: MatchCardProps) {
   const neutral = formatNeutralScoreline(match);
-  const splitStripe = `linear-gradient(180deg, ${players.alan.color} 0 50%, ${players.opponent.color} 50% 100%)`;
+  const splitStripe = `linear-gradient(180deg, ${identityColor("alan")} 0 50%, ${identityColor("opponent")} 50% 100%)`;
 
   return (
     <button
@@ -82,8 +82,8 @@ function UnfinishedCard({ match, players, onOpen }: MatchCardProps) {
           <SurfaceBadge surface={match.surface} />
         </div>
         <h2>
-          <span style={identityTextStyle(players.alan.color)}>{players.alan.displayName}</span> {neutral.alan}—{neutral.opponent}{" "}
-          <span style={identityTextStyle(players.opponent.color)}>{players.opponent.displayName}</span>
+          <span style={identityTextStyle("alan")}>{players.alan.displayName}</span> {neutral.alan}—{neutral.opponent}{" "}
+          <span style={identityTextStyle("opponent")}>{players.opponent.displayName}</span>
         </h2>
         {neutral.setScores ? (
           <p className="set-line">{neutral.setScores.join("   ")}</p>

@@ -3,7 +3,6 @@ import { useRef } from "react";
 import {
   deriveMatchContext,
   deriveMatchResult,
-  deriveSetWinner,
   deriveTimeline,
   formatNeutralScoreline,
   formatWinnerScoreline,
@@ -13,6 +12,7 @@ import {
 import { Match, Player, PlayerKey, PointScore } from "../domain/schema";
 import { Modal } from "./Modal";
 import { LeadSparkline } from "./LeadSparkline";
+import { PlayerComparison } from "./PlayerComparison";
 import { SurfaceBadge } from "./SurfaceBadge";
 import { WeatherBadges } from "./weather";
 
@@ -65,7 +65,7 @@ export function MatchDetail({ match, players, matches, onClose, onUpdate, onSele
       eyebrow={match.date ? `${formatDate(match.date)} · Match ${match.seq}` : `Match ${match.seq} · Date unknown`}
       title={
         <>
-          {winner.displayName} won {scoreline.score}
+          <span style={identityTextStyle(scoreline.winner)}>{winner.displayName}</span> won <span style={identityTextStyle(scoreline.winner)}>{scoreline.score}</span>
         </>
       }
       onClose={onClose}
@@ -92,11 +92,11 @@ export function MatchDetail({ match, players, matches, onClose, onUpdate, onSele
       <div className="detail-impact">
         <p className="eyebrow">Rivalry impact</p>
         <p className="detail-h2h">
-          <span style={identityTextStyle(players.alan.color)}>
+          <span style={identityTextStyle("alan")}>
             {players.alan.displayName} {context.recordAfter.alan}
           </span>
           <i aria-hidden="true"> — </i>
-          <span style={identityTextStyle(players.opponent.color)}>
+          <span style={identityTextStyle("opponent")}>
             {context.recordAfter.opponent} {players.opponent.displayName}
           </span>
         </p>
@@ -116,7 +116,7 @@ export function MatchDetail({ match, players, matches, onClose, onUpdate, onSele
           interactive={false}
           ariaLabel={`Rivalry lead after match ${match.seq}`}
         />
-        {games ? <p className="detail-games">Known games · {players.alan.displayName} {games.alan}—{games.opponent} {players.opponent.displayName}</p> : null}
+        {games ? <p className="detail-games">Known games · <PlayerComparison alan={`${players.alan.displayName} ${games.alan}`} opponent={`${games.opponent} ${players.opponent.displayName}`} /></p> : null}
       </div>
 
       <MatchPager previous={previous} next={next} onSelectMatch={onSelectMatch} />
@@ -143,7 +143,7 @@ function UnfinishedDetail({
       eyebrow={match.date ? `${formatDate(match.date)} · Match ${match.seq}` : `Match ${match.seq} · Date unknown`}
       title={
         <>
-          In progress · {neutral.alan}—{neutral.opponent}
+          In progress · <PlayerComparison alan={neutral.alan} opponent={neutral.opponent} />
         </>
       }
       onClose={onClose}
@@ -162,7 +162,7 @@ function UnfinishedDetail({
         <SetList match={match} players={players} />
       ) : (
         <p className="set-line set-line-missing">
-          Score summary only · set tally {neutral.alan}—{neutral.opponent} so far
+          Score summary only · set tally <PlayerComparison alan={neutral.alan} opponent={neutral.opponent} /> so far
         </p>
       )}
 
@@ -221,25 +221,24 @@ function MatchPager({
   );
 }
 
-// Per-set list with the set winner's games in their identity colour. For an
-// unfinished match this still reads correctly set by set.
+// Per-set comparisons always use Alan-left / Andy-right identity colours,
+// including unfinished sets. Winning and completion rules remain in the domain.
 function SetList({ match, players }: { match: Extract<Match, { fidelity: "sets" }>; players: Record<PlayerKey, Player> }) {
   return (
     <div className="detail-set-table">
       <div className="detail-set-legend" aria-label={`Set score order: ${players.alan.displayName}, then ${players.opponent.displayName}`}>
         <span>Set</span>
-        <strong><b style={identityTextStyle(players.alan.color)}>{players.alan.displayName}</b><i>—</i><b style={identityTextStyle(players.opponent.color)}>{players.opponent.displayName}</b></strong>
+        <strong><b style={identityTextStyle("alan")}>{players.alan.displayName}</b><i>—</i><b style={identityTextStyle("opponent")}>{players.opponent.displayName}</b></strong>
       </div>
       <ol className="detail-sets">
         {match.sets.map((set, index) => {
-          const setWinner = deriveSetWinner(set);
           return (
             <li key={index} aria-label={`Set ${index + 1}: ${players.alan.displayName} ${set.alan}, ${players.opponent.displayName} ${set.opponent}`}>
               <span className="detail-set-label">Set {index + 1}</span>
               <span className="detail-set-score">
-                <b style={identityTextStyle(setWinner === "alan" ? players.alan.color : undefined)}>{set.alan}</b>
+                <b style={identityTextStyle("alan")}>{set.alan}</b>
                 <i aria-hidden="true">–</i>
-                <b style={identityTextStyle(setWinner === "opponent" ? players.opponent.color : undefined)}>{set.opponent}</b>
+                <b style={identityTextStyle("opponent")}>{set.opponent}</b>
                 {set.tiebreak ? (
                   <em>
                     ({set.tiebreak.alan}-{set.tiebreak.opponent})
@@ -257,15 +256,14 @@ function SetList({ match, players }: { match: Extract<Match, { fidelity: "sets" 
 
 // The Laver Cup decider: points, not games, so the score reads in brackets.
 function MatchTiebreakRow({ points, players }: { points: PointScore; players: Record<PlayerKey, Player> }) {
-  const winner = deriveSetWinner(points);
   return (
     <li aria-label={`Match tiebreak: ${players.alan.displayName} ${points.alan}, ${players.opponent.displayName} ${points.opponent}`}>
       <span className="detail-set-label">Match TB</span>
       <span className="detail-set-score">
         <i aria-hidden="true">[</i>
-        <b style={identityTextStyle(winner === "alan" ? players.alan.color : undefined)}>{points.alan}</b>
+        <b style={identityTextStyle("alan")}>{points.alan}</b>
         <i aria-hidden="true">–</i>
-        <b style={identityTextStyle(winner === "opponent" ? players.opponent.color : undefined)}>{points.opponent}</b>
+        <b style={identityTextStyle("opponent")}>{points.opponent}</b>
         <i aria-hidden="true">]</i>
       </span>
     </li>

@@ -228,7 +228,9 @@ Free to simplify:
 - **Motion.** Count-up and sheet transitions are optional; respect reduced motion if added.
 - The exact web chrome tokens are available as CSS variables from `lib/deuceline-tokens.wxss`.
   The current build extracts only the default Wimbledon block; web skin/evening overrides
-  are not exported. Full runtime appearance switching in the mini client is future port work.
+  are not exported, including web player-display overrides. The existing mini skeleton
+  continues to use dataset identity colours; full runtime appearance switching in the mini
+  client is future port work. Web palette resolution is documented in ENGINE.md.
 
 Component map (web → mini program):
 

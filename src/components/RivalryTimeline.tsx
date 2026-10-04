@@ -1,4 +1,4 @@
-import { identityTextStyle } from "./identityStyle";
+import { identityColor, identityTextStyle } from "./identityStyle";
 import { Cadence, DataCoverage, Player, PlayerKey, TimelinePoint } from "../domain/schema";
 
 type RivalryTimelineProps = {
@@ -60,14 +60,14 @@ export function RivalryTimeline({ timeline, cadence, coverage, players }: Rivalr
               cx={xAt(i, count)}
               cy={leadY(p.lead)}
               r={3.5}
-              fill={players[p.winner].color}
+              fill={identityColor(p.winner)}
               className="timeline-point"
             />
           ))}
         </svg>
         <div className="timeline-axis" aria-hidden="true">
-          <span style={identityTextStyle(players.alan.color)}>{players.alan.displayName} ahead ↑</span>
-          <span style={identityTextStyle(players.opponent.color)}>↓ {players.opponent.displayName} ahead</span>
+          <span style={identityTextStyle("alan")}>{players.alan.displayName} ahead ↑</span>
+          <span style={identityTextStyle("opponent")}>↓ {players.opponent.displayName} ahead</span>
         </div>
       </figure>
 

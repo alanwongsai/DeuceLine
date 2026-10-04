@@ -148,10 +148,9 @@ Supported players:
 - opponent
 
 Each player is identity config in the dataset: `displayName`, `color` (a `#rrggbb` hex), and a
-short `abbr` (1–3 chars). These are not derived; they drive every identity cue in the UI.
-Current identity: Alan = purple `#57298a`, Andy = grass green `#1e7a45`. `abbr` exists because
-both names start with "A" (Al / An). Identity colours live in the dataset, **not** the skin
-(see Skin / Theme Layer below) — they belong to this rivalry, not to a Grand Slam look.
+short `abbr` (1–3 chars). These are not derived. Dataset colours are the default identity
+palette; web themes resolve display overrides without altering those inputs (see Skin /
+Theme Layer below). `abbr` exists because both names start with "A" (Al / An).
 
 Per-set scores are the deepest score level in v1. Matches that predate detailed records may
 store only a set tally via `fidelity: "matchScore"`.
@@ -231,10 +230,9 @@ Validation is pragmatic. Historical tennis data may be imperfect, but obviously 
   an evidence footer. Overview keeps that DOM order on phones; wider screens group the
   rivalry/ledger on the left and chapters/exploration on the right. Matches is a ruled
   archive. Physical book plates, paper textures, ribbons and stamps are retired.
-- Results retain dataset player identity colours independently of the Grand Slam theme.
-  Night text uses a neutral foreground plus an underline in the original identity hue
-  (`identityTextStyle`); it does not replace the dataset colour. Surface badges are neutral,
-  explicitly labelled pills so court category cannot be mistaken for player identity.
+- Results, records and charts share theme-aware player identity colours. Names and fixed
+  Alan-left / Andy-right comparisons retain their identity in every theme and mode. Surface
+  badges are explicitly labelled, with a subtle court tint separate from player records.
 - Match scorelines read from the winner's perspective (`formatWinnerScoreline`); detail
   tables and head-to-head impact keep Alan-left / Andy-right with names attached.
 - The Matches archive optimises for scanning and comparison rather than repeating Overview:
@@ -306,9 +304,18 @@ falls back safely. The live browser theme-colour meta follows the selected base.
 
 The default selector must stay `:root, [data-skin="wimbledon"]`: `build:core` extracts that
 block only, including compatibility aliases, for the current mini program skeleton. Web
-mode/skin overrides are not exported by that regex. Player colours always come from the
-rivalry dataset. `identityTextStyle` provides an accessible night treatment without altering
-those values; labelled neutral surface badges separate court category from player identity.
+mode/skin overrides are not exported by that regex. `identityPaletteStyle` binds the web
+shell's `--player-alan` / `--player-opponent` to optional `--theme-alan` / `--theme-opponent`
+tokens, falling back to dataset colours. Wimbledon day omits those overrides. Other skins
+provide terracotta/graphite, blue/bronze and cyan/coral palettes; evening uses brighter
+variants of the same families. `identityColor` and `identityTextStyle` consume the resolved
+variables for all text, fills, form inputs and SVG markers. No appearance code transforms
+the canonical dataset or changes domain/publish rules.
+
+`PlayerComparison` accepts explicit Alan-left / Andy-right values; sample fractions and
+winner-first scorelines are never parsed into that component. Sideline prose colours literal
+player names and keeps score tokens intact without inferring their order. Labelled surface
+badges use court/material tokens; court and sideline chrome follow the same selected skin.
 
 `global.css` owns shared evidence sheets, forms, charts and motion; `journal.css` owns the migrated
 shell, Overview, archive and navigation. Structural radii and spacing are shared. Both

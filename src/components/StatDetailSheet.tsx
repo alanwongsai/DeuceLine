@@ -1,8 +1,13 @@
+import { identityTextStyle } from "./identityStyle";
+import { PlayerKey, Surface } from "../domain/schema";
+import { SurfaceBadge } from "./SurfaceBadge";
 import { ReactNode } from "react";
 import { Modal } from "./Modal";
 
 export type DetailRow = {
   key: string;
+  identity?: PlayerKey;
+  surface?: Surface;
   label: string;
   meta?: string;
   value: ReactNode;
@@ -31,7 +36,7 @@ export function StatDetailSheet({ titleId, eyebrow, title, rows, children, note,
           const content = (
             <>
             <span>
-              {row.label}
+              {row.surface ? <SurfaceBadge surface={row.surface} /> : row.label}
               {row.meta ? <em className="surface-count"> · {row.meta}</em> : null}
             </span>
             <span className="surface-track surface-h2h">
@@ -42,7 +47,7 @@ export function StatDetailSheet({ titleId, eyebrow, title, rows, children, note,
                 </>
               ) : null}
             </span>
-            <strong>{row.value}</strong>
+            <strong style={identityTextStyle(row.identity)}>{row.value}</strong>
             </>
           );
           const className = `surface-row ${row.isEmpty ? "surface-row-empty" : ""} ${row.onClick ? "surface-row-action" : ""}`;

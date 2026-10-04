@@ -67,23 +67,24 @@ stateless commit proxy for match publishing.
   and a derived narrative carry the journal identity. Physical leather, paper textures,
   ribbons and stamps are retired. **Why:** preserve the sports-notebook voice while giving
   the web and native shell a shared, adaptable material. **Boundary:** skin tokens own
-  chrome; dataset colours own player identity; labelled neutral badges own surface category.
+  chrome and display palettes; dataset colours remain default identity; labelled badges own
+  surface category.
   Keep reduced-transparency/motion fallbacks and shared Modal behavior.
 
-- **UI is colored by player identity, not win/loss.** Each player carries
-  `displayName`, `color` (hex), `abbr` in the dataset; the dataset is the canonical
-  source of those values. Current identity: Alan = purple `#57298a` / `Al`, Andy =
-  grass green `#1e7a45` / `An`. **Why:** identity coloring reads as a long-term rivalry
-  notebook, not a generic green dashboard. **Boundary:** read colors from the dataset;
-  don't hardcode them in CSS; identity colours are NOT skin tokens (see next).
+- **UI is colored by player identity, not win/loss.** The dataset owns player keys,
+  names, default colours and abbreviations. **Why:** records need stable ownership even
+  when appearance changes. **Boundary:** Alan remains left and Andy right in comparisons;
+  winner-first scorelines stay explicitly winner-first. Never rewrite canonical player
+  configuration or store derived/display colours in match data.
 
-- **Chrome colour is a swappable skin; identity colour is not.** Non-identity colour lives
-  in `src/styles/skins.css`; journal and shared evidence styles consume those tokens.
-  **Why:** Grand Slam/day-evening appearance should not alter rivalry identity or data.
-  **Boundary:** appearance preferences may persist locally; match data never does. Night
-  text retains the source identity hue as an underline beside a readable foreground.
-  The `build:core` regex exports the default Wimbledon block only; see ENGINE.md and
-  MINIPROGRAM.md for that seam.
+- **Grand Slam themes may adapt identity presentation.** The shared web identity mapping
+  resolves theme display palettes with dataset colours as its fallback; all records, dots,
+  text, forms and charts use that mapping. **Why:** switching themes should change the
+  whole visual language consistently. **Boundary:** Wimbledon day keeps the dataset palette;
+  evening preserves colour families with readable tones. Theme selection is a device
+  preference, not the match's actual surface. Court labels and error semantics remain explicit.
+  Implementation belongs to ENGINE.md; the default-only mini export seam belongs to
+  MINIPROGRAM.md.
 
 - **Two clients, one truth, one rulebook.** The web PWA (Cloudflare) and the WeChat mini
   program (CloudBase, 体验版) run in parallel from this repo; both read and commit the same repo
