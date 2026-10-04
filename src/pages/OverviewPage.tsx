@@ -234,9 +234,8 @@ function ExpandedChapter({ match, number, players, onOpen }: ChapterProps) {
     return (
       <button type="button" className="journal-expanded-chapter journal-expanded-unfinished" onClick={onOpen} aria-label={`Latest match in progress. ${players.alan.displayName} ${score.alan}, ${players.opponent.displayName} ${score.opponent}. Open details`}>
         <span className="journal-chapter-stripe" style={{ background: splitStripe }} />
-        <span className="journal-chapter-number journal-chapter-number-neutral">{number}</span>
         <span className="journal-chapter-copy">
-          <span className="journal-chapter-eyebrow">Latest match · In progress</span>
+          <span className="journal-chapter-eyebrow">Chapter {number} · In progress</span>
           <span className="journal-chapter-date">{match.date ? shortDate(match.date) : `Match ${match.seq}`} · {match.location ?? "Location unknown"}</span>
           <strong><span style={identityTextStyle(players.alan.color)}>{players.alan.displayName} {score.alan}</span>—<span style={identityTextStyle(players.opponent.color)}>{score.opponent} {players.opponent.displayName}</span></strong>
           <span className="journal-set-scores">{score.setScores?.join(", ") ?? `${score.alan}—${score.opponent} so far`}</span>

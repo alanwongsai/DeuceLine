@@ -1,12 +1,7 @@
-const CACHE_NAME = "deuceline-cache-v12";
+const CACHE_NAME = "deuceline-cache-v13";
 const PRECACHE_ASSETS = [
   "./manifest.webmanifest",
   "./assets/icon.svg",
-  "./assets/journal-paper.png",
-  "./assets/journal-book-bg.png",
-  "./assets/journal-crest-transparent.png",
-  "./assets/journal-crest.png",
-  "./assets/journal-stamp.png",
   "./assets/icons/book-open.svg",
   "./assets/icons/menu.svg",
   "./assets/icons/plus.svg",

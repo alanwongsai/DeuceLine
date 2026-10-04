@@ -63,7 +63,7 @@ miniprogram/
   utils/                         small presentation helpers (see "What to port by hand")
   pages/overview · pages/matches (+ add/update as a page or half-screen sheet)
   components/                    chapter row, ledger cell, surface badge, sheets …
-  assets/                        only small images (see Design essence → Assets)
+  assets/                        only small images (see Design direction → Assets)
 cloudfunctions/
   getDataset/ · addMatch/ · updateMatch/
     index.js · package.json · config.json
@@ -162,8 +162,9 @@ const stats = domain.deriveOverviewStats(dataset.matches);
 ## What to port by hand (small, presentation-only)
 
 These live in React files, not the domain, and are cheap to re-create in `miniprogram/utils/`:
-`shortDate` (en-GB `02 Sep 2026`), `numberWord`, `formatPercentagePair` and the handwritten-note
-sentences in `src/pages/OverviewPage.tsx`; surface/weather labels in
+`shortDate` (en-GB `02 Sep 2026`), `numberWord`, `formatPercentagePair` and narrative
+presentation in `src/pages/OverviewPage.tsx` (the derived narrative itself lives in the
+shared domain); surface/weather labels in
 `src/components/SurfaceBadge.tsx` and `src/components/weather.tsx`; sheet copy in
 `src/components/OverviewSheets.tsx`. Keep the UI copy in **English**, as on the web.
 
@@ -172,62 +173,62 @@ fallback in `AddMatchSheet` (the mini program cannot open github.com; on failure
 error and lets you retry), the `data-skin` attribute switching, and the DOM focus-trap / scroll-lock
 code in `Modal.tsx` (use `page-container` or a fixed half-screen view instead).
 
-## Design essence (keep the spirit, not the pixels)
+## Design direction (target for the future client)
 
-Deuceline should feel like **a private leather-bound match journal with modern floating
-controls** — not a generic dashboard. Keep, in priority order:
+The current mini program is only a native shell with Overview and Matches placeholders.
+This section describes the design target for the future full client; it does not imply
+that the data views, evidence sheets, add/update flow, or publishing experience are
+implemented. The full client and its 体验版 release remain a future phase in
+[PROJECT_PLAN.md](PROJECT_PLAN.md) (Phase 12).
 
-1. **Identity colour, never win/loss colour.** Every player cue (names, big numbers, stripes,
-   chapter number badges, ledger values, recent form) uses `players.alan.color` /
+The design uses a quiet **court-inspired canvas, translucent glass controls, and serif
+chapter typography**. The leather cover, paper texture, crest, and stamp are retired from
+the mini program. Keep, in priority order:
+
+1. **Identity colour, never win/loss colour.** Every player cue (identity dots, underlines, stripes,
+   chart markers and recent form) uses `players.alan.color` /
    `players.opponent.color` and `abbr` **from the dataset** — never hard-coded, never red/green
-   for lose/win. (Today: Alan purple `#57298a` / `Al`, Andy green `#1e7a45` / `An`.)
-2. **The journal metaphor — three materials with separate jobs.**
-   - *Leather cover* (content identity): deep green band `#062d20 → #0b563e`, crest image,
-     gold uppercase serif title `DEUCELINE` (`#e3be62`, letter-spaced, Baskerville/serif), the
-     small caps line `MATCHDAY JOURNAL`, and a dashed gold stamp with the version (Overview) or
-     match count (Matches).
-   - *Paper* (all content): warm cream `--journal-paper #f8f5ec` / `#f7f3e8`, ink `#17382d`,
-     thin ruled lines `rgba(33,41,36,0.55)` or `--journal-rule`. Content is always **opaque**.
-   - *Glass* (system controls only): bottom navigation, centre Add and sheets use
-     `--material-bg` + blur; never glass on glass, never glass on content. Fall back to
-     `--material-bg-strong` where blur is unsupported.
-3. **The head-to-head is the anchor.** "Alan *vs* Andy" in identity colours, then huge serif
-   numerals `8 — 5` (Georgia/serif, tabular), a `HEAD-TO-HEAD` label, and one meta line
-   (finished matches · current streak). Tapping it opens the rivalry story sheet.
-4. **Voice.** A short handwritten note (italic cursive, slightly rotated, with the stamp image)
-   summarising the state in plain words; matches are **chapters** with a numbered badge in the
-   winner's colour; scorelines read from the **winner's side** ("Andy won 2—1", sets
-   winner-first) via `formatWinnerScoreline`.
-5. **Evidence honesty.** The 2×2 *Rivalry ledger* (Set record · Win rate · Deciders · Current
+   for lose/win.
+2. **Materials and visual hierarchy.** Use generated Wimbledon skin tokens from
+   `lib/deuceline-tokens.wxss`: `--base`, `--wash`, `--ink`, `--muted`, `--court`,
+   `--content`, `--glass`, and `--rim`. Keep the page canvas calm and legible; reserve
+   translucent glass for floating controls and badges, with a solid `--sheet` fallback
+   where blur is unsupported. Use serif type for the rivalry score and chapter headings.
+   The shared header is a restrained title row with a compact version/count badge; it has
+   no leather band, paper grain, crest, or stamp.
+3. **The head-to-head is the anchor.** Player names carry data-owned identity dots, then
+   huge neutral serif match tallies (tabular), a `HEAD-TO-HEAD` label and a finished-match /
+   win-rate meta line. Tapping it opens the rivalry story sheet. Identity text at night
+   needs a readable neutral foreground with the original hue retained as a marker.
+4. **Voice.** A short plain-language note summarises the state; matches are **chapters** with a
+   chapter number and a dot in the winner's colour; scorelines read from the **winner's side** ("Andy won
+   2—1", sets winner-first) via `formatWinnerScoreline`.
+5. **Evidence honesty.** The 2×2 *Rivalry ledger* (Set record · Deciders · Set 1 → win · Current
    run) — each cell opens its evidence sheet; every row says **Full set scores** vs **Score
    summary**; the footer shows data coverage (dates / set scores / weather out of finished).
    Unfinished matches: split two-colour stripe, "In progress", excluded from every stat.
 6. **Information architecture.** Overview = state now (H2H, ledger, latest chapter expanded,
    Form / Surfaces / Timeline lenses, two recent chapter rows, "View all"). Matches = the
-   complete archive (own cover, surface filter chips with counts, every match incl.
+   complete archive (its own title row, surface filter chips with counts, every match incl.
    unfinished). Centre Add = record or complete one match. Tab bar: Overview · (+) · Matches,
-   the (+) raised and gold (`--accent #c19a4b`).
-7. **Surface badges** keep their four distinct colours (`--hard/--clay/--grass/--astro`).
+   with the (+) using the shared court/accent material.
+7. **Surface badges** are explicitly labelled neutral pills. Surface category and theme
+   must not imply a player identity colour.
 
 Free to simplify:
 
-- **Assets.** The book plate `public/assets/journal-book-bg.png` is 1.7 MB — too much for the
-  2 MB main package. Rebuild the cover as a CSS gradient band + flat paper colour, or load the
-  image from cloud storage. Use `journal-crest-transparent.png` (60 KB), not `journal-crest.png`.
-  `journal-stamp.png` is kept — it is a brand element, shown beside Overview's handwritten note
-  — but re-encoded to a ~12 KB `journal-stamp.jpg` (`sips -Z 240 -s format jpeg -s formatOptions 80`),
-  which is safe because its own paper ground is drawn on paper. WXSS `background-image` cannot
-  point at package files — use `<image>` elements or remote URLs. Heroicons SVGs
-  (`public/assets/icons/`) can be used via `<image>`.
-- **Fonts.** Georgia / Baskerville / Snell Roundhand exist on iOS; on Android accept the
-  system `serif` / italic fallback. Don't ship web fonts for this.
+- **Assets.** The current mini shell needs no journal artwork. Keep its package free of the old
+  crest and stamp; use CSS/WXSS materials and the generated skin tokens. Heroicons SVGs
+  (`public/assets/icons/`) can be used via `<image>` when a future screen needs them.
+- **Fonts.** Georgia / Baskerville exist on iOS; on Android accept the system `serif`
+  fallback. Don't ship web fonts for this.
 - **Charts.** The lead sparkline / timeline are inline SVG on the web, which WXML lacks. Draw
   them with `<canvas type="2d">` or an SVG string as an `<image>` data URI; the interactive
   scrubber can come later (a `<slider>` is the native equivalent of the web range control).
 - **Motion.** Count-up and sheet transitions are optional; respect reduced motion if added.
 - The exact web chrome tokens are available as CSS variables from `lib/deuceline-tokens.wxss`.
-  The journal cover/paper values above are hard-coded in `src/styles/global.css` on the web
-  (not yet tokens), so copy them from this section.
+  The current build extracts only the default Wimbledon block; web skin/evening overrides
+  are not exported. Full runtime appearance switching in the mini client is future port work.
 
 Component map (web → mini program):
 
@@ -237,8 +238,8 @@ Component map (web → mini program):
 | `pages/MatchesPage.tsx` | `pages/matches` |
 | `components/BottomNav.tsx` | custom tab bar (Overview · + · Matches) |
 | `components/MatchDetail.tsx` | detail sheet: sets + tiebreaks, H2H impact (`deriveMatchContext`), previous/next, **Update result** for unfinished |
-| `components/OverviewSheets.tsx`, `StatDetailSheet.tsx` | evidence sheets (story, set record, win rate/form, deciders, streak, surfaces → surface, timeline) |
-| `components/AddMatchSheet.tsx` | add/update form: date, surface, result Finished/Unfinished, set tally; "Add set scores"; "Add details" (location, weather tags, °C, notes) → review (winner scoreline + new H2H) → password → **Submit & publish**; discard confirmation |
+| `components/OverviewSheets.tsx`, `StatDetailSheet.tsx` | evidence sheets (story, set record, conversion, form, deciders, streak, surfaces → surface, timeline) |
+| `components/AddMatchSheet.tsx` | add/update form: date, surface, result Finished/Unfinished, per-set entry (default), set-tally fallback; "Add details" (location, weather tags, °C, notes) → review (winner scoreline + new H2H) → password → **Submit & publish**; discard confirmation |
 | `components/LeadSparkline.tsx`, `RivalryTimeline.tsx` | canvas / SVG-image charts |
 | `components/SurfaceBadge.tsx`, `weather.tsx` | small components + label maps |
 

@@ -7,7 +7,7 @@
 const config = require("./config.js");
 
 App({
-  // The leather cover runs edge to edge (`navigationStyle: "custom"` in app.json),
+  // The custom header runs edge to edge (`navigationStyle: "custom"` in app.json),
   // so pages must clear the status bar themselves. Single owner of that number.
   captureChrome() {
     const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();

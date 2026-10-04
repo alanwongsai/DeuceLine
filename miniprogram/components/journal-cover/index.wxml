@@ -1,14 +1,13 @@
 <view class="cover-wrap" style="padding-top: {{padTop}}px;">
   <view class="cover">
-    <image class="cover-crest" src="/assets/journal-crest.png" mode="aspectFit" />
     <view class="cover-title">
+      <view class="cover-title-kicker">RIVALRY · MATCH NOTES</view>
       <view class="cover-title-main serif">{{title}}</view>
-      <view class="cover-title-sub">Matchday Journal</view>
     </view>
-    <view wx:if="{{countLabel}}" class="badge badge-count">
+    <view wx:if="{{countLabel}}" class="badge badge-count glass">
       <text class="badge-strong serif">{{count}}</text>
       <text class="badge-small">{{countLabel}}</text>
     </view>
-    <view wx:else class="badge">{{version}}</view>
+    <view wx:else class="badge glass">{{version}}</view>
   </view>
 </view>

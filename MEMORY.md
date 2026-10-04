@@ -63,12 +63,12 @@ stateless commit proxy for match publishing.
   **Boundary:** do not move full history or a second metrics dashboard back onto Overview;
   unfinished rows may display in history but remain excluded from all derived statistics.
 
-- **Physical journal content and Liquid Glass controls are separate visual layers.** Leather,
-  paper and rules describe content; Liquid Glass is restricted to navigation, Add and shared
-  overlays; player colours describe identity; surface colours describe court category.
-  **Why:** the product should feel like one real notebook with modern controls, not all-paper
-  nostalgia or glass-on-glass decoration. **Boundary:** keep content opaque and reuse the
-  material tokens plus reduced-transparency fallbacks rather than inventing parallel effects.
+- **One CSS material, editorial journal voice.** Serif type, a large head-to-head, chapters
+  and a derived narrative carry the journal identity. Physical leather, paper textures,
+  ribbons and stamps are retired. **Why:** preserve the sports-notebook voice while giving
+  the web and native shell a shared, adaptable material. **Boundary:** skin tokens own
+  chrome; dataset colours own player identity; labelled neutral badges own surface category.
+  Keep reduced-transparency/motion fallbacks and shared Modal behavior.
 
 - **UI is colored by player identity, not win/loss.** Each player carries
   `displayName`, `color` (hex), `abbr` in the dataset; the dataset is the canonical
@@ -77,15 +77,13 @@ stateless commit proxy for match publishing.
   notebook, not a generic green dashboard. **Boundary:** read colors from the dataset;
   don't hardcode them in CSS; identity colours are NOT skin tokens (see next).
 
-- **Chrome colour is a swappable skin; identity colour is not.** All non-identity
-  colour lives in `src/styles/skins.css` as CSS vars under `[data-skin="…"]` (default
-  Wimbledon = cream / ivy-green / gold); `global.css` consumes the vars and hardcodes no
-  chrome colour. **Why:** the owner wants per-Grand-Slam skins (Wimbledon now;
-  Roland-Garros / US Open / Australian Open later) without touching components.
-  **Boundary:** a new skin is one `[data-skin]` block + the `data-skin` attribute on
-  `<html>`; player identity colours stay in the dataset (a skin may only *suggest* a
-  palette via `--skin-player-*`). No skin-switcher UI yet; surface `--grass`/`--clay`
-  vs identity-colour clash is deferred — see [PROJECT_PLAN.md](PROJECT_PLAN.md).
+- **Chrome colour is a swappable skin; identity colour is not.** Non-identity colour lives
+  in `src/styles/skins.css`; journal and shared evidence styles consume those tokens.
+  **Why:** Grand Slam/day-evening appearance should not alter rivalry identity or data.
+  **Boundary:** appearance preferences may persist locally; match data never does. Night
+  text retains the source identity hue as an underline beside a readable foreground.
+  The `build:core` regex exports the default Wimbledon block only; see ENGINE.md and
+  MINIPROGRAM.md for that seam.
 
 - **Two clients, one truth, one rulebook.** The web PWA (Cloudflare) and the WeChat mini
   program (CloudBase, 体验版) run in parallel from this repo; both read and commit the same repo

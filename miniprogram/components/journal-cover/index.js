@@ -1,12 +1,9 @@
-// The leather cover — the journal's identity band, shared by both pages.
+// The shared editorial header used by both mini program pages.
 //
-// Mirrors the web's `header.app-header.journal-cover` (src/pages/OverviewPage.tsx and
-// MatchesPage.tsx): a three-column strip, crest · title · badge, where the badge sits
-// top-right as a dashed gold rounded rectangle holding the version (Overview) or the
-// chapter count (Matches).
-//
-// The leather itself is a CSS gradient band, not the web's 1.7 MB book plate — see
-// MINIPROGRAM.md → "Design essence → Free to simplify → Assets".
+// Shares the web's serif journal direction (src/components/ThemeControls.tsx and
+// src/pages/MatchesPage.tsx): a title and compact glass badge holding the version (Overview)
+// or the chapter count (Matches). Visual direction and the future-client boundary
+// are documented in MINIPROGRAM.md → "Design direction".
 Component({
   properties: {
     title: {

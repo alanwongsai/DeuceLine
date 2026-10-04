@@ -6,9 +6,9 @@
   "window": {
     "navigationStyle": "custom",
     "navigationBarTitleText": "Deuceline",
-    "navigationBarBackgroundColor": "#062d20",
-    "navigationBarTextStyle": "white",
-    "backgroundColor": "#f8f5ec",
+    "navigationBarBackgroundColor": "#e8eee7",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#e8eee7",
     "backgroundTextStyle": "dark"
   },
   "style": "v2",

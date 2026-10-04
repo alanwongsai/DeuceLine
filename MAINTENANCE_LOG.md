@@ -54,6 +54,23 @@
 
 ## Log
 
+### v0.14.2 — 2026-10-04
+- Visual migration stage 3: retire the unused book, paper, crest and stamp assets from
+  web and mini skeleton; advance the service-worker cache and retain network-first
+  dataset/navigation, offline fallback and POST bypass. Align manifest/launch chrome
+  with Wimbledon day. Keep the existing installed tennis icons.
+- Sync the existing WeChat shell to generated default-skin tokens, serif masthead and
+  isolated-component badge material. No full-client implementation or CloudBase release.
+  Refresh every generated core/version copy; clarify the default-block-only export seam.
+- All five checks pass: typecheck, 124 tests, build, typecheck:functions and build:core.
+  Browser acceptance covers 64 theme/mode/page/width combinations, and a real reload
+  after the localhost source server was stopped still displays all 14 matches. Cache
+  lifecycle/precache paths and non-GET bypass also pass the isolated worker check.
+- Review confirms no change to canonical data, domain rules or publish endpoint source;
+  .workbuddy remains untouched. No deployment of intermediate stages. Native DevTools,
+  installed-device safe areas and OS accessibility preferences remain physical-device
+  follow-up checks; existing CSS fallbacks were reviewed. See design-qa.md for evidence.
+
 ### v0.14.1 — 2026-10-04
 - Visual migration stage 2: unify all analysis sheets, charts, match detail, add/update,
   review, discard and publisher-error/fallback states under the shared material. Fields,

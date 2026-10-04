@@ -1,26 +1,19 @@
-/* The cover band. Web reference: `.journal-cover` / `.journal-version` in
-   src/styles/global.css — the same three-column strip and badge geometry, converted
-   from px to rpx (1px = 2rpx) and simplified where WXSS differs. */
+/* Quiet editorial masthead; the badge is the only glass element in this header. */
 
 .cover-wrap {
   flex: none;
-  background: linear-gradient(165deg, var(--leather-top) 0%, var(--leather-bottom) 100%);
-  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  padding-left: var(--shell-pad);
+  padding-right: var(--shell-pad);
+  background: var(--base);
 }
 
 .cover {
   display: flex;
-  align-items: flex-start;
-  gap: 12rpx;
-  padding: 38rpx 60rpx 0 46rpx;
-  color: #d8b65c;
-}
-
-.cover-crest {
-  flex: none;
-  width: 86rpx;
-  height: 86rpx;
-  margin-top: 2rpx;
+  align-items: center;
+  gap: 20rpx;
+  min-height: 112rpx;
+  padding: 18rpx 0 22rpx;
+  border-bottom: 1px solid var(--line);
 }
 
 .cover-title {
@@ -28,45 +21,45 @@
   min-width: 0;
 }
 
-.cover-title-main {
-  color: #e3be62;
-  font-size: 44rpx;
-  font-weight: 500;
-  line-height: 0.95;
-  letter-spacing: 0.035em;
-  text-transform: uppercase;
-  text-shadow: 0 1px 0 #281b02;
+.cover-title-kicker {
+  margin-bottom: 7rpx;
+  color: var(--muted);
+  font-size: 17rpx;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  line-height: 1.2;
 }
 
-.cover-title-sub {
-  margin-top: 8rpx;
-  color: #e3be62;
-  font-size: 19rpx;
+.cover-title-main {
+  color: var(--ink);
+  font-size: 42rpx;
   font-weight: 500;
-  line-height: 1;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  font-family: Georgia, "Times New Roman", serif;
 }
 
 .badge {
+  background: var(--sheet);
+  border: 1px solid var(--rim);
   display: flex;
   flex: none;
   align-items: center;
   justify-content: center;
-  min-width: 110rpx;
-  height: 56rpx;
-  margin-top: 14rpx;
-  border: 2rpx dashed #d8b65c;
-  border-radius: 8rpx;
-  color: #e3be62;
+  min-width: 92rpx;
+  min-height: 48rpx;
+  padding: 0 14rpx;
+  border-radius: 24rpx;
+  color: var(--ink);
   font-family: Georgia, "Times New Roman", serif;
-  font-size: 22rpx;
+  font-size: 20rpx;
 }
 
 /* Matches' badge carries the chapter count instead of the version. */
 .badge-count {
-  min-width: 116rpx;
-  height: 72rpx;
+  min-width: 100rpx;
+  min-height: 62rpx;
+  padding: 6rpx 14rpx;
   flex-direction: column;
   line-height: 1;
 }
@@ -76,8 +69,15 @@
 }
 
 .badge-small {
+  margin-top: 5rpx;
+  color: var(--muted);
   font-size: 14rpx;
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
+}
+
+/* Component style isolation keeps app.wxss utilities out; own the badge material here. */
+@supports (backdrop-filter: blur(18px)) {
+  .badge { background: var(--glass); backdrop-filter: blur(18px) saturate(135%); }
 }

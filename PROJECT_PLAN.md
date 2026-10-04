@@ -194,7 +194,7 @@ Settled with Alan (2026-09-24):
 - Shared publish core extracted from the Cloudflare Functions; `npm run build:core` bundles
   the domain + publish core + skin tokens for the mini program; port brief written. — done
 - Port phase 0 — repo layout (`project.config.json`, `miniprogram/`, `cloudfunctions/`), the
-  shared leather-cover component, the Overview/Matches shells, the three cloud-function
+  shared journal-header component, the Overview/Matches shells, the three cloud-function
   adapters, and `build:core` emitting the version bundle. — done (v0.11.6; see
   MAINTENANCE_LOG.md). Still owner-only: the mini program AppID, the CloudBase environment, the
   two cloud-function environment variables (`GITHUB_TOKEN`, `ADD_MATCH_PASSWORD`), and Andy
@@ -223,7 +223,8 @@ with the selected CSS glass study. No match-data changes or live test matches.
    stage validation and commit are recorded in MAINTENANCE_LOG.md.
 2. All evidence sheets, charts, detail and complete add/update/review/publish/fallback — implemented;
    acceptance evidence is in design-qa.md.
-3. PWA/cache, legacy resource cleanup, build:core and existing mini skeleton sync, full acceptance.
+3. PWA/cache, legacy resource cleanup, build:core and existing mini skeleton sync — implemented;
+   complete web acceptance and native-tool limitations are recorded in design-qa.md.
 4. Re-read remote main, preserve any new match commits, then deploy through Git → Cloudflare
    Pages and verify the published result. No early deployment of intermediate stages.
 

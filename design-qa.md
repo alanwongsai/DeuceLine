@@ -79,3 +79,32 @@ production evidence/form states intentionally extend its simplified dialogs.
 - No remaining P0/P1/P2 issues in stage-2 surfaces. Full skin/width/PWA matrix is stage 3.
 
 final result: passed
+
+## Stage 3
+
+- Final evidence: `deuceline-final-desktop.jpg` (1280 × 900),
+  `deuceline-final-mobile.jpg` and `deuceline-final-night.jpg` (390 × 844, DPR 1),
+  in the same evidence directory. Serif hierarchy, large settled H2H, narrative,
+  chapter card, ledger and glass controls were inspected at their actual viewport.
+- 64 combinations: 320/390/760/1280px × four skins × day/evening × Overview/Matches.
+  Actual innerWidth was asserted for each case; no horizontal document overflow.
+  The same canonical 14-match data stays visible in every appearance.
+- Offline: stop the dedicated production preview server, reload the controlled page,
+  then navigate to Matches. The v0.14.2 shell, derived 8–6 record and all 14 cached
+  records remain available. Restart the server afterwards. The isolated worker check
+  also verifies all precache paths exist, old-cache deletion, dataset/navigation
+  network-first fallback and no POST interception.
+- PWA: cache v13 drops all retired journal image entries. Manifest and HTML launch
+  colour align with Wimbledon day; tennis install icons are retained. No code/data/API
+  contract change; all five engineering checks pass, including 124 tests and generated
+  core copies. No live test match or canonical fixture was written.
+- Native skeleton: remove unused crest/stamp and hardcoded leather/paper colours;
+  use the generated Wimbledon default tokens. Component isolation is accounted for
+  by owning badge material/type in component WXSS. This remains a shell, with no new
+  data views or publishing flow. WeChat DevTools/device acceptance and the full client/
+  体验版 are explicitly separate work.
+- Reduced transparency/motion and missing-blur CSS fallbacks were source-reviewed.
+  Installed iOS/Android safe areas and OS preference behavior were not device-tested.
+  No remaining web P0/P1/P2 findings; deployment readback belongs to stage 4.
+
+final result: passed (web); native/device checks bounded as above
