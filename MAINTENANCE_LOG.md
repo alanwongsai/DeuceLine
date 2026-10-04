@@ -54,6 +54,22 @@
 
 ## Log
 
+### v0.14.3 — 2026-10-04
+- Give the shared web shell 32px of breathing room beyond the top safe area, following
+  the Norns Flow spacing reference: mobile padding is
+  `calc(max(32px, env(safe-area-inset-top, 0px)) + 32px)`. The old maximum alone let
+  the inset replace the breathing room under iOS translucent status chrome. Both
+  Overview and Matches inherit this once; no extra header inset or margin is added.
+- Preserve the usual desktop 42px top spacing, with a safe-area-plus-32px guard on
+  wider inset-bearing viewports. Bottom fixed navigation and bottom clearance are
+  unchanged. No dataset, domain, publishing, theme or mini-skeleton behavior change.
+- iOS viewport-fit/standalone/translucent-status settings remain in place. Typecheck,
+  124 tests, build and build:core pass; generated copies reflect the patch version.
+  Browser checks at 320/390/760/1280px cover both pages: mobile top is 64px (36px
+  lower), usual desktop top is 42px, no horizontal overflow and fixed navigation stays
+  at the same viewport coordinates. Actual installed iPhone/status-bar masking still
+  needs owner device confirmation.
+
 ### v0.14.2 — 2026-10-04
 - Stage 4 deployment: fetched origin/main immediately before publishing; it remained
   e62b9dd with no new match commits. Pushed the three reviewed stages through the existing
