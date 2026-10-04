@@ -1218,7 +1218,7 @@ input[type="date"].text-input::-webkit-date-and-time-value {
   background: var(--journal-paper);
 }
 
-.sheet-fact span {
+.sheet-fact > span {
   color: var(--muted);
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -1510,7 +1510,7 @@ input[type="date"].text-input::-webkit-date-and-time-value {
 .sheet-fact,.lead-sparkline,.detail-impact,.review-result { background: var(--content); border-color: var(--line); }
 .detail-impact > .lead-sparkline { margin: 8px 0 0; padding: 8px 0 0; border: 0; background: transparent; }
 .sheet-fact strong { font: 22px/1.25 Georgia,serif; font-variant-numeric: tabular-nums; }
-.sheet-fact span { font-size: 10px; font-weight: 600; }
+.sheet-fact > span { font-size: 10px; font-weight: 600; }
 .sheet-form { background: var(--glass-low); }
 .sheet-back,.detail-pagination button { background: var(--content); font-size: 12px; font-weight: 600; }
 .sheet-form button,.form-dot { box-shadow: inset 0 0 0 1px var(--rim); }

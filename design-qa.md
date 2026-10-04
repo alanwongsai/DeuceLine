@@ -128,3 +128,51 @@ final result: passed (web); native/device checks bounded as above
   migration. .workbuddy stays untouched.
 
 final result: passed (published web)
+
+
+## Theme consistency and material polish — 2026-10-04
+
+This section supersedes the earlier neutral-night identity treatment for the web UI.
+It is local acceptance for the current patch, not evidence of a production deployment.
+
+- Evidence directory:
+  `/Users/meltcado/.codex/visualizations/2026/10/04/01a10853-da59-7461-98a6-e1f8859607dc/deuceline-0144`.
+  Includes `main-matrix.json`, `sheet-matrix.json`, `contrast.json`, 16 main-page
+  theme/mode screenshots, and focused `roland-day-impact.jpg`,
+  `roland-day-surfaces.jpg`, `roland-day-overview.jpg`, `us-evening-overview.jpg`.
+- Main pages: 64 combinations = 320/390/430/1280px × four themes × day/evening ×
+  Overview/Matches, height 844px. Actual viewport and computed identity colours checked;
+  no horizontal overflow or dataset error; all 14 canonical match cards remain available.
+- Sheets: 72 cases = four themes × day/evening × story, sets, deciders, conversion,
+  streak, form, surfaces, timeline and latest match detail, at 390 × 844px. No panel or
+  comparison overflow; shared close target 44px; record tracks 3px; comparison numbers
+  retain 22px type. Impact has 14px radius and 16px padding; SVG fills match player tokens.
+  Focused final visual captures include the corrected nested comparison type.
+- Keyboard: chart Home selects match 1, End selects match 14; Shift+Tab from Close
+  cycles to the chart slider; Escape closes and returns focus to the original H2H trigger.
+- Local fixture server served the actual production build with fictional Alpha/Beta data
+  and in-memory POST responses only. At 320px: missing-score validation, dirty close →
+  keep editing, review/back, player-coloured review H2H, rejected key (401), conflict
+  (409), unavailable service (503), expanded fallback, successful add and successful
+  unfinished-match completion were checked. Evening unfinished numerical colours were
+  checked again after the final fix. Canonical data, remote APIs and GitHub editor were
+  never written; fixture servers and tabs were closed.
+- Contrast calculation on solid sheet tones: minimum player text 4.73:1; minimum form
+  initial contrast 5.26:1. Glass gradients, all OS preferences and device rendering were
+  not measured as a full accessibility audit.
+- All five engineering checks pass: typecheck, 124 tests, build, build:core and
+  typecheck:functions. Canonical dataset is byte-identical to the starting commit;
+  shared domain and publisher bundle bodies remain unchanged apart from version banners.
+- PWA cache advances to v14. An isolated worker check confirms all precache paths exist,
+  activation removes v13, shell/data/assets fall back to cache, and both POST endpoints
+  bypass interception. Stopping the production preview server and reloading in the
+  in-app browser returned `ERR_FAILED`; browser control status could not be established
+  through the available read-only interface. This offline reload did **not** pass.
+  Do not infer an environment cause or an installed-device result from this attempt.
+- Reduced-transparency/motion and missing-blur fallback rules are preserved. Installed
+  iOS/Android offline, safe areas and OS preference behaviour need device acceptance.
+  Mini program keeps its generated default Wimbledon palette; no native theme feature
+  or WeChat DevTools acceptance is included. No deployment or live fixture submission.
+
+final result: visual and engineering checks passed locally; offline/device acceptance
+unconfirmed as described above; not published

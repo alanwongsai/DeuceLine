@@ -54,27 +54,31 @@
 
 ## Log
 
-### v0.14.4 — 2026-10-04
-- Material stage (local, not deployed): share 3px record tracks across the homepage and
-  evidence sheets; keep decorative rules thin and selection/focus distinct. Give Impact
-  the shared 14px inner radius and 16px padding, removing its nested chart plate. Match
-  near-solid sheet tones to an explicit solid sticky header; enlarge the close target to
-  44px around its 36px circle. Existing Modal scroll/focus/draft behaviour is unchanged.
-- Material-stage typecheck, 124 tests, build and build:core pass. Mobile browser readback
-  confirms Impact radius/padding, 44px close target, themed SVG fills and no page overflow;
-  visual checks cover Roland-Garros detail and surface tally. Full acceptance follows.
-- Palette stage (local, not deployed): resolve player display colours once at the web shell,
-  with dataset colours as fallback. Wimbledon day keeps its original identity; the other
-  themes use terracotta/graphite, blue/bronze and cyan/coral, with readable evening variants.
-  Apply the mapping to H2H, ledger and evidence comparisons, match record/history, detail,
-  form/review, bars and SVG markers. Sideline names, court chrome and labelled surface pills
-  follow the selected theme. Small bronze/cyan/coral tones were deepened for readable text.
-- Preserve canonical data, derivation, winner-first score order and publishing behaviour.
-  Update the identity contract in AGENTS, ENGINE and MEMORY; document the unchanged
-  default-only mini export seam. Refresh generated core/version copies.
-- Palette-stage typecheck, 124 tests, build and build:core pass. Browser checks confirm
-  shared palette resolution and the Roland-Garros mobile/desktop main page. Material
-  polishing and the full theme/mode acceptance matrix follow before release.
+### v0.14.4 — 2026-10-04 (local, not deployed)
+- Resolve player display colours once at the web shell, with dataset colours as fallback.
+  Wimbledon day keeps purple/green; Roland-Garros uses terracotta/graphite, US Open
+  blue/bronze and Australian Open cyan/coral. Evening variants preserve each pairing
+  with readable lighter tones. H2H, ledger, match record/history, detail, form/review,
+  bars, SVG markers, Sideline names, court chrome and labelled surface pills share this
+  mapping. Preserve winner-first score order and same-player sample fractions.
+- Share 3px record tracks across homepage and Surfaces sheets; keep decorative rules
+  thin. Give Impact the shared 14px inner radius and 16px padding without a nested chart
+  plate. Match near-solid sheet tones to a solid sticky header; enlarge the close target
+  to 44px around its 36px circle. Preserve Modal focus/scroll/draft behaviour.
+- Acceptance also corrected a broad label selector that shrank nested comparison
+  numbers, and themed the numerical pair in unfinished match cards. Advance the PWA
+  cache to v14; caching strategy and POST bypass are unchanged.
+- Canonical data, domain and publish code are unchanged. Update the identity contract
+  in AGENTS, ENGINE and MEMORY; document the default-only mini export seam in MINIPROGRAM.
+  Refresh generated core/version copies. The mini client does not gain web theme switching.
+- Final typecheck, 124 tests, build, build:core and Functions typecheck pass. Browser
+  acceptance covers 64 main-page combinations and 72 sheet cases, keyboard navigation,
+  and fictional local add/update validation, draft, review, 401/409/503 and success flows.
+  Solid sheet text contrast is at least 4.73:1; this is not a full accessibility audit.
+- Isolated worker checks pass for precache paths, v14 activation/old-cache deletion,
+  shell/data/assets fallback and POST bypass. In-app-browser offline reload returned
+  `ERR_FAILED`; installed-device offline acceptance remains unconfirmed. No push or
+  live match submission. Detailed evidence and device limits: [design-qa.md](design-qa.md).
 
 ### v0.14.3 — 2026-10-04
 - Give the shared web shell 32px of breathing room beyond the top safe area, following
