@@ -108,3 +108,23 @@ final result: passed
   No remaining web P0/P1/P2 findings; deployment readback belongs to stage 4.
 
 final result: passed (web); native/device checks bounded as above
+
+## Stage 4
+
+- Fetched remote immediately before push: origin/main remained e62b9dd; no match commit
+  was missed and no data reconciliation was necessary. Three verified stages pushed
+  together; Cloudflare Pages check for 2ca99ed completed successfully.
+- Live: https://deuceline.meltcado.com/ displays v0.14.2. JS `index-D3qi47aF.js` and CSS
+  `index-CGoxq8rP.css` match local production bytes, as do sw.js, manifest and dataset.
+  Dataset SHA256: e104e7e0d7dfa11dff784cef05f47a2785678a0cb01844100c4364c4e606735b.
+- Production browser confirms settled 8–6, all 14 records, Australian Open evening and
+  navigation, match-14 detail and closing/return. Final view returns to Wimbledon day;
+  no console warnings/errors. Evidence: `deuceline-live-desktop.jpg` in the evidence directory.
+- Empty unauthenticated POSTs to both Functions return 401 / Wrong password. GETs follow
+  the existing SPA fallback; only the rejected POST proves the write gate. No real match
+  or fixture was submitted. The successful publish flow was accepted only on localhost.
+- Physical installed-device/OS preference and WeChat DevTools checks remain separate,
+  as described above. Full-client implementation and trial release are not part of this
+  migration. .workbuddy stays untouched.
+
+final result: passed (published web)

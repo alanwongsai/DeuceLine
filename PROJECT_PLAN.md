@@ -225,8 +225,8 @@ with the selected CSS glass study. No match-data changes or live test matches.
    acceptance evidence is in design-qa.md.
 3. PWA/cache, legacy resource cleanup, build:core and existing mini skeleton sync — implemented;
    complete web acceptance and native-tool limitations are recorded in design-qa.md.
-4. Re-read remote main, preserve any new match commits, then deploy through Git → Cloudflare
-   Pages and verify the published result. No early deployment of intermediate stages.
+4. Remote synchronization, Git → Cloudflare Pages deployment and live readback — complete;
+   deployment evidence is recorded in MAINTENANCE_LOG.md and design-qa.md.
 
 Full WeChat client behavior and 体验版 upload remain Phase 12, outside this migration.
 

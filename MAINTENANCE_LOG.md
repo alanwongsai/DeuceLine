@@ -55,6 +55,15 @@
 ## Log
 
 ### v0.14.2 — 2026-10-04
+- Stage 4 deployment: fetched origin/main immediately before publishing; it remained
+  e62b9dd with no new match commits. Pushed the three reviewed stages through the existing
+  Git → Cloudflare Pages integration. Cloudflare check for 2ca99ed completed successfully;
+  custom domain https://deuceline.meltcado.com/ serves v0.14.2.
+- Live readback: JS/CSS bytes, worker, manifest and canonical dataset match local build.
+  Browser confirms 8–6, all 14 records, theme/mode navigation and match-14 detail; no
+  console warnings/errors. Both publish Functions reject empty unauthenticated requests
+  with 401. No live match write. Full WeChat client/体验版 and physical-device checks stay
+  separate (PROJECT_PLAN.md / MINIPROGRAM.md).
 - Visual migration stage 3: retire the unused book, paper, crest and stamp assets from
   web and mini skeleton; advance the service-worker cache and retain network-first
   dataset/navigation, offline fallback and POST bypass. Align manifest/launch chrome
