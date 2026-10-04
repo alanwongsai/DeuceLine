@@ -66,8 +66,9 @@
   plate. Match near-solid sheet tones to a solid sticky header; enlarge the close target
   to 44px around its 36px circle. Preserve Modal focus/scroll/draft behaviour.
 - Acceptance also corrected a broad label selector that shrank nested comparison
-  numbers, and themed the numerical pair in unfinished match cards. Advance the PWA
-  cache to v14; caching strategy and POST bypass are unchanged.
+  numbers, and themed the numerical pair in unfinished match cards. Chart captions now
+  use the existing winner-first formatter: Andy's 2–1 win no longer reads "won · 1–2".
+  Advance the PWA cache to v14; caching strategy and POST bypass are unchanged.
 - Canonical data, domain and publish code are unchanged. Update the identity contract
   in AGENTS, ENGINE and MEMORY; document the default-only mini export seam in MINIPROGRAM.
   Refresh generated core/version copies. The mini client does not gain web theme switching.

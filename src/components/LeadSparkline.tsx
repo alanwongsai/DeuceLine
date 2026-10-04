@@ -1,6 +1,6 @@
 import { identityColor } from "./identityStyle";
 import { PointerEvent, useEffect, useMemo, useState } from "react";
-import { deriveMatchResult } from "../domain/deriveStats";
+import { formatWinnerScoreline, isUnfinished } from "../domain/deriveStats";
 import { Match, Player, PlayerKey, TimelinePoint } from "../domain/schema";
 
 export type LeadSparklineProps = {
@@ -46,9 +46,9 @@ export function LeadSparkline({
   const points = timeline.map((point, index) => `${xAt(index, timeline.length)},${yAt(point)}`).join(" ");
   const matchMap = useMemo(() => new Map(matches.map((match) => [match.id, match])), [matches]);
   const selectedMatch = selected ? matchMap.get(selected.matchId) : undefined;
-  const selectedResult = selectedMatch ? deriveMatchResult(selectedMatch) : null;
-  const selectedText = selected && selectedResult?.winner
-    ? `Match ${selected.seq} · ${selected.date ? formatShortDate(selected.date) : "date unknown"} · ${players[selectedResult.winner].displayName} won · ${selectedResult.matchScore.alan}—${selectedResult.matchScore.opponent}`
+  const selectedScoreline = selectedMatch && !isUnfinished(selectedMatch) ? formatWinnerScoreline(selectedMatch) : null;
+  const selectedText = selected && selectedScoreline
+    ? `Match ${selected.seq} · ${selected.date ? formatShortDate(selected.date) : "date unknown"} · ${players[selectedScoreline.winner].displayName} won · ${selectedScoreline.score}`
     : "No finished match selected";
 
   const selectFromPointer = (event: PointerEvent<SVGSVGElement>) => {

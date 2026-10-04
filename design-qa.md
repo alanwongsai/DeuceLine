@@ -150,6 +150,12 @@ It is local acceptance for the current patch, not evidence of a production deplo
   Focused final visual captures include the corrected nested comparison type.
 - Keyboard: chart Home selects match 1, End selects match 14; Shift+Tab from Close
   cycles to the chart slider; Escape closes and returns focus to the original H2H trigger.
+- Final screenshot review caught an existing chart-caption order mismatch: match 14
+  said "Andy won · 1–2" while its heading correctly said "Andy won 2–1". Reuse the
+  existing winner-first formatter for both visible caption and slider aria-valuetext.
+  Production-build readback confirms match 12 "Alan won · 2–1", match 14 "Andy won ·
+  2–1", and slider Home/End captions. Impact evidence was recaptured after this fix;
+  typecheck, all 124 tests and build passed again.
 - Local fixture server served the actual production build with fictional Alpha/Beta data
   and in-memory POST responses only. At 320px: missing-score validation, dirty close →
   keep editing, review/back, player-coloured review H2H, rejected key (401), conflict
