@@ -12,6 +12,9 @@
 - **MINOR** (`0.4.0`) — a new feature or surface within the current direction.
 - **MAJOR** (`1.0.0`) — the first stable release / a direction change. Record it in
   [PROJECT_PLAN.md](PROJECT_PLAN.md) first and start a new log file.
+- When a new log file is started, update the file name in the `awk` command in
+  AGENTS.md's startup core (Required Reading) in the same change. That command relies on
+  the `## Log` heading and `### v` entry headings below, so keep both stable.
 
 ## What goes here / what doesn't
 
@@ -80,6 +83,13 @@
   shell/data/assets fallback and POST bypass. In-app-browser offline reload returned
   `ERR_FAILED`; installed-device offline acceptance remains unconfirmed. No push or
   live match submission. Detailed evidence and device limits: [design-qa.md](design-qa.md).
+- 2026-10-11, docs only (no version bump — no running-product change; precedent 0f5a1f2):
+  lower AI session startup cost. AGENTS.md's startup core now extracts only the latest
+  log entry with one `awk` command instead of `head`/`sed` over this ~47KB file, forbids
+  pre-reading other docs and whole-repo scans, and states that the repo-root `MEMORY.md`
+  (decision ledger) is not Claude's auto-memory. On-demand docs are read by section.
+  Current State is marked as a routing table, not a reading list. No code, data or
+  generated copies touched; the `awk` command was verified to output exactly one entry.
 
 ### v0.14.3 — 2026-10-04
 - Give the shared web shell 32px of breathing room beyond the top safe area, following

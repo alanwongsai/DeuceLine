@@ -91,14 +91,32 @@ Read these every new session; they're enough to start almost any task:
 
 1. `AGENTS.md` (this file) — scope, hard rules, how to work here.
 2. The latest entry in [MAINTENANCE_LOG.md](MAINTENANCE_LOG.md) — what shipped recently.
+   Extract it with exactly this command, not `head`/`sed` (the file is large; the top
+   lines are rules and backlog, not the latest entry):
 
-Read the rest **only when the task touches that area** — do not pre-read it:
+   ```bash
+   awk '/^## Log$/{in_log=1; next} in_log && /^### v/{if (seen++) exit} in_log && seen{print}' MAINTENANCE_LOG.md
+   ```
 
-- [ENGINE.md](ENGINE.md) — when touching architecture, data flow, or validation.
-- [PROJECT_PLAN.md](PROJECT_PLAN.md) — when touching scope or deciding what's next.
-- [MEMORY.md](MEMORY.md) — to recover durable decisions and their boundaries.
-- [MINIPROGRAM.md](MINIPROGRAM.md) — when touching `miniprogram/`, `cloudfunctions/`, the
-  shared core or its build.
+   Empty output means the log format changed — report it; do not fall back to `head`.
+
+Do not pre-read anything else. In particular, do not `cat`/`head` MAINTENANCE_LOG.md, and
+do not run whole-repo scans such as `git ls-files | xargs wc` to "get oriented" — the
+Architecture section is the map. The repo-root [MEMORY.md](MEMORY.md) is the project
+decision ledger, NOT Claude's auto-memory; do not read it at startup.
+
+Open the following only when the task touches that area, and read only the relevant
+section (grep the heading, then `sed -n` the range):
+
+- [ENGINE.md](ENGINE.md) — architecture, data flow, validation.
+- [PROJECT_PLAN.md](PROJECT_PLAN.md) — scope, or deciding what's next.
+- [MEMORY.md](MEMORY.md) — when a past decision or its boundary is in question.
+- [MINIPROGRAM.md](MINIPROGRAM.md) — `miniprogram/`, `cloudfunctions/`, the shared core
+  and its build.
+- Older log entries — only to trace a specific past change
+  (`grep -n '^### v' MAINTENANCE_LOG.md`, then `sed -n`).
+
+A pure bug or UI fix needs the two startup items and the code, nothing more.
 
 ## Working Agreement (how to work here)
 
@@ -125,15 +143,17 @@ Standing preferences, so the owner (Alan) doesn't restate them each session:
   root of all drift — see Documentation Sync Rules below.
 - **MEMORY.md is a router + durable-decision ledger, not a status mirror.** It points
   at owners; it never holds current status, version, or progress.
-- **Startup core is minimal.** Read the small fixed set above every session; everything
-  else on demand.
+- **Startup core is minimal.** Read the small fixed set above every session (the log's
+  latest entry via the `awk` command, never the whole file); everything else on demand,
+  section by section.
 
 ## Current State (pointer block — do not restate status here)
 
-This section is a pointer to the single owner of each kind of fact; keep it free of
-dates and version numbers:
+This section is a routing table, not a reading list for session start (the startup core
+is in Required Reading above). It points to the single owner of each kind of fact; keep it
+free of dates and version numbers:
 
-- **Latest version & what shipped** → [MAINTENANCE_LOG.md](MAINTENANCE_LOG.md).
+- **Latest version & what shipped** → [MAINTENANCE_LOG.md](MAINTENANCE_LOG.md) (latest entry via the Required Reading `awk` command).
 - **Scope / parked decisions / future phases** → [PROJECT_PLAN.md](PROJECT_PLAN.md).
 - **Architecture / data flow / validation strategy** → [ENGINE.md](ENGINE.md).
 - **Durable decisions & boundaries** → [MEMORY.md](MEMORY.md).
