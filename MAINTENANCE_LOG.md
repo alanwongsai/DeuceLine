@@ -90,6 +90,9 @@
   (decision ledger) is not Claude's auto-memory. On-demand docs are read by section.
   Current State is marked as a routing table, not a reading list. No code, data or
   generated copies touched; the `awk` command was verified to output exactly one entry.
+- 2026-10-16, data only (no version bump — one field, no code or generated copies): correct
+  match 15 (2026-10-16, Bishop) surface from `grass` to `astro`; it was mis-selected when
+  submitted from the phone. Date, scores, conditions and everything else are unchanged.
 
 ### v0.14.3 — 2026-10-04
 - Give the shared web shell 32px of breathing room beyond the top safe area, following
