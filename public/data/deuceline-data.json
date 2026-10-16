@@ -270,6 +270,32 @@
         "alan": 8,
         "opponent": 10
       }
+    },
+    {
+      "id": "match-15",
+      "seq": 15,
+      "date": "2026-10-16",
+      "surface": "grass",
+      "location": "Bishop",
+      "conditions": [
+        "cloudy"
+      ],
+      "tempC": 10,
+      "fidelity": "sets",
+      "sets": [
+        {
+          "alan": 7,
+          "opponent": 5
+        },
+        {
+          "alan": 4,
+          "opponent": 6
+        }
+      ],
+      "matchTiebreak": {
+        "alan": 10,
+        "opponent": 5
+      }
     }
   ]
 }
