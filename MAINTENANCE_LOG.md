@@ -93,6 +93,12 @@
 - 2026-10-16, data only (no version bump — one field, no code or generated copies): correct
   match 15 (2026-10-16, Bishop) surface from `grass` to `astro`; it was mis-selected when
   submitted from the phone. Date, scores, conditions and everything else are unchanged.
+- 2026-10-22, hosting config only (no version bump — no repo code changed): enabled
+  Cloudflare Web Analytics on the `deuceline` Pages project in the dashboard so Alan can see
+  whether anyone opens the shared link (anonymous counts only, no identities). Cloudflare
+  auto-injects its cookieless beacon on the next deployment; no CSP exists to block it and
+  the service worker needs no change. Document the setup in ENGINE (Static Hosting) and the
+  "counts, not identities" boundary in MEMORY. This commit's push triggers the redeploy.
 
 ### v0.14.3 — 2026-10-04
 - Give the shared web shell 32px of breathing room beyond the top safe area, following

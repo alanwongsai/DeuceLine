@@ -35,6 +35,13 @@ service-worker cache name in the same change. A failed validation is actionable 
 UI: the normal state explains that data could not be refreshed, provides **Reload data**,
 and keeps raw technical validation details collapsed for diagnosis.
 
+Visitor counts come from Cloudflare Web Analytics, enabled on the Pages project in the
+dashboard (Metrics → Web Analytics). Cloudflare injects its cookieless beacon into the HTML
+at the edge on each deployment, so there is no analytics code in the repo. The service
+worker is compatible as-is: navigations are network-first (the injected HTML arrives), the
+cross-origin beacon script is never cached (opaque response), and the beacon's POSTs bypass
+the worker.
+
 ## Data Source Strategy
 
 Canonical data file:

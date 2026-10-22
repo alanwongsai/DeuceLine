@@ -125,3 +125,8 @@ stateless commit proxy for match publishing.
   weighting shown in words with every factor visible — no percentages, no stored predictions,
   no model; tiebreak-in-set ("pressure points") stats are deliberately not built because they
   need point-level recording.
+- **Analytics answers "did anyone look", never "who".** Alan, 2026-10-22. Cloudflare Web
+  Analytics (dashboard toggle, cookieless, auto-injected) gives anonymous visits, country,
+  referrer and device. **Why:** sharing the link only needs a sign of life, not identities.
+  **Boundary:** no visitor identification, per-person links, cookies or third-party trackers;
+  no analytics code in the repo — see [ENGINE.md](ENGINE.md) → Static Hosting Constraints.
