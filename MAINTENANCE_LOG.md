@@ -57,6 +57,18 @@
 
 ## Log
 
+### v0.14.7 — 2026-10-22
+- Tighter Overview top so more of the page fits on the first screen. Head-to-head card
+  (`src/styles/journal.css`): same centered layout, score 86→68px (narrow phones 76→60,
+  ≥760px 100→84), padding and gaps around names, score and ratio bar roughly halved — card
+  291→223px at 375px. Grand Slam theme picker is now one horizontal row (dot beside the
+  label, buttons sized to their text) at 32px instead of 52px, with 16px below instead of
+  30px. Rivalry ledger now starts ~100px higher on a 375×812 phone.
+- Chosen by Alan from two options each (card: compress vs names-beside-score; themes:
+  inline row vs dots in the top bar). Mini program unchanged (no theme picker there).
+- Typecheck, 130 tests, build and build:core (version copies only) pass. Checked in the
+  dev preview at 375px, 320px (all four theme labels fit, no horizontal scroll) and 1000px.
+
 ### v0.14.6 — 2026-10-22
 - Limit password guessing on the Cloudflare Functions. `add-match`, `update-match` and
   `check-key` now run the shared password check through `guardPublishKey`
