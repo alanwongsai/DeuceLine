@@ -296,6 +296,28 @@
         "alan": 10,
         "opponent": 5
       }
+    },
+    {
+      "id": "match-16",
+      "seq": 16,
+      "date": "2026-10-22",
+      "surface": "astro",
+      "location": "Bishop",
+      "conditions": [
+        "windy"
+      ],
+      "tempC": 10,
+      "fidelity": "sets",
+      "sets": [
+        {
+          "alan": 6,
+          "opponent": 4
+        },
+        {
+          "alan": 7,
+          "opponent": 5
+        }
+      ]
     }
   ]
 }
