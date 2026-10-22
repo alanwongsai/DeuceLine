@@ -130,3 +130,9 @@ stateless commit proxy for match publishing.
   referrer and device. **Why:** sharing the link only needs a sign of life, not identities.
   **Boundary:** no visitor identification, per-person links, cookies or third-party trackers;
   no analytics code in the repo — see [ENGINE.md](ENGINE.md) → Static Hosting Constraints.
+- **Visitors get a joke, not a form.** Alan, 2026-10-22. Tapping + (or Update result) on a
+  device without the stored publish password shows the Hawk-Eye "OUT!" gate; the owner gets
+  in through "I'm meltcado" + password. **Why:** the link is shared, and a visitor shouldn't
+  fill in a whole match before learning they can't publish. **Boundary:** the gate is UX only
+  — the server-side password check stays the sole write protection; the gate follows the
+  skin tokens of all four themes in day and evening; the mini program is unaffected.

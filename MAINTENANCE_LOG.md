@@ -57,6 +57,25 @@
 
 ## Log
 
+### v0.14.5 — 2026-10-22
+- Add a spectator gate for the shared link. On a device with no stored publish password,
+  the add button and Update result open a Hawk-Eye replay sheet: the ball lands out, "OUT!",
+  "Challenge unsuccessful. No no, only meltcado can add this.", with "Fine, I'll just watch"
+  to close. "I'm meltcado →" asks for the password and checks it via the new stateless
+  `POST /api/check-key` Function (shared `checkPublishKey` gate only); a confirmed key is
+  stored and the form opens. An unreachable check falls back to the old submit-time check.
+  Devices that already hold the key skip the gate. Write security is unchanged.
+- Password storage helpers moved from `AddMatchSheet` to `src/components/publishKey.ts`.
+  Gate colours come from skin tokens (court, chalk = sheet-solid, ink, danger); only the
+  ball is fixed tennis-ball yellow. Ball landing animation respects reduced motion.
+- Typecheck, 124 tests, build, Functions typecheck and build:core (version copies only)
+  pass. Local `wrangler pages dev` acceptance at 375px: wrong password → 401 message,
+  correct test password → Match 16 form with key stored, "just watch" closes, stored key
+  skips the gate. Screenshots checked Wimbledon, Roland-Garros and US Open in day and evening
+  plus Australian Open evening; Australian Open day not captured. Update result path shares
+  the same code but was not clicked (no unfinished match in data). Mini program unaffected.
+  Documented in ENGINE (Data Update Flow) and MEMORY.
+
 ### v0.14.4 — 2026-10-04 (local, not deployed)
 - Resolve player display colours once at the web shell, with dataset colours as fallback.
   Wimbledon day keeps purple/green; Roland-Garros uses terracotta/graphite, US Open

@@ -14,41 +14,14 @@ import { DeucelineDataset, Match, PlayerKey, SetScore, Surface, SURFACES, Weathe
 import { describeFormIssue } from "../domain/formIssues";
 import { DatasetValidationError, validateDataset } from "../domain/validateDataset";
 import { Modal } from "./Modal";
+import { clearStoredPassword, readStoredPassword, storePassword } from "./publishKey";
+import { SpectatorGate } from "./SpectatorGate";
 import { SurfaceBadge } from "./SurfaceBadge";
 import { WEATHER_LABELS, WeatherBadges } from "./weather";
 
 // The Cloudflare Pages Functions that commit for us (one-tap publish / update).
 const PUBLISH_ENDPOINT = "/api/add-match";
 const UPDATE_ENDPOINT = "/api/update-match";
-// The publish password is stored on this device only — never in the bundle — so
-// a visitor with just the link can't reach the write path. It's a credential,
-// not canonical data, so localStorage is fine here (see AGENTS.md).
-const PASSWORD_KEY = "deuceline.addMatchKey";
-
-function readStoredPassword(): string {
-  try {
-    return localStorage.getItem(PASSWORD_KEY) ?? "";
-  } catch {
-    return "";
-  }
-}
-
-function storePassword(value: string): void {
-  try {
-    localStorage.setItem(PASSWORD_KEY, value);
-  } catch {
-    /* localStorage may be unavailable (private mode); the GitHub-editor fallback still works. */
-  }
-}
-
-function clearStoredPassword(): void {
-  try {
-    localStorage.removeItem(PASSWORD_KEY);
-  } catch {
-    /* ignore */
-  }
-}
-
 const surfaceLabels: Record<Surface, string> = {
   hard: "Hard",
   clay: "Clay",
@@ -168,6 +141,9 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
   const [pendingInput, setPendingInput] = useState<NewMatchInput | null>(null);
   const [password, setPassword] = useState(readStoredPassword);
   const [needsPassword, setNeedsPassword] = useState(false);
+  // No stored password means a visitor's device (or the owner on a new one): show
+  // the Hawk-Eye gate first instead of a form they can't publish from.
+  const [unlocked, setUnlocked] = useState(() => Boolean(password));
   const [publishState, setPublishState] = useState<"idle" | "publishing" | "done">("idle");
   const [publishError, setPublishError] = useState<string | null>(null);
   // Whether the committed dataset was successfully applied to local state, so the
@@ -414,6 +390,19 @@ export function AddMatchSheet({ dataset, onClose, editMatch, onPublished }: AddM
     setRefreshed(false);
     initialDraftKey.current = null;
   };
+
+  if (!unlocked) {
+    return (
+      <SpectatorGate
+        eyebrow={isEdit ? "Update match" : "Add match"}
+        onClose={onClose}
+        onUnlock={(key) => {
+          setPassword(key);
+          setUnlocked(true);
+        }}
+      />
+    );
+  }
 
   if (confirmDiscard) {
     return (

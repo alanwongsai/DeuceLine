@@ -91,6 +91,17 @@ only the public link can't write or delete:
 - **Least privilege** — the token (`GITHUB_TOKEN`) is a fine-grained PAT scoped to this repo,
   Contents-only; every write is a commit, so any bad write is git-revertible.
 
+**Spectator gate (courtesy, not security).** On a device with no stored publish password,
+both the add button and **Update result** first show `SpectatorGate` — a Hawk-Eye replay
+calling the challenge OUT ("No no, only meltcado can add this.") — instead of a form a
+visitor could never publish. Its "I'm meltcado" link checks the password against
+`functions/api/check-key.ts` (`POST /api/check-key`, the same `checkPublishKey` gate and
+nothing else); a confirmed key is stored and the form opens. If the check itself can't run
+(offline, Function missing), the form opens anyway and the key is checked on submit as
+before. The write endpoints keep checking the password on every call, so the gate changes
+what a visitor sees, never what they can do. Its colours are skin tokens, so it follows
+every theme and day/evening mode.
+
 A second Function, `functions/api/update-match.ts` (`POST /api/update-match`), completes or
 edits an **unfinished** match. It shares the password gate, least-privilege token, and GitHub
 plumbing (the shared core — see Shared publish core below). Its append-only equivalent is a strict precondition:
