@@ -5,10 +5,9 @@
 // the same shared gate as the write endpoints and touches nothing else, so it
 // grants no access the write endpoints don't already check on every call.
 
-import { Env, respond } from "./_cloudflare";
-import { checkPublishKey } from "./_publish";
+import { Env, guardPublishKey, respond } from "./_cloudflare";
 
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
-  const denied = checkPublishKey(env, request.headers.get("x-deuceline-key"));
+  const denied = await guardPublishKey(env, request);
   return respond(denied ?? { status: 200, body: { ok: true } });
 };

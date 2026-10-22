@@ -85,7 +85,13 @@ The write Function (`functions/api/add-match.ts`) is guarded three ways, so a vi
 only the public link can't write or delete:
 
 - **Password gate** — the caller must send the shared password (a Cloudflare secret,
-  `ADD_MATCH_PASSWORD`); the app stores it on-device only, never in the bundle.
+  `ADD_MATCH_PASSWORD`); the app stores it on-device only, never in the bundle. Every
+  Cloudflare Function runs it through `guardPublishKey` (`_cloudflare.ts`): ten wrong
+  passwords from one IP (IPv6: one /64) lock it out (`429`, even with the right password) until an
+  hour passes without another wrong try. The count lives in Workers KV (`RATE_LIMIT`,
+  bound in `wrangler.toml`), so it covers `pages.dev` as well as the custom domain; KV is
+  eventually consistent, so the cap is approximate. Without the binding it fails open to
+  the plain check. The mini program's cloud functions are not limited (testers only).
 - **Append-only** — the client sends only a new match; the Function re-appends server-side,
   so the endpoint can add one match but never delete or rewrite existing ones.
 - **Least privilege** — the token (`GITHUB_TOKEN`) is a fine-grained PAT scoped to this repo,

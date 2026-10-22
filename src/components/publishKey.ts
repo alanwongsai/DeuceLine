@@ -30,16 +30,18 @@ export function clearStoredPassword(): void {
   }
 }
 
-// "ok": the server accepted the key. "rejected": wrong password. "unknown": the
-// check itself couldn't run (offline, Function missing or misconfigured) — the
+// "ok": the server accepted the key. "rejected": wrong password. "limited": too
+// many wrong passwords from this IP, so it's locked out for a while. "unknown":
+// the check itself couldn't run (offline, Function missing or misconfigured) — the
 // write endpoints still check the key on submit, so the caller may let it through.
-export type KeyCheck = "ok" | "rejected" | "unknown";
+export type KeyCheck = "ok" | "rejected" | "limited" | "unknown";
 
 export async function checkPublishKey(key: string): Promise<KeyCheck> {
   try {
     const response = await fetch(CHECK_ENDPOINT, { method: "POST", headers: { "x-deuceline-key": key } });
     if (response.ok) return "ok";
-    return response.status === 401 ? "rejected" : "unknown";
+    if (response.status === 401) return "rejected";
+    return response.status === 429 ? "limited" : "unknown";
   } catch {
     return "unknown";
   }

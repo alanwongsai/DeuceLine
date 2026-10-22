@@ -13,12 +13,12 @@
 // This file is only the Cloudflare adapter; the gate and rules live in
 // _publish.ts and are shared with the mini program's CloudBase cloud function.
 
-import { Env, respond } from "./_cloudflare";
+import { Env, guardPublishKey, respond } from "./_cloudflare";
 import { createGitHubStore } from "./_github";
-import { checkPublishKey, handleUpdateMatch } from "./_publish";
+import { handleUpdateMatch } from "./_publish";
 
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
-  const denied = checkPublishKey(env, request.headers.get("x-deuceline-key"));
+  const denied = await guardPublishKey(env, request);
   if (denied) return respond(denied);
 
   // A body that isn't JSON is answered by the core's 400 shape check.

@@ -136,3 +136,9 @@ stateless commit proxy for match publishing.
   fill in a whole match before learning they can't publish. **Boundary:** the gate is UX only
   — the server-side password check stays the sole write protection; the gate follows the
   skin tokens of all four themes in day and evening; the mini program is unaffected.
+- **Slow down password guessing instead of forcing a stronger password.** Alan, 2026-10-22.
+  Alan keeps the current publish password; the Cloudflare Functions lock an IP out for an
+  hour after ten wrong passwords (Workers KV counter, `wrangler.toml` binding). **Why:** the
+  shared password is the only write gate and the link is public. **Boundary:** per-IP and
+  approximate (KV), not a global lock — a global one would let anyone lock Alan out; no
+  CAPTCHA or account system; the mini program's CloudBase functions are not covered.

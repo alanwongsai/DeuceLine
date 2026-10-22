@@ -36,6 +36,10 @@ export function SpectatorGate({ eyebrow, onClose, onUnlock }: SpectatorGateProps
       setError("Challenge unsuccessful again. That's not the password.");
       return;
     }
+    if (result === "limited") {
+      setError("Out of challenges. Too many wrong passwords, so try again in an hour.");
+      return;
+    }
     // Only a confirmed key is remembered; an unchecked one is re-checked on submit.
     if (result === "ok") storePassword(trimmed);
     onUnlock(trimmed);

@@ -57,6 +57,26 @@
 
 ## Log
 
+### v0.14.6 — 2026-10-22
+- Limit password guessing on the Cloudflare Functions. `add-match`, `update-match` and
+  `check-key` now run the shared password check through `guardPublishKey`
+  (`functions/api/_cloudflare.ts` → new `_rateLimit.ts`): each wrong password from an IP
+  bumps a Workers KV counter (one-hour TTL, refreshed per failure); at ten, that IP gets
+  `429 Too many wrong passwords. Try again in an hour.` even with the right password, until
+  an hour passes without another wrong try. Correct passwords and 500s are not counted.
+  IPv6 clients are counted per /64 so address-hopping within one prefix doesn't reset the
+  count. KV read/write errors and a missing binding fail open to the plain check.
+- New KV namespace `deuceline-rate-limit`, bound as `RATE_LIMIT` in `wrangler.toml` (the
+  project's bindings are managed there, not in the dashboard). The Hawk-Eye gate shows
+  "Out of challenges…" on 429 instead of opening the form; the add/update sheet already
+  surfaces the server's error text. The mini program's CloudBase functions are unchanged
+  and not limited. Password itself unchanged at Alan's request.
+- Typecheck, 130 tests (6 new limiter tests), build, Functions typecheck and build:core
+  (version copies only) pass. Local `wrangler pages dev` with the toml binding: ten wrong
+  passwords → 401, eleventh → 429; after lockout the correct password and `add-match` both
+  get 429; the gate shows the lockout message and keeps the form closed. Rebased onto
+  match 16 (d4e2354), published from the app meanwhile. Documented in ENGINE and MEMORY.
+
 ### v0.14.5 — 2026-10-22
 - Add a spectator gate for the shared link. On a device with no stored publish password,
   the add button and Update result open a Hawk-Eye replay sheet: the ball lands out, "OUT!",

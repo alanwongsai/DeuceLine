@@ -5,3 +5,9 @@
 name = "deuceline"
 pages_build_output_dir = "dist"
 compatibility_date = "2024-11-01"
+
+# Wrong-password counter for the publish gate (functions/api/_rateLimit.ts):
+# ten wrong passwords lock that IP out for an hour. Namespace "deuceline-rate-limit".
+[[kv_namespaces]]
+binding = "RATE_LIMIT"
+id = "86a2e3efd5d3462b86a2233685aa59fb"
