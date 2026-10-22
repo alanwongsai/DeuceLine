@@ -57,6 +57,13 @@
 
 ## Log
 
+### v0.14.8 — 2026-10-22
+- Reverted v0.14.7 at Alan's request: the Overview head-to-head card and the Grand Slam
+  theme picker are back to their v0.14.6 size and layout (`src/styles/journal.css` restored
+  as of 446fd54). Version moves forward rather than back so the deployed label still
+  changes. No other code touched.
+- Typecheck, tests, build and build:core (version copies only) pass.
+
 ### v0.14.7 — 2026-10-22
 - Tighter Overview top so more of the page fits on the first screen. Head-to-head card
   (`src/styles/journal.css`): same centered layout, score 86→68px (narrow phones 76→60,
