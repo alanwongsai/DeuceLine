@@ -307,12 +307,19 @@
         "windy"
       ],
       "tempC": 10,
-      "status": "unfinished",
       "fidelity": "sets",
       "sets": [
         {
           "alan": 6,
           "opponent": 4
+        },
+        {
+          "alan": 3,
+          "opponent": 6
+        },
+        {
+          "alan": 6,
+          "opponent": 3
         }
       ]
     }
